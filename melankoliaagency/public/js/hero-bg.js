@@ -1,174 +1,164 @@
 /* ================================================
-   MELANKOLIA AGENCY — HERO BACKGROUND
-   Slow parallax drift through the logo mark
-   Three.js + SVG texture approach
+   MELANKOLIA AGENCY — SITE BACKGROUND
+   True 3D: camera flies forward through
+   enormous logo-mark planes in deep space.
+   Fixed canvas behind all content.
    ================================================ */
-
 (function () {
   const canvas = document.getElementById('heroCanvas');
-  if (!canvas) return;
+  if (!canvas || typeof THREE === 'undefined') return;
 
-  // ---- RENDERER ----
+  /* ---- RENDERER ---- */
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setClearColor(0x000000, 1);
 
-  // ---- SCENE / CAMERA ----
+  /* ---- SCENE / CAMERA ---- */
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 100);
-  camera.position.set(0, 0, 1.8);
+  scene.fog = new THREE.FogExp2(0x000000, 0.055);
 
-  // ---- LOAD SVG AS TEXTURE via offscreen canvas ----
-  function buildSVGTexture(callback) {
-    const svgUrl = '/images/logo-mark-white.svg';
+  const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 120);
+
+  function resize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* ---- BUILD LOGO TEXTURE FROM SVG ---- */
+  function makeTex(cb) {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      // Render SVG into an offscreen canvas so we control size/colour
+      // Render white SVG onto a black canvas so it's visible as additive texture
       const oc = document.createElement('canvas');
-      // Use a wide canvas matching the SVG aspect (792:612 ≈ 1.294)
-      oc.width  = 1024;
-      oc.height = Math.round(1024 / (792 / 612));  // ~792
+      // SVG viewBox 792×612
+      oc.width = 1024; oc.height = Math.round(1024 * 612 / 792);
       const ctx = oc.getContext('2d');
-      ctx.clearRect(0, 0, oc.width, oc.height);
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, oc.width, oc.height);
       ctx.drawImage(img, 0, 0, oc.width, oc.height);
-      const tex = new THREE.CanvasTexture(oc);
-      tex.needsUpdate = true;
-      callback(tex);
+      const t = new THREE.CanvasTexture(oc);
+      cb(t);
     };
-    img.onerror = () => {
-      // Fallback: plain texture if SVG fails
-      const oc = document.createElement('canvas');
-      oc.width = oc.height = 4;
-      callback(new THREE.CanvasTexture(oc));
-    };
-    img.src = svgUrl;
+    img.onerror = () => cb(new THREE.CanvasTexture(document.createElement('canvas')));
+    img.src = '/images/logo-mark-white.svg';
   }
 
-  buildSVGTexture((logoTex) => {
+  makeTex((tex) => {
 
-    // ---- LOGO PLANES — stack several at different Z depths ----
-    // The viewer drifts slowly forward; each plane has its own depth/scale/opacity
-    // giving a genuine parallax "flying through" feel
+    /* ---- LOGO PLANE TUNNEL ----
+       We place N logo planes along the Z axis, camera flies through them.
+       Planes recycle: when one passes behind camera it jumps to far end.
+    */
+    const SVG_ASPECT = 792 / 612;          // logo width:height
+    const PLANE_SCALE  = 14;               // world units tall
+    const PLANE_W      = PLANE_SCALE * SVG_ASPECT;
+    const PLANE_H      = PLANE_SCALE;
+    const N_PLANES     = 12;
+    const SPACING      = 8;                // z gap between planes
+    const TOTAL_DEPTH  = N_PLANES * SPACING;
 
-    const planes = [];
-    const LAYERS = [
-      // { z, scale, opacity, rotZ }
-      { z: -3.0, scale: 5.5,  opacity: 0.04, rotZ:  0.00 },
-      { z: -1.6, scale: 3.8,  opacity: 0.07, rotZ:  0.003 },
-      { z: -0.4, scale: 2.4,  opacity: 0.10, rotZ: -0.004 },
-      { z:  0.6, scale: 1.5,  opacity: 0.13, rotZ:  0.002 },
-      { z:  1.4, scale: 0.9,  opacity: 0.09, rotZ: -0.002 },
-    ];
-
-    // SVG aspect: 792 / 612
-    const svgAspect = 792 / 612;
-
-    LAYERS.forEach(({ z, scale, opacity, rotZ }) => {
-      const geo = new THREE.PlaneGeometry(scale * svgAspect, scale);
-      const mat = new THREE.MeshBasicMaterial({
-        map: logoTex,
-        transparent: true,
-        opacity: opacity,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(0, 0, z);
-      mesh.rotation.z = rotZ;
-      scene.add(mesh);
-      planes.push({ mesh, baseZ: z, baseOpacity: opacity, baseScale: scale, rotZ });
+    const planeMat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      opacity: 0.13,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
     });
 
-    // ---- SUBTLE PARTICLE FIELD — fine dust behind logo ----
-    const COUNT = 600;
-    const pos = new Float32Array(COUNT * 3);
-    for (let i = 0; i < COUNT; i++) {
-      pos[i * 3]     = (Math.random() - 0.5) * 12;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 9;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 8 - 2;
+    const planeGeo = new THREE.PlaneGeometry(PLANE_W, PLANE_H);
+    const meshes = [];
+
+    for (let i = 0; i < N_PLANES; i++) {
+      const m = new THREE.Mesh(planeGeo, planeMat.clone());
+      m.position.z = -i * SPACING;
+      // Slight random tilt per plane — like drifting debris
+      m.rotation.z = (Math.random() - 0.5) * 0.06;
+      m.position.x = (Math.random() - 0.5) * 0.4;
+      m.position.y = (Math.random() - 0.5) * 0.2;
+      scene.add(m);
+      meshes.push(m);
+    }
+
+    /* ---- GOLD PARTICLE FIELD ---- */
+    const PC = 800;
+    const pArr = new Float32Array(PC * 3);
+    for (let i = 0; i < PC; i++) {
+      pArr[i*3]   = (Math.random()-0.5)*30;
+      pArr[i*3+1] = (Math.random()-0.5)*22;
+      pArr[i*3+2] = -(Math.random()*TOTAL_DEPTH);
     }
     const pGeo = new THREE.BufferGeometry();
-    pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const pMat = new THREE.PointsMaterial({
-      color: 0xc8a96e,
-      size: 0.012,
-      transparent: true,
-      opacity: 0.35,
-      sizeAttenuation: true,
-    });
-    scene.add(new THREE.Points(pGeo, pMat));
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pArr,3));
+    scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
+      color:0xc8a96e, size:0.025, transparent:true, opacity:0.5, sizeAttenuation:true
+    })));
 
-    // ---- MOUSE PARALLAX STATE ----
-    let targetX = 0, targetY = 0;
-    let currentX = 0, currentY = 0;
-    document.addEventListener('mousemove', (e) => {
-      targetX = (e.clientX / window.innerWidth  - 0.5) * 0.18;
-      targetY = (e.clientY / window.innerHeight - 0.5) * 0.10;
-    }, { passive: true });
+    /* ---- MOUSE PARALLAX ---- */
+    let mx=0, my=0, tmx=0, tmy=0;
+    window.addEventListener('mousemove', e => {
+      tmx = (e.clientX/window.innerWidth  - 0.5) *  0.5;
+      tmy = (e.clientY/window.innerHeight - 0.5) * -0.3;
+    }, {passive:true});
 
-    // Touch support
-    document.addEventListener('touchmove', (e) => {
-      const t = e.touches[0];
-      targetX = (t.clientX / window.innerWidth  - 0.5) * 0.1;
-      targetY = (t.clientY / window.innerHeight - 0.5) * 0.06;
-    }, { passive: true });
+    /* ---- ANIMATION ---- */
+    let t = 0;
+    // Camera starts behind the planes and moves forward (decreasing Z)
+    const CAM_START_Z = 6;
+    const FLY_SPEED   = 0.006;   // units/frame — slow, hypnotic
 
-    // ---- SCROLL parallax ----
-    let scrollY = 0;
-    window.addEventListener('scroll', () => {
-      scrollY = window.scrollY;
-    }, { passive: true });
+    camera.position.set(0, 0, CAM_START_Z);
 
-    // ---- RESIZE ----
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    function tick() {
+      requestAnimationFrame(tick);
+      t += 0.005;
 
-    // ---- ANIMATE ----
-    let time = 0;
-    let camZ = 1.8;
-    const DRIFT_SPEED = 0.00018; // extremely slow forward drift
+      // Smooth mouse
+      mx += (tmx - mx) * 0.04;
+      my += (tmy - my) * 0.04;
 
-    function animate() {
-      requestAnimationFrame(animate);
-      time += 0.005;
+      // Forward flight
+      camera.position.z -= FLY_SPEED;
 
-      // Smooth mouse follow
-      currentX += (targetX - currentX) * 0.035;
-      currentY += (targetY - currentY) * 0.035;
+      // Camera gently oscillates off-centre — feels like floating
+      camera.position.x = mx * 1.8 + Math.sin(t * 0.17) * 0.15;
+      camera.position.y = my * 1.2 + Math.cos(t * 0.13) * 0.08;
 
-      // Very slow forward drift (POV creeping into the logo)
-      camZ -= DRIFT_SPEED;
-      // Oscillate gently so it never "arrives" — pendulum feel
-      const driftZ = 1.8 + Math.sin(time * 0.12) * 0.25;
-
-      camera.position.set(
-        currentX,
-        -currentY,
-        driftZ
+      // Look slightly ahead of centre — gives the "flying into" sense
+      camera.lookAt(
+        camera.position.x * 0.1,
+        camera.position.y * 0.1,
+        camera.position.z - 20
       );
-      // Slight camera tilt toward mouse
-      camera.rotation.y = currentX * -0.12;
-      camera.rotation.x = currentY * 0.08;
-      // Very slow roll
-      camera.rotation.z = Math.sin(time * 0.07) * 0.004;
 
-      // Planes breathe — opacity pulse, very slow
-      planes.forEach(({ mesh, baseOpacity }, i) => {
-        mesh.material.opacity = baseOpacity * (0.75 + 0.25 * Math.sin(time * 0.3 + i * 1.1));
-        // Each layer drifts laterally at a slightly different rate (parallax)
-        mesh.position.x = currentX * (i * 0.3 + 0.2) * -0.8;
-        mesh.position.y = currentY * (i * 0.2 + 0.1) *  0.8;
+      // Recycle planes: when a plane is 2 units behind camera, push to far end
+      meshes.forEach(m => {
+        if (m.position.z > camera.position.z + 2) {
+          m.position.z -= TOTAL_DEPTH;
+          // Refresh slight tilt & drift
+          m.rotation.z = (Math.random()-0.5)*0.06;
+          m.position.x = (Math.random()-0.5)*0.4;
+          m.position.y = (Math.random()-0.5)*0.2;
+        }
+        // Opacity: far planes are faint, near planes pulse brighter
+        const dist = Math.abs(m.position.z - camera.position.z);
+        m.material.opacity = Math.max(0.04, 0.18 - dist * 0.012)
+          * (0.8 + 0.2 * Math.sin(t * 0.4 + m.position.z * 0.1));
       });
+
+      // Recycle particles
+      const pa = pGeo.attributes.position.array;
+      for (let i=0; i<PC; i++) {
+        if (pa[i*3+2] > camera.position.z + 3) pa[i*3+2] -= TOTAL_DEPTH;
+      }
+      pGeo.attributes.position.needsUpdate = true;
 
       renderer.render(scene, camera);
     }
-
-    animate();
+    tick();
   });
-
 })();

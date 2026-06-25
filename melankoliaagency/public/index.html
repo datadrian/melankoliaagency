@@ -10,6 +10,9 @@
 </head>
 <body>
 
+  <!-- FULL-PAGE THREE.JS CANVAS — lives behind everything -->
+  <canvas id="heroCanvas" class="site-canvas"></canvas>
+
   <!-- NAV -->
   <nav class="nav" id="nav">
     <a href="/" class="nav-logo">
@@ -26,27 +29,11 @@
     </ul>
   </nav>
 
-  <!-- HERO -->
-  <header class="hero">
-    <!-- Three.js canvas sits behind everything -->
-    <canvas id="heroCanvas" class="hero-canvas"></canvas>
-    <div class="hero-content">
-      <img src="/images/logo-full.png" alt="Melankolia Agency" class="hero-logo">
-      <p class="hero-tagline">Dark Wave &nbsp;·&nbsp; Post-Punk &nbsp;·&nbsp; EBM &nbsp;·&nbsp; Industrial &nbsp;·&nbsp; Dark Techno</p>
-    </div>
-    <div class="hero-scroll-hint">
-      <span>Artists</span>
-      <div class="scroll-arrow"></div>
-    </div>
-  </header>
-
-  <!-- ARTISTS GRID -->
+  <!-- ARTISTS — visible immediately on load -->
   <main class="artists-section" id="artists">
     <div class="section-header">
       <h2 class="section-title">Our Artists</h2>
-      <div class="filter-bar">
-        <input type="text" class="search-input" id="artistSearch" placeholder="Search artists..." autocomplete="off">
-      </div>
+      <input type="text" class="search-input" id="artistSearch" placeholder="Search artists..." autocomplete="off">
     </div>
     <div class="artists-grid" id="artistsGrid"></div>
   </main>
@@ -62,7 +49,6 @@
     </div>
   </footer>
 
-  <!-- THREE.JS from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script src="/js/data.js"></script>
   <script src="/js/hero-bg.js"></script>
