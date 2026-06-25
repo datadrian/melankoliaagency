@@ -568,3 +568,10 @@ select.form-input option { background: #111; }
   text-transform: uppercase;
   color: var(--muted);
 }
+
+/* Nav mark-only — square-ish, no text */
+.nav-logo-img {
+  height: 36px !important;
+  width: auto !important;
+  max-width: 44px !important;
+}
