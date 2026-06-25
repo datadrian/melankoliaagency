@@ -25,48 +25,60 @@ document.querySelectorAll('.sidebar-link[data-view]').forEach(link => {
 
 /* ---- DATA LAYER ---- */
 // Artists are seeded from MELANKOLIA_DATA (data.js), then extended with admin edits
-function getArtists() {
-  const stored = localStorage.getItem('mk_artists');
-  if (stored) return JSON.parse(stored);
-  // Seed from global data — MELANKOLIA_DATA = { artists: [...] }
+const DATA_VERSION = 'v3'; // bump this to force a reseed
+
+function seedArtistsFromSource() {
   const source = (typeof MELANKOLIA_DATA !== 'undefined' && MELANKOLIA_DATA.artists)
     ? MELANKOLIA_DATA.artists
     : (Array.isArray(MELANKOLIA_DATA) ? MELANKOLIA_DATA : []);
-  if (source.length) {
-    const seeded = source.map((a, i) => ({
-      id: 'artist_' + i,
-      name: a.name || '',
-      slug: a.slug || a.name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
-      photo: a.image ? '/images/' + a.image : (a.photo || ''),
-      banner: '',
-      photos: [],
-      genres: Array.isArray(a.genres) ? a.genres.join(', ') : (a.genres || ''),
-      location: '',
-      bio: a.bio || '',
-      shortBio: '',
-      quotes: '',
-      notes: '',
-      spotify:    a.social_links?.spotify    || a.links?.spotify    || '',
-      soundcloud: a.social_links?.soundcloud || a.links?.soundcloud || '',
-      bandcamp:   a.social_links?.bandcamp   || a.links?.bandcamp   || '',
-      apple:      a.social_links?.apple      || '',
-      instagram:  a.social_links?.instagram  || a.links?.instagram  || '',
-      facebook:   a.social_links?.facebook   || a.links?.facebook   || '',
-      youtube:    a.social_links?.youtube    || a.links?.youtube    || '',
-      website:    a.social_links?.website    || a.links?.website    || '',
-      bandsintown:'',
-      ra: '',
-      presskit: '',
-      techRider: '',
-      bookingEmail: '',
-      status: 'active',
-      featured: a.featured || false,
-      epk: null,
-    }));
-    saveArtists(seeded);
-    return seeded;
+  if (!source.length) return [];
+  return source.map((a, i) => ({
+    id: 'artist_' + i,
+    name: a.name || '',
+    slug: a.slug || (a.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+    photo: a.image ? '/images/' + a.image : (a.photo || ''),
+    banner: '',
+    photos: [],
+    genres: Array.isArray(a.genres) ? a.genres.join(', ') : (a.genres || ''),
+    location: '',
+    bio: (a.bio || '').replace(/\n\n/g,' ').replace(/\n/g,' ').trim(),
+    shortBio: '',
+    quotes: '',
+    notes: '',
+    spotify:    (a.social_links||{}).spotify    || (a.links||{}).spotify    || '',
+    soundcloud: (a.social_links||{}).soundcloud || (a.links||{}).soundcloud || '',
+    bandcamp:   (a.social_links||{}).bandcamp   || (a.links||{}).bandcamp   || '',
+    apple:      (a.social_links||{}).apple      || '',
+    instagram:  (a.social_links||{}).instagram  || (a.links||{}).instagram  || '',
+    facebook:   (a.social_links||{}).facebook   || (a.links||{}).facebook   || '',
+    youtube:    (a.social_links||{}).youtube    || (a.links||{}).youtube    || '',
+    website:    (a.social_links||{}).website    || (a.links||{}).website    || '',
+    bandsintown:'',
+    ra: '',
+    presskit: '',
+    techRider: '',
+    bookingEmail: '',
+    status: 'active',
+    featured: a.featured || false,
+    epk: null,
+  }));
+}
+
+function getArtists() {
+  // Force reseed if version changed or data is empty/missing
+  const storedVer = localStorage.getItem('mk_data_version');
+  const stored = localStorage.getItem('mk_artists');
+  if (storedVer === DATA_VERSION && stored) {
+    const parsed = JSON.parse(stored);
+    if (parsed.length > 0) return parsed;
   }
-  return [];
+  // Reseed
+  const seeded = seedArtistsFromSource();
+  if (seeded.length) {
+    saveArtists(seeded);
+    localStorage.setItem('mk_data_version', DATA_VERSION);
+  }
+  return seeded;
 }
 
 function saveArtists(artists) {
@@ -97,9 +109,10 @@ function saveBookings(b) { localStorage.setItem('mk_bookings', JSON.stringify(b)
 
 /* ---- RESET / RESEED ---- */
 function resetAndReseed() {
-  if (!confirm('This will clear all local admin data and reload from the original artist data. Continue?')) return;
+  if (!confirm('Re-sync all data from source? Any manual edits will be lost.')) return;
   localStorage.removeItem('mk_artists');
   localStorage.removeItem('mk_videos');
+  localStorage.removeItem('mk_data_version');
   location.reload();
 }
 
