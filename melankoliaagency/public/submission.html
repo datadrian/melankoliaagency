@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artist Submission — Melankolia Agency</title>
+  <meta name="description" content="Submit your music to Melankolia Agency for consideration.">
+  <link rel="icon" type="image/png" href="/images/logo.png">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <nav class="nav" id="nav">
+    <a href="/" class="nav-logo">
+      <img src="/images/logo.png" alt="Melankolia Agency" class="nav-logo-img">
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/" class="nav-link">Artists</a></li>
+      <li><a href="/videos.html" class="nav-link">Videos</a></li>
+      <li><a href="/booking.html" class="nav-link">Booking</a></li>
+      <li><a href="/submission.html" class="nav-link active">Submit</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-hero">
+    <h1 class="page-title">Artist Submission</h1>
+    <p class="page-sub">We represent artists in Dark Wave, Post-Punk, EBM, Industrial, Dark Techno, Shoegaze, and Dream Pop.</p>
+  </div>
+
+  <main class="submission-section">
+    <div class="submission-layout">
+      <div class="submission-info">
+        <h2>What We Offer</h2>
+        <ul class="offer-list">
+          <li>Expert artist management and booking, with a specialty in introducing U.S. acts to the European scene.</li>
+          <li>Innovative promotion strategies to elevate your presence in the music world.</li>
+          <li>Creative content creation, including visually stunning music videos and engaging social media content.</li>
+        </ul>
+
+        <h2>Who Should Reach Out</h2>
+        <ul class="offer-list">
+          <li>Bands and solo artists in the genre seeking management and booking.</li>
+          <li>Music creators looking for dynamic promotion and marketing.</li>
+          <li>Visionaries desiring to collaborate on unique content creation projects.</li>
+        </ul>
+
+        <p class="submission-contact">
+          If you're passionate about making your mark in the dark and eager to expand your reach across continents, Melankolia Agency is your ally.
+        </p>
+      </div>
+
+      <div class="submission-form-col">
+        <h2>Submit Your Material</h2>
+        <p>Send us your music, your vision, and your story.</p>
+        <form class="submission-form" id="submissionForm" netlify>
+          <input type="hidden" name="form-name" value="submission">
+          <div class="form-group">
+            <label>Artist / Band Name *</label>
+            <input type="text" name="artist_name" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label>Your Email *</label>
+            <input type="email" name="email" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label>Genre(s)</label>
+            <input type="text" name="genres" class="form-input" placeholder="Dark Wave, EBM, etc.">
+          </div>
+          <div class="form-group">
+            <label>Music Link (Bandcamp, Spotify, SoundCloud) *</label>
+            <input type="url" name="music_link" class="form-input" placeholder="https://" required>
+          </div>
+          <div class="form-group">
+            <label>Bio / Press Kit Link</label>
+            <input type="url" name="bio_link" class="form-input" placeholder="https://">
+          </div>
+          <div class="form-group">
+            <label>Tell us about your vision</label>
+            <textarea name="message" class="form-input form-textarea" placeholder="What are you looking for from Melankolia Agency?"></textarea>
+          </div>
+          <button type="submit" class="btn-submit">Send Submission</button>
+          <div class="form-success" id="subSuccess" style="display:none;">
+            <p>Thanks! We'll listen carefully and be in touch.</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <img src="/images/logo.png" alt="Melankolia Agency" class="footer-logo">
+      <div class="footer-links">
+        <a href="mailto:booking@melankoliaagency.com">booking@melankoliaagency.com</a>
+      </div>
+      <p class="footer-copy">&copy; 2025 Melankolia Agency. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/js/data.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

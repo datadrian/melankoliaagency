@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artist — Melankolia Agency</title>
+  <meta name="description" content="Artist bio and booking information — Melankolia Agency">
+  <link rel="icon" type="image/png" href="/images/logo.png">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <a href="/" class="nav-logo">
+      <img src="/images/logo.png" alt="Melankolia Agency" class="nav-logo-img">
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/" class="nav-link">Artists</a></li>
+      <li><a href="/videos.html" class="nav-link">Videos</a></li>
+      <li><a href="/booking.html" class="nav-link">Booking</a></li>
+      <li><a href="/submission.html" class="nav-link">Submit</a></li>
+    </ul>
+  </nav>
+
+  <!-- ARTIST HERO -->
+  <div class="artist-hero" id="artistHero">
+    <div class="artist-hero-bg" id="artistHeroBg"></div>
+    <div class="artist-hero-overlay"></div>
+    <div class="artist-hero-content">
+      <a href="/" class="back-link">← All Artists</a>
+      <h1 class="artist-hero-name" id="artistName">Loading...</h1>
+    </div>
+  </div>
+
+  <!-- ARTIST CONTENT -->
+  <main class="artist-content" id="artistContent">
+    <div class="artist-layout">
+      <div class="artist-photo-col">
+        <img class="artist-photo" id="artistPhoto" src="" alt="">
+        <div class="artist-social" id="artistSocial"></div>
+        <a href="/booking.html" class="btn-book" id="bookBtn">Book This Artist</a>
+      </div>
+      <div class="artist-bio-col">
+        <p class="artist-bio" id="artistBio"></p>
+        <div class="artist-videos" id="artistVideos"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <img src="/images/logo.png" alt="Melankolia Agency" class="footer-logo">
+      <div class="footer-links">
+        <a href="mailto:booking@melankoliaagency.com">booking@melankoliaagency.com</a>
+      </div>
+      <p class="footer-copy">&copy; 2025 Melankolia Agency. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/js/data.js"></script>
+  <script src="/js/artist.js"></script>
+</body>
+</html>

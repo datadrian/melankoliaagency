@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Videos — Melankolia Agency</title>
+  <meta name="description" content="Music videos from Melankolia Agency artists.">
+  <link rel="icon" type="image/png" href="/images/logo.png">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <nav class="nav" id="nav">
+    <a href="/" class="nav-logo">
+      <img src="/images/logo.png" alt="Melankolia Agency" class="nav-logo-img">
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/" class="nav-link">Artists</a></li>
+      <li><a href="/videos.html" class="nav-link active">Videos</a></li>
+      <li><a href="/booking.html" class="nav-link">Booking</a></li>
+      <li><a href="/submission.html" class="nav-link">Submit</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-hero">
+    <h1 class="page-title">Music Videos</h1>
+    <p class="page-sub">Visual works from our artists</p>
+  </div>
+
+  <main class="videos-section">
+    <div class="video-filter-bar">
+      <input type="text" class="search-input" id="videoSearch" placeholder="Filter by artist...">
+    </div>
+    <div class="videos-grid" id="videosGrid">
+      <!-- Populated by JS -->
+    </div>
+    <div class="no-videos" id="noVideos" style="display:none;">
+      <p>No videos yet. Check back soon.</p>
+    </div>
+  </main>
+
+  <!-- VIDEO MODAL -->
+  <div class="video-modal" id="videoModal">
+    <div class="video-modal-backdrop" id="videoModalBackdrop"></div>
+    <div class="video-modal-content">
+      <button class="video-modal-close" id="videoModalClose">✕</button>
+      <div class="video-modal-player" id="videoModalPlayer"></div>
+      <div class="video-modal-info">
+        <p class="video-modal-title" id="videoModalTitle"></p>
+        <p class="video-modal-artist" id="videoModalArtist"></p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <img src="/images/logo.png" alt="Melankolia Agency" class="footer-logo">
+      <div class="footer-links">
+        <a href="mailto:booking@melankoliaagency.com">booking@melankoliaagency.com</a>
+      </div>
+      <p class="footer-copy">&copy; 2025 Melankolia Agency. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/js/data.js"></script>
+  <script src="/js/videos.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Melankolia Agency</title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+
+  <div class="admin-login" id="adminLogin">
+    <img src="/images/logo.png" alt="Melankolia Agency" class="admin-logo">
+    <h1>Admin Panel</h1>
+    <form id="loginForm">
+      <input type="password" id="adminPassword" class="admin-input" placeholder="Password" autofocus>
+      <button type="submit" class="admin-btn">Enter</button>
+      <p class="login-error" id="loginError" style="display:none">Incorrect password</p>
+    </form>
+  </div>
+
+  <div class="admin-panel" id="adminPanel" style="display:none">
+    <aside class="admin-sidebar">
+      <img src="/images/logo.png" alt="" class="admin-sidebar-logo">
+      <nav class="admin-nav">
+        <button class="admin-nav-item active" data-tab="artists">Artists</button>
+        <button class="admin-nav-item" data-tab="videos">Videos</button>
+        <button class="admin-nav-item" data-tab="settings">Settings</button>
+      </nav>
+      <a href="/" class="admin-back-link" target="_blank">← View Site</a>
+    </aside>
+    <main class="admin-main">
+      <section class="admin-tab active" id="tab-artists">
+        <div class="admin-tab-header">
+          <h2>Artists</h2>
+          <button class="admin-btn" id="addArtistBtn">+ Add Artist</button>
+        </div>
+        <div class="admin-artist-list" id="adminArtistList"></div>
+      </section>
+      <section class="admin-tab" id="tab-videos">
+        <div class="admin-tab-header">
+          <h2>Music Videos</h2>
+          <button class="admin-btn" id="addVideoBtn">+ Add Video</button>
+        </div>
+        <div class="admin-video-list" id="adminVideoList"></div>
+      </section>
+      <section class="admin-tab" id="tab-settings">
+        <div class="admin-tab-header"><h2>Site Settings</h2></div>
+        <div class="settings-form">
+          <div class="form-group">
+            <label>Agency Email</label>
+            <input type="email" class="admin-input" id="settingEmail" value="booking@melankoliaagency.com">
+          </div>
+          <button class="admin-btn" id="saveSettingsBtn">Save Settings</button>
+        </div>
+      </section>
+    </main>
+    <div class="admin-modal" id="artistModal" style="display:none">
+      <div class="admin-modal-backdrop" id="artistModalBackdrop"></div>
+      <div class="admin-modal-content">
+        <h3 id="artistModalTitle">Edit Artist</h3>
+        <form id="artistForm">
+          <div class="form-group"><label>Name *</label><input type="text" class="admin-input" id="editArtistName" required></div>
+          <div class="form-group"><label>Slug (URL) *</label><input type="text" class="admin-input" id="editArtistSlug" required></div>
+          <div class="form-group"><label>Bio</label><textarea class="admin-input admin-textarea" id="editArtistBio"></textarea></div>
+          <div class="form-group"><label>Image filename</label><input type="text" class="admin-input" id="editArtistImage" placeholder="artist_name_0.jpg"></div>
+          <div class="form-group"><label>Website</label><input type="url" class="admin-input" id="editArtistWebsite"></div>
+          <div class="form-group"><label>Instagram</label><input type="url" class="admin-input" id="editArtistInstagram"></div>
+          <div class="form-group"><label>Facebook</label><input type="url" class="admin-input" id="editArtistFacebook"></div>
+          <div class="form-group"><label>Bandcamp</label><input type="url" class="admin-input" id="editArtistBandcamp"></div>
+          <div class="form-group"><label>Spotify</label><input type="url" class="admin-input" id="editArtistSpotify"></div>
+          <div class="form-group"><label>TikTok</label><input type="url" class="admin-input" id="editArtistTiktok"></div>
+          <div class="form-group"><label>YouTube</label><input type="url" class="admin-input" id="editArtistYoutube"></div>
+          <div class="form-group checkbox-group"><label><input type="checkbox" id="editArtistFeatured"> Featured on homepage</label></div>
+          <div class="modal-actions">
+            <button type="button" class="admin-btn admin-btn-secondary" id="cancelArtistBtn">Cancel</button>
+            <button type="submit" class="admin-btn">Save Artist</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="admin-modal" id="videoModal" style="display:none">
+      <div class="admin-modal-backdrop" id="videoModalBackdrop"></div>
+      <div class="admin-modal-content">
+        <h3>Add / Edit Video</h3>
+        <form id="videoForm">
+          <div class="form-group"><label>YouTube URL *</label><input type="url" class="admin-input" id="editVideoUrl" placeholder="https://www.youtube.com/watch?v=..." required></div>
+          <div class="form-group"><label>Video Title *</label><input type="text" class="admin-input" id="editVideoTitle" required></div>
+          <div class="form-group"><label>Artist *</label><select class="admin-input" id="editVideoArtist" required><option value="">Select artist...</option></select></div>
+          <div class="modal-actions">
+            <button type="button" class="admin-btn admin-btn-secondary" id="cancelVideoBtn">Cancel</button>
+            <button type="submit" class="admin-btn">Save Video</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/data.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

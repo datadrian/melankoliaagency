@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Melankolia Agency — Dark Music Booking</title>
+  <meta name="description" content="Melankolia Agency represents the finest artists in dark wave, post-punk, EBM, industrial, and dark techno. Expert artist management and booking.">
+  <link rel="icon" type="image/png" href="/images/logo.png">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <a href="/" class="nav-logo">
+      <img src="/images/logo.png" alt="Melankolia Agency" class="nav-logo-img">
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/" class="nav-link active">Artists</a></li>
+      <li><a href="/videos.html" class="nav-link">Videos</a></li>
+      <li><a href="/booking.html" class="nav-link">Booking</a></li>
+      <li><a href="/submission.html" class="nav-link">Submit</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <img src="/images/logo.png" alt="Melankolia Agency" class="hero-logo">
+      <p class="hero-tagline">Dark Wave · Post-Punk · EBM · Industrial · Dark Techno</p>
+    </div>
+    <div class="hero-scroll-hint">
+      <span>Artists</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </header>
+
+  <!-- ARTISTS GRID -->
+  <main class="artists-section" id="artists">
+    <div class="section-header">
+      <h2 class="section-title">Our Artists</h2>
+      <div class="filter-bar">
+        <input type="text" class="search-input" id="artistSearch" placeholder="Search artists..." autocomplete="off">
+      </div>
+    </div>
+    <div class="artists-grid" id="artistsGrid">
+      <!-- Populated by JS -->
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <img src="/images/logo.png" alt="Melankolia Agency" class="footer-logo">
+      <div class="footer-links">
+        <a href="mailto:booking@melankoliaagency.com">booking@melankoliaagency.com</a>
+      </div>
+      <p class="footer-copy">&copy; 2025 Melankolia Agency. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/js/data.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>
