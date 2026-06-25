@@ -4,98 +4,406 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Melankolia Agency</title>
+  <link rel="icon" type="image/png" href="/images/logo-full.png">
   <link rel="stylesheet" href="/css/admin.css">
 </head>
-<body class="admin-body">
+<body>
+  <div class="admin-layout">
 
-  <div class="admin-login" id="adminLogin">
-    <img src="/images/logo-full.png" alt="Melankolia Agency" class="admin-logo">
-    <h1>Admin Panel</h1>
-    <form id="loginForm">
-      <input type="password" id="adminPassword" class="admin-input" placeholder="Password" autofocus>
-      <button type="submit" class="admin-btn">Enter</button>
-      <p class="login-error" id="loginError" style="display:none">Incorrect password</p>
-    </form>
-  </div>
-
-  <div class="admin-panel" id="adminPanel" style="display:none">
-    <aside class="admin-sidebar">
-      <img src="/images/logo-full.png" alt="" class="admin-sidebar-logo">
-      <nav class="admin-nav">
-        <button class="admin-nav-item active" data-tab="artists">Artists</button>
-        <button class="admin-nav-item" data-tab="videos">Videos</button>
-        <button class="admin-nav-item" data-tab="settings">Settings</button>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <img src="/images/logo-mark-white.svg" alt="Melankolia" class="sidebar-logo">
+        <span class="sidebar-title">Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-link active" data-view="dashboard">
+          <span class="icon">◈</span> Dashboard
+        </a>
+        <a href="#" class="sidebar-link" data-view="artists">
+          <span class="icon">◈</span> Artists
+        </a>
+        <a href="#" class="sidebar-link" data-view="epk">
+          <span class="icon">◈</span> EPK Builder
+        </a>
+        <a href="#" class="sidebar-link" data-view="videos">
+          <span class="icon">◈</span> Videos
+        </a>
+        <a href="#" class="sidebar-link" data-view="bookings">
+          <span class="icon">◈</span> Booking Requests
+        </a>
+        <a href="#" class="sidebar-link" data-view="settings">
+          <span class="icon">◈</span> Site Settings
+        </a>
       </nav>
-      <a href="/" class="admin-back-link" target="_blank">← View Site</a>
+      <div class="sidebar-footer">
+        <a href="/" class="sidebar-link" target="_blank">← View Site</a>
+      </div>
     </aside>
-    <main class="admin-main">
-      <section class="admin-tab active" id="tab-artists">
-        <div class="admin-tab-header">
-          <h2>Artists</h2>
-          <button class="admin-btn" id="addArtistBtn">+ Add Artist</button>
+
+    <!-- MAIN -->
+    <main class="admin-main" id="adminMain">
+
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dashboard">
+        <div class="view-header">
+          <h1>Dashboard</h1>
         </div>
-        <div class="admin-artist-list" id="adminArtistList"></div>
-      </section>
-      <section class="admin-tab" id="tab-videos">
-        <div class="admin-tab-header">
-          <h2>Music Videos</h2>
-          <button class="admin-btn" id="addVideoBtn">+ Add Video</button>
-        </div>
-        <div class="admin-video-list" id="adminVideoList"></div>
-      </section>
-      <section class="admin-tab" id="tab-settings">
-        <div class="admin-tab-header"><h2>Site Settings</h2></div>
-        <div class="settings-form">
-          <div class="form-group">
-            <label>Agency Email</label>
-            <input type="email" class="admin-input" id="settingEmail" value="booking@melankoliaagency.com">
+        <div class="stat-grid" id="statGrid">
+          <div class="stat-card">
+            <div class="stat-num" id="statArtists">—</div>
+            <div class="stat-label">Artists</div>
           </div>
-          <button class="admin-btn" id="saveSettingsBtn">Save Settings</button>
+          <div class="stat-card">
+            <div class="stat-num" id="statVideos">—</div>
+            <div class="stat-label">Videos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="statEpks">—</div>
+            <div class="stat-label">EPKs Built</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="statBookings">—</div>
+            <div class="stat-label">Booking Requests</div>
+          </div>
         </div>
-      </section>
+        <div class="dash-section">
+          <h2 class="dash-h2">Quick Actions</h2>
+          <div class="quick-actions">
+            <button class="qa-btn" onclick="showView('artists'); showArtistForm()">+ Add Artist</button>
+            <button class="qa-btn" onclick="showView('epk')">+ Build EPK</button>
+            <button class="qa-btn" onclick="showView('videos')">+ Add Video</button>
+            <button class="qa-btn" onclick="showView('bookings')">View Requests</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARTISTS -->
+      <div class="view" id="view-artists">
+        <div class="view-header">
+          <h1>Artists</h1>
+          <button class="btn-primary" id="addArtistBtn" onclick="showArtistForm()">+ Add Artist</button>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="adminArtistSearch" placeholder="Search artists..." class="admin-search">
+        </div>
+        <div class="artist-admin-grid" id="artistAdminGrid">
+          <div class="loading">Loading artists...</div>
+        </div>
+      </div>
+
+      <!-- ARTIST FORM (modal) -->
+      <div class="modal-overlay" id="artistModal">
+        <div class="modal">
+          <div class="modal-header">
+            <h2 id="artistFormTitle">Add Artist</h2>
+            <button class="modal-close" onclick="closeArtistModal()">✕</button>
+          </div>
+          <div class="modal-body">
+            <form id="artistForm" class="admin-form">
+              <input type="hidden" id="editArtistId">
+
+              <div class="form-tabs">
+                <button type="button" class="tab-btn active" data-tab="basic">Basic Info</button>
+                <button type="button" class="tab-btn" data-tab="media">Media</button>
+                <button type="button" class="tab-btn" data-tab="links">Links & Social</button>
+                <button type="button" class="tab-btn" data-tab="bio">Bio & Copy</button>
+              </div>
+
+              <!-- BASIC -->
+              <div class="tab-content active" data-tab="basic">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Artist Name *</label>
+                    <input type="text" id="aName" class="form-input" required placeholder="e.g. Bestial Mouths">
+                  </div>
+                  <div class="form-group">
+                    <label>Slug (URL)</label>
+                    <input type="text" id="aSlug" class="form-input" placeholder="bestial-mouths">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Genres (comma separated)</label>
+                    <input type="text" id="aGenres" class="form-input" placeholder="Dark Wave, Post-Punk">
+                  </div>
+                  <div class="form-group">
+                    <label>Origin / Location</label>
+                    <input type="text" id="aLocation" class="form-input" placeholder="Los Angeles, CA">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Booking Email</label>
+                  <input type="email" id="aBookingEmail" class="form-input" placeholder="artist@melankoliaagency.com">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Status</label>
+                    <select id="aStatus" class="form-input">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="past">Past Roster</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Featured</label>
+                    <select id="aFeatured" class="form-input">
+                      <option value="false">No</option>
+                      <option value="true">Yes — show first</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MEDIA -->
+              <div class="tab-content" data-tab="media">
+                <div class="form-group">
+                  <label>Thumbnail / Grid Photo (URL)</label>
+                  <input type="url" id="aPhoto" class="form-input" placeholder="https://...">
+                  <div class="img-preview" id="photoPreview"></div>
+                </div>
+                <div class="form-group">
+                  <label>Banner / Header Image (URL)</label>
+                  <input type="url" id="aBanner" class="form-input" placeholder="https://...">
+                  <div class="img-preview" id="bannerPreview"></div>
+                </div>
+                <div class="form-group">
+                  <label>Secondary Photos (one URL per line)</label>
+                  <textarea id="aPhotos" class="form-input form-textarea" placeholder="https://photo1.jpg&#10;https://photo2.jpg"></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Press Kit / Download URL</label>
+                  <input type="url" id="aPresskit" class="form-input" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                  <label>Tech Rider URL</label>
+                  <input type="url" id="aTechRider" class="form-input" placeholder="https://...">
+                </div>
+              </div>
+
+              <!-- LINKS -->
+              <div class="tab-content" data-tab="links">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Spotify Artist URL</label>
+                    <input type="url" id="aSpotify" class="form-input" placeholder="https://open.spotify.com/artist/...">
+                  </div>
+                  <div class="form-group">
+                    <label>SoundCloud URL</label>
+                    <input type="url" id="aSoundcloud" class="form-input" placeholder="https://soundcloud.com/...">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Bandcamp URL</label>
+                    <input type="url" id="aBandcamp" class="form-input" placeholder="https://....bandcamp.com">
+                  </div>
+                  <div class="form-group">
+                    <label>Apple Music URL</label>
+                    <input type="url" id="aApple" class="form-input" placeholder="https://music.apple.com/...">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Instagram</label>
+                    <input type="text" id="aInstagram" class="form-input" placeholder="@handle">
+                  </div>
+                  <div class="form-group">
+                    <label>Facebook URL</label>
+                    <input type="url" id="aFacebook" class="form-input" placeholder="https://facebook.com/...">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>YouTube Channel URL</label>
+                    <input type="url" id="aYoutube" class="form-input" placeholder="https://youtube.com/...">
+                  </div>
+                  <div class="form-group">
+                    <label>Website URL</label>
+                    <input type="url" id="aWebsite" class="form-input" placeholder="https://...">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Bandsintown / Songkick</label>
+                    <input type="url" id="aBandsintown" class="form-input" placeholder="https://bandsintown.com/a/...">
+                  </div>
+                  <div class="form-group">
+                    <label>Resident Advisor</label>
+                    <input type="url" id="aRA" class="form-input" placeholder="https://ra.co/dj/...">
+                  </div>
+                </div>
+              </div>
+
+              <!-- BIO -->
+              <div class="tab-content" data-tab="bio">
+                <div class="form-group">
+                  <label>Short Bio (2–3 sentences, for grid hover / EPK header)</label>
+                  <textarea id="aShortBio" class="form-input form-textarea" rows="3" placeholder="Dark electro duo from..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Full Bio</label>
+                  <textarea id="aBio" class="form-input form-textarea" rows="10" placeholder="Full artist biography..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Press Quotes (one per line, include source after | )</label>
+                  <textarea id="aQuotes" class="form-input form-textarea" rows="4" placeholder="One of the most vital acts in dark electronics. | Pitchfork&#10;Visceral and uncompromising. | The Wire"></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Admin Notes (internal only)</label>
+                  <textarea id="aNotes" class="form-input form-textarea" rows="3" placeholder="Deal memo, contact info, notes..."></textarea>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="closeArtistModal()">Cancel</button>
+                <button type="submit" class="btn-primary">Save Artist</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- EPK BUILDER -->
+      <div class="view" id="view-epk">
+        <div class="view-header">
+          <h1>EPK Builder</h1>
+          <p class="view-sub">Build stunning Electronic Press Kits for each artist</p>
+        </div>
+
+        <div class="epk-layout">
+          <!-- EPK Artist selector -->
+          <div class="epk-sidebar">
+            <div class="epk-sidebar-header">Select Artist</div>
+            <div id="epkArtistList" class="epk-artist-list">
+              <div class="loading">Loading...</div>
+            </div>
+          </div>
+
+          <!-- EPK Editor -->
+          <div class="epk-editor" id="epkEditor">
+            <div class="epk-placeholder">
+              <div class="epk-placeholder-icon">◈</div>
+              <p>Select an artist to build or edit their EPK</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEOS -->
+      <div class="view" id="view-videos">
+        <div class="view-header">
+          <h1>Videos</h1>
+          <button class="btn-primary" onclick="showVideoForm()">+ Add Video</button>
+        </div>
+        <div class="modal-overlay" id="videoModal">
+          <div class="modal modal-sm">
+            <div class="modal-header">
+              <h2>Add Video</h2>
+              <button class="modal-close" onclick="document.getElementById('videoModal').classList.remove('open')">✕</button>
+            </div>
+            <div class="modal-body">
+              <form id="videoForm" class="admin-form">
+                <input type="hidden" id="editVideoId">
+                <div class="form-group">
+                  <label>Artist</label>
+                  <select id="vArtist" class="form-input"><option value="">Select artist...</option></select>
+                </div>
+                <div class="form-group">
+                  <label>YouTube URL *</label>
+                  <input type="url" id="vUrl" class="form-input" required placeholder="https://youtube.com/watch?v=...">
+                </div>
+                <div class="form-group">
+                  <label>Title</label>
+                  <input type="text" id="vTitle" class="form-input" placeholder="Video title">
+                </div>
+                <div class="form-group">
+                  <label>Category</label>
+                  <select id="vCategory" class="form-input">
+                    <option>Music Video</option>
+                    <option>Live Performance</option>
+                    <option>Documentary</option>
+                    <option>Interview</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Featured</label>
+                  <select id="vFeatured" class="form-input">
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
+                <div class="form-actions">
+                  <button type="button" class="btn-secondary" onclick="document.getElementById('videoModal').classList.remove('open')">Cancel</button>
+                  <button type="submit" class="btn-primary">Save Video</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="video-admin-list" id="videoAdminList">
+          <div class="loading">Loading videos...</div>
+        </div>
+      </div>
+
+      <!-- BOOKINGS -->
+      <div class="view" id="view-bookings">
+        <div class="view-header">
+          <h1>Booking Requests</h1>
+        </div>
+        <div class="bookings-list" id="bookingsList">
+          <div class="loading">Loading...</div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="view" id="view-settings">
+        <div class="view-header">
+          <h1>Site Settings</h1>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h3>Agency Info</h3>
+            <form class="admin-form" id="settingsForm">
+              <div class="form-group">
+                <label>Agency Name</label>
+                <input type="text" class="form-input" value="Melankolia Agency">
+              </div>
+              <div class="form-group">
+                <label>Booking Email</label>
+                <input type="email" class="form-input" value="booking@melankoliaagency.com">
+              </div>
+              <div class="form-group">
+                <label>Gigwell Agency URL</label>
+                <input type="url" class="form-input" placeholder="https://...gigwell.com/...">
+              </div>
+              <button type="submit" class="btn-primary">Save Settings</button>
+            </form>
+          </div>
+          <div class="settings-card">
+            <h3>Gigwell Integration</h3>
+            <div class="gigwell-status">
+              <div class="status-badge pending">Not Connected</div>
+              <p>Connect Gigwell to sync booking requests and embed EPKs directly from your Gigwell dashboard.</p>
+              <a href="https://gigwell.com" target="_blank" class="btn-secondary">Open Gigwell →</a>
+            </div>
+            <div class="integration-notes">
+              <h4>Integration Options:</h4>
+              <ul>
+                <li><strong>Embeddable EPK</strong> — Gigwell generates an embeddable EPK iframe per artist. Paste the embed code per artist to power EPK pages from Gigwell directly.</li>
+                <li><strong>Booking Form Embed</strong> — Gigwell's built-in booking form can be embedded on artist or booking pages.</li>
+                <li><strong>Zapier Bridge</strong> — Website form → Zapier → Gigwell creates a new deal automatically.</li>
+                <li><strong>Embeddable Roster Widget</strong> — Gigwell can generate your full roster as an embeddable widget.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
-    <div class="admin-modal" id="artistModal" style="display:none">
-      <div class="admin-modal-backdrop" id="artistModalBackdrop"></div>
-      <div class="admin-modal-content">
-        <h3 id="artistModalTitle">Edit Artist</h3>
-        <form id="artistForm">
-          <div class="form-group"><label>Name *</label><input type="text" class="admin-input" id="editArtistName" required></div>
-          <div class="form-group"><label>Slug (URL) *</label><input type="text" class="admin-input" id="editArtistSlug" required></div>
-          <div class="form-group"><label>Bio</label><textarea class="admin-input admin-textarea" id="editArtistBio"></textarea></div>
-          <div class="form-group"><label>Image filename</label><input type="text" class="admin-input" id="editArtistImage" placeholder="artist_name_0.jpg"></div>
-          <div class="form-group"><label>Website</label><input type="url" class="admin-input" id="editArtistWebsite"></div>
-          <div class="form-group"><label>Instagram</label><input type="url" class="admin-input" id="editArtistInstagram"></div>
-          <div class="form-group"><label>Facebook</label><input type="url" class="admin-input" id="editArtistFacebook"></div>
-          <div class="form-group"><label>Bandcamp</label><input type="url" class="admin-input" id="editArtistBandcamp"></div>
-          <div class="form-group"><label>Spotify</label><input type="url" class="admin-input" id="editArtistSpotify"></div>
-          <div class="form-group"><label>TikTok</label><input type="url" class="admin-input" id="editArtistTiktok"></div>
-          <div class="form-group"><label>YouTube</label><input type="url" class="admin-input" id="editArtistYoutube"></div>
-          <div class="form-group checkbox-group"><label><input type="checkbox" id="editArtistFeatured"> Featured on homepage</label></div>
-          <div class="modal-actions">
-            <button type="button" class="admin-btn admin-btn-secondary" id="cancelArtistBtn">Cancel</button>
-            <button type="submit" class="admin-btn">Save Artist</button>
-          </div>
-        </form>
-      </div>
-    </div>
-    <div class="admin-modal" id="videoModal" style="display:none">
-      <div class="admin-modal-backdrop" id="videoModalBackdrop"></div>
-      <div class="admin-modal-content">
-        <h3>Add / Edit Video</h3>
-        <form id="videoForm">
-          <div class="form-group"><label>YouTube URL *</label><input type="url" class="admin-input" id="editVideoUrl" placeholder="https://www.youtube.com/watch?v=..." required></div>
-          <div class="form-group"><label>Video Title *</label><input type="text" class="admin-input" id="editVideoTitle" required></div>
-          <div class="form-group"><label>Artist *</label><select class="admin-input" id="editVideoArtist" required><option value="">Select artist...</option></select></div>
-          <div class="modal-actions">
-            <button type="button" class="admin-btn admin-btn-secondary" id="cancelVideoBtn">Cancel</button>
-            <button type="submit" class="admin-btn">Save Video</button>
-          </div>
-        </form>
-      </div>
-    </div>
   </div>
 
-  <script src="/js/data.js"></script>
   <script src="/js/admin.js"></script>
 </body>
 </html>

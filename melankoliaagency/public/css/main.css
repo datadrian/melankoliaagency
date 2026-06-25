@@ -187,7 +187,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
 
 .artist-card {
   position: relative;
-  aspect-ratio: 3/4;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   background: var(--card);
   cursor: pointer;
@@ -282,7 +282,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
   gap: 4rem; align-items: start;
 }
 .artist-photo {
-  width: 100%; aspect-ratio: 3/4;
+  width: 100%; aspect-ratio: 1 / 1;
   object-fit: cover; filter: grayscale(12%);
 }
 .artist-social {

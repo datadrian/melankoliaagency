@@ -1,288 +1,549 @@
 /* ================================================
-   MELANKOLIA AGENCY — ADMIN JS
-   Password-protected CMS for editing artists/videos
-   NOTE: For a production site, connect to Netlify CMS
-   or a proper backend. This version uses localStorage
-   for demo/staging with data.js as source of truth.
+   MELANKOLIA ADMIN — JavaScript
+   All data stored in localStorage (JSON)
+   Reads artists from data.js MELANKOLIA_DATA
    ================================================ */
 
-(function() {
-  const ADMIN_PASS = 'melankolia2025'; // Change this in production!
-  const STORAGE_KEY = 'melankolia_data';
+/* ---- NAVIGATION ---- */
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  const el = document.getElementById('view-' + name);
+  if (el) el.classList.add('active');
+  const link = document.querySelector(`.sidebar-link[data-view="${name}"]`);
+  if (link) link.classList.add('active');
+  if (name === 'artists')  renderArtistGrid();
+  if (name === 'epk')      renderEPKList();
+  if (name === 'videos')   renderVideoAdmin();
+  if (name === 'bookings') renderBookings();
+  if (name === 'dashboard') renderDashboard();
+}
 
-  // ---- Load data from localStorage or data.js ----
-  let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || 
-    (typeof MELANKOLIA_DATA !== 'undefined' ? JSON.parse(JSON.stringify(MELANKOLIA_DATA)) : { artists: [], settings: {} });
+document.querySelectorAll('.sidebar-link[data-view]').forEach(link => {
+  link.addEventListener('click', e => { e.preventDefault(); showView(link.dataset.view); });
+});
 
-  function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+/* ---- DATA LAYER ---- */
+// Artists are seeded from MELANKOLIA_DATA (data.js), then extended with admin edits
+function getArtists() {
+  const stored = localStorage.getItem('mk_artists');
+  if (stored) return JSON.parse(stored);
+  // Seed from global data
+  if (typeof MELANKOLIA_DATA !== 'undefined') {
+    const seeded = MELANKOLIA_DATA.map((a, i) => ({
+      id: 'artist_' + i,
+      name: a.name,
+      slug: a.name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+      photo: a.photo || '',
+      banner: '',
+      photos: [],
+      genres: a.genres ? a.genres.join(', ') : '',
+      location: '',
+      bio: a.bio || '',
+      shortBio: '',
+      quotes: '',
+      notes: '',
+      spotify: a.links?.spotify || '',
+      soundcloud: a.links?.soundcloud || '',
+      bandcamp: a.links?.bandcamp || '',
+      apple: '',
+      instagram: a.links?.instagram || '',
+      facebook: a.links?.facebook || '',
+      youtube: a.links?.youtube || '',
+      website: a.links?.website || '',
+      bandsintown: '',
+      ra: '',
+      presskit: '',
+      techRider: '',
+      bookingEmail: '',
+      status: 'active',
+      featured: false,
+      epk: null,
+    }));
+    saveArtists(seeded);
+    return seeded;
   }
+  return [];
+}
 
-  // ---- LOGIN ----
-  const loginEl = document.getElementById('adminLogin');
-  const panelEl = document.getElementById('adminPanel');
-  const loginForm = document.getElementById('loginForm');
-  const loginError = document.getElementById('loginError');
+function saveArtists(artists) {
+  localStorage.setItem('mk_artists', JSON.stringify(artists));
+}
 
-  function isLoggedIn() { return sessionStorage.getItem('ma_auth') === '1'; }
-  function doLogin() {
-    sessionStorage.setItem('ma_auth', '1');
-    loginEl.style.display = 'none';
-    panelEl.style.display = 'flex';
-    initPanel();
-  }
-
-  if (isLoggedIn()) {
-    loginEl.style.display = 'none';
-    panelEl.style.display = 'flex';
-    initPanel();
-  }
-
-  loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const pw = document.getElementById('adminPassword').value;
-    if (pw === ADMIN_PASS) {
-      loginError.style.display = 'none';
-      doLogin();
-    } else {
-      loginError.style.display = 'block';
-      document.getElementById('adminPassword').value = '';
-    }
-  });
-
-  // ---- TABS ----
-  function initPanel() {
-    document.querySelectorAll('.admin-nav-item').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+function getVideos() {
+  const stored = localStorage.getItem('mk_videos');
+  if (stored) return JSON.parse(stored);
+  if (typeof MELANKOLIA_DATA !== 'undefined') {
+    const vids = [];
+    MELANKOLIA_DATA.forEach((a, i) => {
+      (a.videos||[]).forEach((v,j) => {
+        vids.push({ id:`vid_${i}_${j}`, artistId:'artist_'+i, artistName:a.name, url:v.url, title:v.title||a.name, category:'Music Video', featured:false });
       });
     });
-
-    renderArtistList();
-    renderVideoList();
-    populateVideoArtistSelect();
-    initArtistModal();
-    initVideoModal();
-    initSettings();
+    localStorage.setItem('mk_videos', JSON.stringify(vids));
+    return vids;
   }
+  return [];
+}
+function saveVideos(v) { localStorage.setItem('mk_videos', JSON.stringify(v)); }
+function getBookings() { return JSON.parse(localStorage.getItem('mk_bookings')||'[]'); }
+function saveBookings(b) { localStorage.setItem('mk_bookings', JSON.stringify(b)); }
 
-  // ---- ARTISTS ----
-  function renderArtistList() {
-    const list = document.getElementById('adminArtistList');
-    list.innerHTML = '';
-    appData.artists.forEach((artist, idx) => {
-      const row = document.createElement('div');
-      row.className = 'admin-artist-row';
-      row.innerHTML = `
-        ${artist.image
-          ? `<img class="admin-artist-thumb" src="/images/${artist.image}" alt="">`
-          : `<div class="admin-artist-thumb" style="background:#181818;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#333">${artist.name.charAt(0)}</div>`
-        }
-        <div style="flex:1">
-          <div class="admin-artist-name">${artist.name}</div>
-          <div class="admin-artist-slug">/${artist.slug}</div>
-        </div>
-        <div class="admin-row-actions">
-          <button class="admin-btn admin-btn-sm admin-btn-secondary" data-idx="${idx}" data-action="edit">Edit</button>
-          <button class="admin-btn admin-btn-sm admin-btn-danger" data-idx="${idx}" data-action="delete">Delete</button>
-        </div>
-      `;
-      list.appendChild(row);
-    });
+/* ---- DASHBOARD ---- */
+function renderDashboard() {
+  const artists = getArtists();
+  const videos  = getVideos();
+  const bookings= getBookings();
+  const epks    = artists.filter(a => a.epk).length;
+  document.getElementById('statArtists').textContent  = artists.filter(a=>a.status==='active').length;
+  document.getElementById('statVideos').textContent   = videos.length;
+  document.getElementById('statEpks').textContent     = epks;
+  document.getElementById('statBookings').textContent = bookings.length;
+}
 
-    list.querySelectorAll('[data-action="edit"]').forEach(btn => {
-      btn.addEventListener('click', () => openArtistModal(parseInt(btn.dataset.idx)));
-    });
-    list.querySelectorAll('[data-action="delete"]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (confirm('Delete this artist?')) {
-          appData.artists.splice(parseInt(btn.dataset.idx), 1);
-          saveData();
-          renderArtistList();
-        }
-      });
-    });
-  }
-
-  let editingArtistIdx = -1;
-
-  function openArtistModal(idx) {
-    editingArtistIdx = idx;
-    const modal = document.getElementById('artistModal');
-    const artist = idx >= 0 ? appData.artists[idx] : {};
-    document.getElementById('artistModalTitle').textContent = idx >= 0 ? 'Edit Artist' : 'Add Artist';
-    document.getElementById('editArtistName').value = artist.name || '';
-    document.getElementById('editArtistSlug').value = artist.slug || '';
-    document.getElementById('editArtistBio').value = artist.bio || '';
-    document.getElementById('editArtistImage').value = artist.image || '';
-    document.getElementById('editArtistWebsite').value = (artist.social_links || {}).website || '';
-    document.getElementById('editArtistInstagram').value = (artist.social_links || {}).instagram || '';
-    document.getElementById('editArtistFacebook').value = (artist.social_links || {}).facebook || '';
-    document.getElementById('editArtistBandcamp').value = (artist.social_links || {}).bandcamp || '';
-    document.getElementById('editArtistSpotify').value = (artist.social_links || {}).spotify || '';
-    document.getElementById('editArtistTiktok').value = (artist.social_links || {}).tiktok || '';
-    document.getElementById('editArtistYoutube').value = (artist.social_links || {}).youtube || '';
-    document.getElementById('editArtistFeatured').checked = artist.featured || false;
-    modal.style.display = 'flex';
-  }
-
-  function initArtistModal() {
-    document.getElementById('addArtistBtn').addEventListener('click', () => openArtistModal(-1));
-    document.getElementById('cancelArtistBtn').addEventListener('click', closeArtistModal);
-    document.getElementById('artistModalBackdrop').addEventListener('click', closeArtistModal);
-
-    document.getElementById('artistForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const artistData = {
-        name: document.getElementById('editArtistName').value.trim(),
-        slug: document.getElementById('editArtistSlug').value.trim().toLowerCase().replace(/\s+/g, '-'),
-        bio: document.getElementById('editArtistBio').value.trim(),
-        image: document.getElementById('editArtistImage').value.trim(),
-        social_links: {
-          website: document.getElementById('editArtistWebsite').value.trim() || undefined,
-          instagram: document.getElementById('editArtistInstagram').value.trim() || undefined,
-          facebook: document.getElementById('editArtistFacebook').value.trim() || undefined,
-          bandcamp: document.getElementById('editArtistBandcamp').value.trim() || undefined,
-          spotify: document.getElementById('editArtistSpotify').value.trim() || undefined,
-          tiktok: document.getElementById('editArtistTiktok').value.trim() || undefined,
-          youtube: document.getElementById('editArtistYoutube').value.trim() || undefined,
-        },
-        featured: document.getElementById('editArtistFeatured').checked,
-        music_videos: editingArtistIdx >= 0 ? (appData.artists[editingArtistIdx].music_videos || []) : []
-      };
-      // Remove undefined social links
-      Object.keys(artistData.social_links).forEach(k => {
-        if (!artistData.social_links[k]) delete artistData.social_links[k];
-      });
-
-      if (editingArtistIdx >= 0) {
-        appData.artists[editingArtistIdx] = artistData;
-      } else {
-        appData.artists.push(artistData);
-        appData.artists.sort((a, b) => a.name.localeCompare(b.name));
+/* ---- ARTIST GRID ---- */
+function renderArtistGrid(filter='') {
+  const grid = document.getElementById('artistAdminGrid');
+  const artists = getArtists().filter(a =>
+    !filter || a.name.toLowerCase().includes(filter.toLowerCase())
+  );
+  if (!artists.length) { grid.innerHTML = '<div class="empty-state">No artists found.</div>'; return; }
+  grid.innerHTML = artists.map(a => `
+    <div class="artist-admin-card">
+      <div class="artist-status-dot ${a.status !== 'active' ? 'inactive' : ''}"></div>
+      ${a.photo
+        ? `<img class="artist-admin-card-img" src="${a.photo}" alt="${a.name}" onerror="this.style.display='none'">`
+        : `<div class="artist-admin-card-placeholder">${a.name[0]}</div>`
       }
-      saveData();
-      closeArtistModal();
-      renderArtistList();
-      populateVideoArtistSelect();
-    });
-  }
+      <div class="artist-admin-info">
+        <div class="artist-admin-name">${a.name}</div>
+        <div class="artist-admin-genre">${a.genres || '—'}</div>
+        <div class="artist-admin-actions">
+          <button class="btn-secondary btn-sm" onclick="editArtist('${a.id}')">Edit</button>
+          <button class="btn-secondary btn-sm" onclick="openEPK('${a.id}')">EPK</button>
+          <button class="btn-danger btn-sm" onclick="deleteArtist('${a.id}')">✕</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
 
-  function closeArtistModal() {
-    document.getElementById('artistModal').style.display = 'none';
-  }
+document.getElementById('adminArtistSearch').addEventListener('input', e => {
+  renderArtistGrid(e.target.value);
+});
 
-  // ---- VIDEOS ----
-  function renderVideoList() {
-    const list = document.getElementById('adminVideoList');
-    list.innerHTML = '';
-    let videoCount = 0;
-    appData.artists.forEach((artist, artistIdx) => {
-      (artist.music_videos || []).forEach((video, videoIdx) => {
-        videoCount++;
-        const ytId = extractYouTubeId(video.url);
-        const card = document.createElement('div');
-        card.className = 'admin-video-card';
-        card.innerHTML = `
-          <div class="admin-video-thumb">
-            ${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg" alt="">` : ''}
-          </div>
-          <div class="admin-video-info">
-            <p class="admin-video-title">${video.title}</p>
-            <p class="admin-video-artist-name">${artist.name}</p>
-          </div>
-          <div class="admin-video-actions">
-            <button class="admin-btn admin-btn-sm admin-btn-danger" data-aidx="${artistIdx}" data-vidx="${videoIdx}" data-action="del-video">Delete</button>
-          </div>
-        `;
-        list.appendChild(card);
-      });
-    });
+/* ---- ARTIST FORM ---- */
+function showArtistForm(data={}) {
+  document.getElementById('artistFormTitle').textContent = data.id ? 'Edit Artist' : 'Add Artist';
+  document.getElementById('editArtistId').value = data.id || '';
+  // Fill fields
+  const fields = ['Name','Slug','Genres','Location','BookingEmail','Status','Featured',
+    'Photo','Banner','Photos','Presskit','TechRider',
+    'Spotify','Soundcloud','Bandcamp','Apple','Instagram','Facebook','Youtube','Website','Bandsintown','RA',
+    'ShortBio','Bio','Quotes','Notes'];
+  fields.forEach(f => {
+    const el = document.getElementById('a'+f);
+    if (el) el.value = data[f.charAt(0).toLowerCase()+f.slice(1)] || '';
+  });
+  // Preview images
+  updateImgPreview('aPhoto', 'photoPreview');
+  updateImgPreview('aBanner', 'bannerPreview');
+  // Default tab
+  switchTab('basic');
+  document.getElementById('artistModal').classList.add('open');
+}
 
-    if (!videoCount) {
-      list.innerHTML = '<p style="color:#555;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;padding:2rem 0">No videos yet. Click + Add Video to add a YouTube video.</p>';
-    }
+function updateImgPreview(inputId, previewId) {
+  const val = document.getElementById(inputId)?.value;
+  const prev = document.getElementById(previewId);
+  if (!prev) return;
+  prev.innerHTML = val ? `<img src="${val}" alt="">` : '<span>No image</span>';
+}
+['aPhoto','aBanner'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    updateImgPreview('aPhoto','photoPreview');
+    updateImgPreview('aBanner','bannerPreview');
+  });
+});
 
-    list.querySelectorAll('[data-action="del-video"]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (confirm('Delete this video?')) {
-          const aIdx = parseInt(btn.dataset.aidx);
-          const vIdx = parseInt(btn.dataset.vidx);
-          appData.artists[aIdx].music_videos.splice(vIdx, 1);
-          saveData();
-          renderVideoList();
-        }
-      });
-    });
-  }
+function closeArtistModal() {
+  document.getElementById('artistModal').classList.remove('open');
+}
 
-  function initVideoModal() {
-    document.getElementById('addVideoBtn').addEventListener('click', () => {
-      document.getElementById('videoModal').style.display = 'flex';
-      document.getElementById('videoForm').reset();
-    });
-    document.getElementById('cancelVideoBtn').addEventListener('click', closeVideoModal);
-    document.getElementById('videoModalBackdrop').addEventListener('click', closeVideoModal);
+function editArtist(id) {
+  const a = getArtists().find(x => x.id === id);
+  if (a) showArtistForm(a);
+  showView('artists');
+}
 
-    document.getElementById('videoForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const url = document.getElementById('editVideoUrl').value.trim();
-      const title = document.getElementById('editVideoTitle').value.trim();
-      const artistName = document.getElementById('editVideoArtist').value;
-      const artistIdx = appData.artists.findIndex(a => a.name === artistName);
-      if (artistIdx < 0) return;
-      if (!appData.artists[artistIdx].music_videos) appData.artists[artistIdx].music_videos = [];
-      appData.artists[artistIdx].music_videos.push({ url, title });
-      saveData();
-      closeVideoModal();
-      renderVideoList();
-    });
-  }
+function deleteArtist(id) {
+  if (!confirm('Delete this artist?')) return;
+  saveArtists(getArtists().filter(a => a.id !== id));
+  renderArtistGrid();
+  renderDashboard();
+}
 
-  function closeVideoModal() {
-    document.getElementById('videoModal').style.display = 'none';
-  }
-
-  function populateVideoArtistSelect() {
-    const sel = document.getElementById('editVideoArtist');
-    sel.innerHTML = '<option value="">Select artist...</option>';
-    appData.artists.forEach(a => {
-      const opt = document.createElement('option');
-      opt.value = a.name;
-      opt.textContent = a.name;
-      sel.appendChild(opt);
-    });
-  }
-
-  // ---- SETTINGS ----
-  function initSettings() {
-    const emailInput = document.getElementById('settingEmail');
-    if (appData.settings && appData.settings.email) emailInput.value = appData.settings.email;
-
-    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-      if (!appData.settings) appData.settings = {};
-      appData.settings.email = emailInput.value.trim();
-      saveData();
-      alert('Settings saved!');
-    });
-  }
-
-  // ---- UTILS ----
-  function extractYouTubeId(url) {
-    const match = (url || '').match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-    return match ? match[1] : null;
-  }
-
-  // Export data as JSON (for updating data.js)
-  window.exportMelankoliaData = function() {
-    const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'melankolia_data.json';
-    a.click();
+document.getElementById('artistForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const artists = getArtists();
+  const id = document.getElementById('editArtistId').value;
+  const data = {
+    name: document.getElementById('aName').value,
+    slug: document.getElementById('aSlug').value || document.getElementById('aName').value.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+    genres: document.getElementById('aGenres').value,
+    location: document.getElementById('aLocation').value,
+    bookingEmail: document.getElementById('aBookingEmail').value,
+    status: document.getElementById('aStatus').value,
+    featured: document.getElementById('aFeatured').value === 'true',
+    photo: document.getElementById('aPhoto').value,
+    banner: document.getElementById('aBanner').value,
+    photos: document.getElementById('aPhotos').value.split('\n').filter(Boolean),
+    presskit: document.getElementById('aPresskit').value,
+    techRider: document.getElementById('aTechRider').value,
+    spotify: document.getElementById('aSpotify').value,
+    soundcloud: document.getElementById('aSoundcloud').value,
+    bandcamp: document.getElementById('aBandcamp').value,
+    apple: document.getElementById('aApple').value,
+    instagram: document.getElementById('aInstagram').value,
+    facebook: document.getElementById('aFacebook').value,
+    youtube: document.getElementById('aYoutube').value,
+    website: document.getElementById('aWebsite').value,
+    bandsintown: document.getElementById('aBandsintown').value,
+    ra: document.getElementById('aRA').value,
+    shortBio: document.getElementById('aShortBio').value,
+    bio: document.getElementById('aBio').value,
+    quotes: document.getElementById('aQuotes').value,
+    notes: document.getElementById('aNotes').value,
   };
 
-})();
+  if (id) {
+    const idx = artists.findIndex(a => a.id === id);
+    if (idx > -1) artists[idx] = { ...artists[idx], ...data };
+  } else {
+    data.id = 'artist_' + Date.now();
+    data.epk = null;
+    artists.push(data);
+  }
+
+  saveArtists(artists);
+  closeArtistModal();
+  renderArtistGrid();
+  renderDashboard();
+});
+
+/* ---- TABS ---- */
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab===name));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.dataset.tab===name));
+}
+document.querySelectorAll('.tab-btn').forEach(b => {
+  b.addEventListener('click', () => switchTab(b.dataset.tab));
+});
+
+/* ---- EPK BUILDER ---- */
+function renderEPKList() {
+  const list = document.getElementById('epkArtistList');
+  const artists = getArtists().filter(a => a.status === 'active');
+  list.innerHTML = artists.map(a => `
+    <div class="epk-artist-item ${a.epk ? 'has-epk' : ''}" onclick="openEPKEditor('${a.id}')">
+      ${a.photo ? `<img class="epk-artist-avatar" src="${a.photo}" alt="${a.name}" onerror="this.style.display='none'">` : '<div class="epk-artist-avatar"></div>'}
+      <span>${a.name}</span>
+      ${a.epk ? '<span class="epk-badge">EPK</span>' : ''}
+    </div>
+  `).join('');
+}
+
+function openEPK(artistId) {
+  showView('epk');
+  openEPKEditor(artistId);
+}
+
+function openEPKEditor(artistId) {
+  const a = getArtists().find(x => x.id === artistId);
+  if (!a) return;
+
+  document.querySelectorAll('.epk-artist-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.epk-artist-item').forEach(el => {
+    if (el.onclick.toString().includes(artistId)) el.classList.add('active');
+  });
+
+  const epk = a.epk || {
+    heroStyle: 'fullBleed',
+    accentColor: '#c8a96e',
+    showSocials: true,
+    showSpotify: true,
+    showVideos: true,
+    showTechRider: true,
+    showQuotes: true,
+    showGigCalendar: true,
+    customIntro: '',
+    embedGigwell: '',
+    published: false,
+  };
+
+  const editor = document.getElementById('epkEditor');
+  const epkUrl = `/epk/${a.slug || a.id}`;
+
+  editor.innerHTML = `
+    <div class="epk-editor-inner">
+      <div class="epk-preview-btn">
+        <div class="epk-url-display">${window.location.origin}${epkUrl}</div>
+        <button class="btn-secondary" onclick="window.open('${epkUrl}','_blank')">Preview EPK →</button>
+        <button class="btn-primary" onclick="saveAndPublishEPK('${a.id}')">Save & Publish</button>
+      </div>
+
+      <div class="epk-section">
+        <div class="epk-section-header">
+          <span class="epk-section-title">Hero / Header</span>
+        </div>
+        <div class="epk-section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Hero Style</label>
+              <select id="epkHeroStyle" class="form-input">
+                <option value="fullBleed" ${epk.heroStyle==='fullBleed'?'selected':''}>Full Bleed Photo</option>
+                <option value="split" ${epk.heroStyle==='split'?'selected':''}>Split (photo + bio)</option>
+                <option value="cinematic" ${epk.heroStyle==='cinematic'?'selected':''}>Cinematic Dark</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Accent Colour</label>
+              <input type="color" id="epkAccentColor" class="form-input" value="${epk.accentColor}" style="height:38px;padding:2px">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Custom Intro (overrides short bio on EPK)</label>
+            <textarea id="epkCustomIntro" class="form-input form-textarea" rows="3" placeholder="For use on EPK only...">${epk.customIntro||a.shortBio||''}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="epk-section">
+        <div class="epk-section-header">
+          <span class="epk-section-title">Content Sections</span>
+        </div>
+        <div class="epk-section-body">
+          ${epkToggle('epkShowSocials', 'Show Social Media Links & Stats', epk.showSocials)}
+          ${epkToggle('epkShowSpotify', 'Embed Spotify Player', epk.showSpotify)}
+          ${epkToggle('epkShowVideos', 'Show Video Gallery', epk.showVideos)}
+          ${epkToggle('epkShowQuotes', 'Show Press Quotes', epk.showQuotes)}
+          ${epkToggle('epkShowTechRider', 'Show / Link Tech Rider', epk.showTechRider)}
+          ${epkToggle('epkShowGigCalendar', 'Show Gig Calendar (Bandsintown)', epk.showGigCalendar)}
+        </div>
+      </div>
+
+      <div class="epk-section">
+        <div class="epk-section-header">
+          <span class="epk-section-title">Gigwell Integration</span>
+        </div>
+        <div class="epk-section-body">
+          <div class="form-group">
+            <label>Gigwell EPK Embed Code (paste full iframe code from Gigwell)</label>
+            <textarea id="epkGigwellEmbed" class="form-input form-textarea" rows="4" placeholder="&lt;iframe src=&quot;https://...gigwell.com/epk/...&quot;&gt;&lt;/iframe&gt;">${epk.embedGigwell||''}</textarea>
+          </div>
+          <div class="form-group">
+            <label>Gigwell Booking Form URL (auto-embeds in EPK)</label>
+            <input type="url" id="epkGigwellBooking" class="form-input" value="${epk.gigwellBooking||''}" placeholder="https://...gigwell.com/booking/...">
+          </div>
+          <p style="font-size:0.7rem;color:var(--muted);margin-top:0.5rem">
+            In Gigwell: Artists → [Artist] → Share EPK → Copy Embed Code. Paste above to replace the built-in EPK with your Gigwell-managed version.
+          </p>
+        </div>
+      </div>
+
+      <div class="epk-section">
+        <div class="epk-section-header">
+          <span class="epk-section-title">Downloads & Rider</span>
+        </div>
+        <div class="epk-section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tech Rider URL (PDF/link)</label>
+              <input type="url" id="epkTechRider" class="form-input" value="${a.techRider||''}" placeholder="https://...">
+            </div>
+            <div class="form-group">
+              <label>Press Kit / Photo Pack URL</label>
+              <input type="url" id="epkPresskit" class="form-input" value="${a.presskit||''}" placeholder="https://...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Stage Plot / Hospitality Rider URL</label>
+            <input type="url" id="epkStagePlot" class="form-input" value="${epk.stagePlot||''}" placeholder="https://...">
+          </div>
+        </div>
+      </div>
+
+      <div class="epk-section">
+        <div class="epk-section-header">
+          <span class="epk-section-title">Current Info — pulls from Artist record</span>
+        </div>
+        <div class="epk-section-body" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div>
+            <div style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">Photo</div>
+            <div style="height:80px;overflow:hidden;background:#111">${a.photo?`<img src="${a.photo}" style="width:100%;height:100%;object-fit:cover">`:'—'}</div>
+          </div>
+          <div>
+            <div style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">Spotify</div>
+            <div style="font-size:.75rem;color:var(--off)">${a.spotify||'Not set'}</div>
+            <div style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:.6rem 0 .3rem">Instagram</div>
+            <div style="font-size:.75rem;color:var(--off)">${a.instagram||'Not set'}</div>
+          </div>
+        </div>
+        <button class="btn-secondary btn-sm" style="margin-top:.75rem" onclick="editArtist('${a.id}')">Edit Artist Record →</button>
+      </div>
+    </div>
+  `;
+}
+
+function epkToggle(id, label, value) {
+  return `
+    <div class="form-group" style="flex-direction:row;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+      <label style="text-transform:none;letter-spacing:0;font-size:.8rem;color:var(--off)">${label}</label>
+      <select id="${id}" class="form-input" style="width:80px">
+        <option value="true" ${value?'selected':''}>On</option>
+        <option value="false" ${!value?'selected':''}>Off</option>
+      </select>
+    </div>
+  `;
+}
+
+function saveAndPublishEPK(artistId) {
+  const artists = getArtists();
+  const idx = artists.findIndex(a => a.id === artistId);
+  if (idx === -1) return;
+
+  const epk = {
+    heroStyle: document.getElementById('epkHeroStyle')?.value || 'fullBleed',
+    accentColor: document.getElementById('epkAccentColor')?.value || '#c8a96e',
+    customIntro: document.getElementById('epkCustomIntro')?.value || '',
+    showSocials: document.getElementById('epkShowSocials')?.value === 'true',
+    showSpotify: document.getElementById('epkShowSpotify')?.value === 'true',
+    showVideos: document.getElementById('epkShowVideos')?.value === 'true',
+    showQuotes: document.getElementById('epkShowQuotes')?.value === 'true',
+    showTechRider: document.getElementById('epkShowTechRider')?.value === 'true',
+    showGigCalendar: document.getElementById('epkShowGigCalendar')?.value === 'true',
+    embedGigwell: document.getElementById('epkGigwellEmbed')?.value || '',
+    gigwellBooking: document.getElementById('epkGigwellBooking')?.value || '',
+    stagePlot: document.getElementById('epkStagePlot')?.value || '',
+    published: true,
+    publishedAt: new Date().toISOString(),
+  };
+
+  // Also update rider/presskit on artist record
+  artists[idx].techRider = document.getElementById('epkTechRider')?.value || artists[idx].techRider;
+  artists[idx].presskit  = document.getElementById('epkPresskit')?.value  || artists[idx].presskit;
+  artists[idx].epk = epk;
+  saveArtists(artists);
+  renderEPKList();
+  renderDashboard();
+  alert(`EPK saved for ${artists[idx].name}!`);
+}
+
+/* ---- VIDEOS ---- */
+function showVideoForm(data={}) {
+  document.getElementById('editVideoId').value = data.id || '';
+  document.getElementById('vUrl').value = data.url || '';
+  document.getElementById('vTitle').value = data.title || '';
+  document.getElementById('vCategory').value = data.category || 'Music Video';
+  document.getElementById('vFeatured').value = data.featured ? 'true' : 'false';
+  // Populate artist select
+  const sel = document.getElementById('vArtist');
+  const artists = getArtists();
+  sel.innerHTML = '<option value="">Select artist...</option>' +
+    artists.map(a => `<option value="${a.id}" ${data.artistId===a.id?'selected':''}>${a.name}</option>`).join('');
+  document.getElementById('videoModal').classList.add('open');
+}
+
+document.getElementById('videoForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const videos = getVideos();
+  const id = document.getElementById('editVideoId').value;
+  const artistId = document.getElementById('vArtist').value;
+  const artist = getArtists().find(a => a.id === artistId);
+  const data = {
+    url: document.getElementById('vUrl').value,
+    title: document.getElementById('vTitle').value,
+    category: document.getElementById('vCategory').value,
+    featured: document.getElementById('vFeatured').value === 'true',
+    artistId, artistName: artist?.name || '',
+  };
+  if (id) {
+    const idx = videos.findIndex(v => v.id === id);
+    if (idx > -1) videos[idx] = { ...videos[idx], ...data };
+  } else {
+    data.id = 'vid_' + Date.now();
+    videos.push(data);
+  }
+  saveVideos(videos);
+  document.getElementById('videoModal').classList.remove('open');
+  renderVideoAdmin();
+});
+
+function getYTId(url) {
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function renderVideoAdmin() {
+  const list = document.getElementById('videoAdminList');
+  const videos = getVideos();
+  if (!videos.length) { list.innerHTML = '<div class="empty-state">No videos yet. Click + Add Video.</div>'; return; }
+  list.innerHTML = videos.map(v => {
+    const ytId = getYTId(v.url);
+    const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : '';
+    return `
+      <div class="video-admin-row">
+        ${thumb ? `<img class="video-admin-thumb" src="${thumb}" alt="">` : '<div class="video-admin-thumb"></div>'}
+        <div>
+          <div class="video-admin-title">${v.title || '—'}</div>
+          <div class="video-admin-artist">${v.artistName || '—'} · ${v.category}</div>
+        </div>
+        <div style="font-size:.68rem;color:var(--muted)">${v.featured?'★ Featured':''}</div>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn-secondary btn-sm" onclick='showVideoForm(${JSON.stringify(v)})'>Edit</button>
+          <button class="btn-danger btn-sm" onclick="deleteVideo('${v.id}')">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function deleteVideo(id) {
+  if (!confirm('Delete?')) return;
+  saveVideos(getVideos().filter(v => v.id !== id));
+  renderVideoAdmin();
+}
+
+/* ---- BOOKINGS ---- */
+function renderBookings() {
+  const list = document.getElementById('bookingsList');
+  const bookings = getBookings();
+  if (!bookings.length) {
+    list.innerHTML = '<div class="empty-state">No booking requests yet. They will appear here when submitted via the website form.</div>';
+    return;
+  }
+  list.innerHTML = bookings.map(b => `
+    <div class="booking-row">
+      <div>
+        <div class="booking-name">${b.name}</div>
+        <div class="booking-detail">${b.date || '—'}</div>
+      </div>
+      <div>
+        <div style="font-size:.8rem;color:var(--off)">${b.artist || 'Any'} · ${b.venue||'—'}</div>
+        <div class="booking-detail">${b.email}</div>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted)">${b.type||'Booking'}</div>
+      <span class="booking-status ${b.status==='new'?'new':''}">${b.status||'New'}</span>
+      <button class="btn-danger btn-sm" onclick="deleteBooking('${b.id}')">✕</button>
+    </div>
+  `).join('');
+}
+
+function deleteBooking(id) {
+  if (!confirm('Remove?')) return;
+  saveBookings(getBookings().filter(b => b.id !== id));
+  renderBookings();
+}
+
+/* ---- INIT ---- */
+showView('dashboard');
