@@ -832,3 +832,48 @@ select.form-input option { background: var(--card); }
   .artists-grid { grid-template-columns: repeat(2, 1fr); }
   .hero-logo { width: 240px; }
 }
+
+/* ================================================
+   HERO CANVAS & LOGO UPDATES
+   ================================================ */
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  display: block;
+}
+
+/* Override hero-bg so canvas shows through */
+.hero-bg { display: none; }
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-scroll-hint {
+  position: absolute;
+  z-index: 1;
+}
+
+/* Full wordmark logo — wider, needs more space */
+.nav-logo-img {
+  height: 32px;
+  width: auto;
+  max-width: 260px;
+  object-fit: contain;
+}
+
+.hero-logo {
+  width: min(480px, 70vw);
+  filter: drop-shadow(0 0 40px rgba(200, 169, 110, 0.15));
+}
+
+.footer-logo {
+  height: auto;
+  width: min(200px, 50vw);
+  opacity: 0.55;
+}

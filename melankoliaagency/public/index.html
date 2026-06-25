@@ -4,15 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Melankolia Agency — Dark Music Booking</title>
-  <meta name="description" content="Melankolia Agency represents the finest artists in dark wave, post-punk, EBM, industrial, and dark techno. Expert artist management and booking.">
-  <link rel="icon" type="image/png" href="/images/logo.png">
+  <meta name="description" content="Melankolia Agency represents the finest artists in dark wave, post-punk, EBM, industrial, and dark techno.">
+  <link rel="icon" type="image/png" href="/images/logo-full.png">
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
+
   <!-- NAV -->
   <nav class="nav" id="nav">
     <a href="/" class="nav-logo">
-      <img src="/images/logo.png" alt="Melankolia Agency" class="nav-logo-img">
+      <img src="/images/logo-full.png" alt="Melankolia Agency" class="nav-logo-img">
     </a>
     <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
       <span></span><span></span><span></span>
@@ -27,10 +28,11 @@
 
   <!-- HERO -->
   <header class="hero">
-    <div class="hero-bg"></div>
+    <!-- Three.js canvas sits behind everything -->
+    <canvas id="heroCanvas" class="hero-canvas"></canvas>
     <div class="hero-content">
-      <img src="/images/logo.png" alt="Melankolia Agency" class="hero-logo">
-      <p class="hero-tagline">Dark Wave · Post-Punk · EBM · Industrial · Dark Techno</p>
+      <img src="/images/logo-full.png" alt="Melankolia Agency" class="hero-logo">
+      <p class="hero-tagline">Dark Wave &nbsp;·&nbsp; Post-Punk &nbsp;·&nbsp; EBM &nbsp;·&nbsp; Industrial &nbsp;·&nbsp; Dark Techno</p>
     </div>
     <div class="hero-scroll-hint">
       <span>Artists</span>
@@ -46,15 +48,13 @@
         <input type="text" class="search-input" id="artistSearch" placeholder="Search artists..." autocomplete="off">
       </div>
     </div>
-    <div class="artists-grid" id="artistsGrid">
-      <!-- Populated by JS -->
-    </div>
+    <div class="artists-grid" id="artistsGrid"></div>
   </main>
 
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-inner">
-      <img src="/images/logo.png" alt="Melankolia Agency" class="footer-logo">
+      <img src="/images/logo-full.png" alt="Melankolia Agency" class="footer-logo">
       <div class="footer-links">
         <a href="mailto:booking@melankoliaagency.com">booking@melankoliaagency.com</a>
       </div>
@@ -62,7 +62,10 @@
     </div>
   </footer>
 
+  <!-- THREE.JS from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script src="/js/data.js"></script>
+  <script src="/js/hero-bg.js"></script>
   <script src="/js/main.js"></script>
 </body>
 </html>
