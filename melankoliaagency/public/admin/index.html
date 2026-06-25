@@ -8,6 +8,42 @@
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
+
+  <!-- PASSWORD GATE -->
+  <div id="passwordGate" style="position:fixed;inset:0;background:#050505;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:1.5rem">
+    <img src="/images/logo-mark-white.svg" style="width:52px;opacity:0.7">
+    <div style="font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:#444">Admin Access</div>
+    <form id="pwForm" style="display:flex;flex-direction:column;gap:0.75rem;align-items:center">
+      <input type="password" id="pwInput" placeholder="Password" autofocus
+        style="background:#0e0e0e;border:1px solid #222;color:#fff;padding:0.7rem 1.2rem;font-size:0.9rem;width:240px;outline:none;text-align:center;letter-spacing:0.1em;font-family:inherit">
+      <button type="submit"
+        style="background:#c8a96e;color:#000;border:none;padding:0.6rem 2rem;font-size:0.65rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;width:240px">
+        Enter
+      </button>
+      <div id="pwError" style="color:#c0392b;font-size:0.7rem;letter-spacing:0.1em;display:none">Incorrect password</div>
+    </form>
+  </div>
+  <script>
+    (function() {
+      const PW = 'melankolia2025';
+      const KEY = 'mk_admin_auth';
+      const gate = document.getElementById('passwordGate');
+      if (sessionStorage.getItem(KEY) === '1') { gate.style.display = 'none'; return; }
+      document.getElementById('pwForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const val = document.getElementById('pwInput').value;
+        if (val === PW) {
+          sessionStorage.setItem(KEY, '1');
+          gate.style.display = 'none';
+        } else {
+          document.getElementById('pwError').style.display = 'block';
+          document.getElementById('pwInput').value = '';
+          document.getElementById('pwInput').focus();
+        }
+      });
+    })();
+  </script>
+
   <div class="admin-layout">
 
     <!-- SIDEBAR -->
@@ -74,6 +110,7 @@
             <button class="qa-btn" onclick="showView('epk')">+ Build EPK</button>
             <button class="qa-btn" onclick="showView('videos')">+ Add Video</button>
             <button class="qa-btn" onclick="showView('bookings')">View Requests</button>
+            <button class="qa-btn" onclick="resetAndReseed()" style="color:#666">↺ Re-sync Data</button>
           </div>
         </div>
       </div>
@@ -404,6 +441,7 @@
     </main>
   </div>
 
+  <script src="/js/data.js"></script>
   <script src="/js/admin.js"></script>
 </body>
 </html>

@@ -28,36 +28,39 @@ document.querySelectorAll('.sidebar-link[data-view]').forEach(link => {
 function getArtists() {
   const stored = localStorage.getItem('mk_artists');
   if (stored) return JSON.parse(stored);
-  // Seed from global data
-  if (typeof MELANKOLIA_DATA !== 'undefined') {
-    const seeded = MELANKOLIA_DATA.map((a, i) => ({
+  // Seed from global data — MELANKOLIA_DATA = { artists: [...] }
+  const source = (typeof MELANKOLIA_DATA !== 'undefined' && MELANKOLIA_DATA.artists)
+    ? MELANKOLIA_DATA.artists
+    : (Array.isArray(MELANKOLIA_DATA) ? MELANKOLIA_DATA : []);
+  if (source.length) {
+    const seeded = source.map((a, i) => ({
       id: 'artist_' + i,
-      name: a.name,
-      slug: a.name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
-      photo: a.photo || '',
+      name: a.name || '',
+      slug: a.slug || a.name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+      photo: a.image ? '/images/' + a.image : (a.photo || ''),
       banner: '',
       photos: [],
-      genres: a.genres ? a.genres.join(', ') : '',
+      genres: Array.isArray(a.genres) ? a.genres.join(', ') : (a.genres || ''),
       location: '',
       bio: a.bio || '',
       shortBio: '',
       quotes: '',
       notes: '',
-      spotify: a.links?.spotify || '',
-      soundcloud: a.links?.soundcloud || '',
-      bandcamp: a.links?.bandcamp || '',
-      apple: '',
-      instagram: a.links?.instagram || '',
-      facebook: a.links?.facebook || '',
-      youtube: a.links?.youtube || '',
-      website: a.links?.website || '',
-      bandsintown: '',
+      spotify:    a.social_links?.spotify    || a.links?.spotify    || '',
+      soundcloud: a.social_links?.soundcloud || a.links?.soundcloud || '',
+      bandcamp:   a.social_links?.bandcamp   || a.links?.bandcamp   || '',
+      apple:      a.social_links?.apple      || '',
+      instagram:  a.social_links?.instagram  || a.links?.instagram  || '',
+      facebook:   a.social_links?.facebook   || a.links?.facebook   || '',
+      youtube:    a.social_links?.youtube    || a.links?.youtube    || '',
+      website:    a.social_links?.website    || a.links?.website    || '',
+      bandsintown:'',
       ra: '',
       presskit: '',
       techRider: '',
       bookingEmail: '',
       status: 'active',
-      featured: false,
+      featured: a.featured || false,
       epk: null,
     }));
     saveArtists(seeded);
@@ -73,21 +76,32 @@ function saveArtists(artists) {
 function getVideos() {
   const stored = localStorage.getItem('mk_videos');
   if (stored) return JSON.parse(stored);
-  if (typeof MELANKOLIA_DATA !== 'undefined') {
-    const vids = [];
-    MELANKOLIA_DATA.forEach((a, i) => {
-      (a.videos||[]).forEach((v,j) => {
-        vids.push({ id:`vid_${i}_${j}`, artistId:'artist_'+i, artistName:a.name, url:v.url, title:v.title||a.name, category:'Music Video', featured:false });
-      });
+  const source = (typeof MELANKOLIA_DATA !== 'undefined' && MELANKOLIA_DATA.artists)
+    ? MELANKOLIA_DATA.artists
+    : (Array.isArray(MELANKOLIA_DATA) ? MELANKOLIA_DATA : []);
+  const vids = [];
+  source.forEach((a, i) => {
+    (a.music_videos || a.videos || []).forEach((v, j) => {
+      if (!v) return;
+      const url = typeof v === 'string' ? v : (v.url || '');
+      if (!url) return;
+      vids.push({ id:`vid_${i}_${j}`, artistId:'artist_'+i, artistName:a.name, url, title: v.title || a.name, category:'Music Video', featured:false });
     });
-    localStorage.setItem('mk_videos', JSON.stringify(vids));
-    return vids;
-  }
-  return [];
+  });
+  localStorage.setItem('mk_videos', JSON.stringify(vids));
+  return vids;
 }
 function saveVideos(v) { localStorage.setItem('mk_videos', JSON.stringify(v)); }
 function getBookings() { return JSON.parse(localStorage.getItem('mk_bookings')||'[]'); }
 function saveBookings(b) { localStorage.setItem('mk_bookings', JSON.stringify(b)); }
+
+/* ---- RESET / RESEED ---- */
+function resetAndReseed() {
+  if (!confirm('This will clear all local admin data and reload from the original artist data. Continue?')) return;
+  localStorage.removeItem('mk_artists');
+  localStorage.removeItem('mk_videos');
+  location.reload();
+}
 
 /* ---- DASHBOARD ---- */
 function renderDashboard() {
