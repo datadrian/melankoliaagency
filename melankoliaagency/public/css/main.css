@@ -546,3 +546,25 @@ select.form-input option { background: #111; }
   .nav-toggle { display: flex; }
   .artists-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ================================================
+   PAGE LOGO ABOVE ARTISTS GRID
+   ================================================ */
+.page-logo-wrap {
+  text-align: center;
+  padding: 3rem 0 2.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2.5rem;
+}
+.page-logo {
+  width: min(360px, 65vw);
+  height: auto;
+  margin: 0 auto 1rem;
+  filter: drop-shadow(0 0 30px rgba(255,255,255,0.04));
+}
+.page-tagline {
+  font-size: 0.62rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+}

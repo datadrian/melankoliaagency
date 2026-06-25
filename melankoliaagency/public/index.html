@@ -10,7 +10,7 @@
 </head>
 <body>
 
-  <!-- FULL-PAGE THREE.JS CANVAS — lives behind everything -->
+  <!-- FIXED 3D BACKGROUND CANVAS -->
   <canvas id="heroCanvas" class="site-canvas"></canvas>
 
   <!-- NAV -->
@@ -29,12 +29,20 @@
     </ul>
   </nav>
 
-  <!-- ARTISTS — visible immediately on load -->
+  <!-- ARTISTS SECTION -->
   <main class="artists-section" id="artists">
+
+    <!-- Logo mark above the grid -->
+    <div class="page-logo-wrap">
+      <img src="/images/logo-full.png" alt="Melankolia Agency" class="page-logo">
+      <p class="page-tagline">Dark Wave &nbsp;·&nbsp; Post-Punk &nbsp;·&nbsp; EBM &nbsp;·&nbsp; Industrial &nbsp;·&nbsp; Dark Techno</p>
+    </div>
+
     <div class="section-header">
       <h2 class="section-title">Our Artists</h2>
       <input type="text" class="search-input" id="artistSearch" placeholder="Search artists..." autocomplete="off">
     </div>
+
     <div class="artists-grid" id="artistsGrid"></div>
   </main>
 
