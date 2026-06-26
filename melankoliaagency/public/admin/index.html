@@ -71,6 +71,12 @@
         <a href="#" class="sidebar-link" data-view="tour">
           <span class="icon">◈</span> Tour Planner
         </a>
+        <a href="#" class="sidebar-link" data-view="library">
+          <span class="icon">◈</span> Tour Library
+        </a>
+        <a href="#" class="sidebar-link" data-view="outreach">
+          <span class="icon">◈</span> Email Outreach
+        </a>
         <a href="#" class="sidebar-link" data-view="settings">
           <span class="icon">◈</span> Site Settings
         </a>
@@ -455,7 +461,20 @@
               <div>
                 <div class="tour-sidebar-title">Tour Planner</div>
               </div>
-              <button onclick="openTourWizard()" class="t-btn t-btn-secondary t-btn-sm" title="Open guide">? Guide</button>
+              <div style="display:flex;gap:0.4rem;align-items:center;">
+                <div class="tp-ref-badge" id="tp-ref-badge" style="display:none;">
+                  <span>Ref: </span><span class="ref-name"></span>
+                  <button class="ref-clear" onclick="tlSetReferenceTour(null)">✕</button>
+                </div>
+                <button onclick="openTourWizard()" class="t-btn t-btn-secondary t-btn-sm">? Guide</button>
+              </div>
+            </div>
+            <!-- Reference tour selector -->
+            <div style="padding:0.5rem 1.1rem;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:0.5rem;">
+              <label style="font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;color:#444;flex-shrink:0;">Reference:</label>
+              <select id="tp-reference-tour" class="t-input" style="font-size:0.68rem;">
+                <option value="">None — build fresh</option>
+              </select>
             </div>
 
             <div class="tour-tab-bar">
@@ -517,6 +536,21 @@
                 </div>
                 <div class="t-group"><label>Notes / Preferences</label><textarea id="tp-prefs" class="t-input t-textarea" placeholder="e.g. avoid midwest, prefer art spaces, need 2 rest days..."></textarea></div>
                 <button type="submit" class="t-btn t-btn-primary" id="tp-generate-btn">◈ Generate Tour Plan</button>
+                <!-- Save Panel — shown after generation -->
+                <div class="tp-save-panel" id="tp-save-panel">
+                  <div style="flex:1;min-width:160px;">
+                    <label>Tour Name</label>
+                    <input type="text" id="tp-save-name" class="t-input" placeholder="e.g. Bootblacks Fall USA 2026">
+                  </div>
+                  <div style="flex:1;min-width:120px;">
+                    <label>Notes</label>
+                    <input type="text" id="tp-save-notes" class="t-input" placeholder="Optional notes...">
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:0.3rem;justify-content:flex-end;">
+                    <button type="button" class="t-btn t-btn-primary t-btn-sm" onclick="tlConfirmSave()">Save Tour</button>
+                    <button type="button" class="t-btn t-btn-secondary t-btn-sm" onclick="tlCancelSave()">Not now</button>
+                  </div>
+                </div>
               </form>
             </div>
 
@@ -649,6 +683,219 @@
         </div><!-- /tour-layout -->
       </div><!-- /view-tour -->
 
+      <!-- TOUR LIBRARY -->
+      <div class="view" id="view-library">
+        <div class="view-header" style="display:flex;align-items:center;justify-content:space-between;">
+          <h1>Tour Library</h1>
+        </div>
+
+        <!-- Library Sub-tabs -->
+        <div class="tour-tab-bar" style="max-width:100%;border-bottom:1px solid #1e1e1e;margin-bottom:1.5rem;">
+          <button class="tour-tab-btn active" data-ltab="saved" onclick="switchLibTab('saved')">Saved Tours</button>
+          <button class="tour-tab-btn" data-ltab="venues" onclick="switchLibTab('venues')">Venue Bank</button>
+          <button class="tour-tab-btn" data-ltab="markets" onclick="switchLibTab('markets')">Market Data</button>
+        </div>
+
+        <!-- SAVED TOURS -->
+        <div id="ltab-saved" class="lib-tab-panel active">
+          <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap;">
+            <select id="tl-artist-filter" class="t-input" style="width:180px;">
+              <option value="">All artists</option>
+            </select>
+            <select id="tl-status-filter" class="t-input" style="width:140px;">
+              <option value="">All statuses</option>
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+              <option value="archived">Archived</option>
+            </select>
+            <div style="margin-left:auto;font-size:0.62rem;color:#444;">Tours are saved from the planner. Open a past tour to reload it on the map.</div>
+          </div>
+          <div id="tl-tour-grid" class="tl-grid"></div>
+        </div>
+
+        <!-- VENUE BANK -->
+        <div id="ltab-venues" class="lib-tab-panel" style="display:none;">
+          <div style="margin-bottom:0.8rem;">
+            <div style="font-size:0.62rem;color:#444;line-height:1.6;">Every time you use Venues in the Tour Planner, results are automatically banked here. Click a city to expand venue details.</div>
+          </div>
+          <div id="tl-venue-bank-list"></div>
+        </div>
+
+        <!-- MARKET PERFORMANCE -->
+        <div id="ltab-markets" class="lib-tab-panel" style="display:none;">
+          <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap;">
+            <select id="tl-perf-artist" class="t-input" style="width:200px;">
+              <option value="">Select artist...</option>
+            </select>
+            <button class="t-btn t-btn-primary t-btn-sm" onclick="tlShowLogPerformanceModal()">+ Log Show Results</button>
+          </div>
+          <div style="font-size:0.62rem;color:#444;margin-bottom:1rem;line-height:1.6;">
+            After each tour, log actual attendance and payout per show. The AI uses this data when planning the next tour for this artist — it will know which markets pull audiences, which over-performed, and which to skip.
+          </div>
+          <div id="tl-perf-list"></div>
+        </div>
+
+        <!-- LOG PERFORMANCE MODAL -->
+        <div id="tl-log-modal" class="modal-overlay" style="display:none;">
+          <div class="modal">
+            <div class="modal-header">
+              <h2>Log Show Results</h2>
+              <button class="modal-close" onclick="document.getElementById('tl-log-modal').style.display='none'">✕</button>
+            </div>
+            <div class="modal-body">
+              <form class="admin-form" onsubmit="event.preventDefault();tlSavePerformanceLog();">
+                <div class="form-row">
+                  <div class="form-group"><label>Artist *</label><select id="tl-log-artist" class="form-input"></select></div>
+                  <div class="form-group"><label>City *</label><input type="text" id="tl-log-city" class="form-input" placeholder="Berlin"></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label>Country</label><input type="text" id="tl-log-country" class="form-input" placeholder="Germany"></div>
+                  <div class="form-group"><label>Date</label><input type="date" id="tl-log-date" class="form-input"></div>
+                </div>
+                <div class="form-group"><label>Venue</label><input type="text" id="tl-log-venue" class="form-input" placeholder="Musik & Frieden"></div>
+                <div class="form-row">
+                  <div class="form-group"><label>Actual Attendance</label><input type="number" id="tl-log-att" class="form-input" placeholder="180"></div>
+                  <div class="form-group"><label>Projected Attendance</label><input type="number" id="tl-log-proj-att" class="form-input" placeholder="150"></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label>Guarantee $</label><input type="number" id="tl-log-guar" class="form-input" placeholder="1200"></div>
+                  <div class="form-group"><label>Actual Payout $</label><input type="number" id="tl-log-payout" class="form-input" placeholder="1450"></div>
+                </div>
+                <div class="form-group"><label>Notes</label><textarea id="tl-log-notes" class="form-input" rows="2" placeholder="Strong crowd, merch sold well, promoter reliable..."></textarea></div>
+                <div class="form-actions">
+                  <button type="button" class="btn-secondary" onclick="document.getElementById('tl-log-modal').style.display='none'">Cancel</button>
+                  <button type="submit" class="btn-primary">Save Results</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMAIL OUTREACH -->
+      <div class="view" id="view-outreach">
+        <div class="view-header">
+          <h1>Email Outreach</h1>
+        </div>
+        <div style="display:grid;grid-template-columns:380px 1fr;gap:1.5rem;align-items:start;">
+
+          <!-- LEFT: Email Form -->
+          <div>
+            <div class="tour-tab-bar" style="margin-bottom:1rem;">
+              <button class="tour-tab-btn email-tab-btn active" data-etab="cold">Cold Pitch</button>
+              <button class="tour-tab-btn email-tab-btn" data-etab="followup">Follow-Up</button>
+              <button class="tour-tab-btn email-tab-btn" data-etab="counter">Counter Offer</button>
+              <button class="tour-tab-btn email-tab-btn" data-etab="advance">Advance</button>
+            </div>
+
+            <!-- COLD PITCH -->
+            <div class="email-tab-panel active" id="etab-cold">
+              <div class="t-form">
+                <div class="t-group"><label>Artist</label><select id="tl-email-artist" class="t-input"></select></div>
+                <div class="t-row">
+                  <div class="t-group"><label>Venue Name</label><input type="text" id="tl-email-venue" class="t-input" placeholder="Empty Bottle"></div>
+                  <div class="t-group"><label>City</label><input type="text" id="tl-email-city" class="t-input" placeholder="Chicago"></div>
+                </div>
+                <div class="t-group"><label>Target Dates / Window</label><input type="text" id="tl-email-dates" class="t-input" placeholder="e.g. Oct 3-5 or mid-October"></div>
+                <div class="t-group"><label>Deal Preference</label>
+                  <select id="tl-email-deal" class="t-input">
+                    <option value="guarantee or best of guarantee vs door">Guarantee or Best Of</option>
+                    <option value="guarantee">Guarantee only</option>
+                    <option value="door deal">Door Deal</option>
+                  </select>
+                </div>
+                <div class="t-group"><label>Tour Context</label><input type="text" id="tl-email-context" class="t-input" placeholder="e.g. East Coast fall tour, supporting new LP"></div>
+                <div class="t-group"><label>Past Performance Here</label><input type="text" id="tl-email-past" class="t-input" placeholder="e.g. played here in 2024, drew 200, or first time"></div>
+                <button class="t-btn t-btn-primary" id="tl-email-gen-cold_pitch" onclick="onGenerateEmail('cold_pitch')">◈ Generate Cold Pitch</button>
+              </div>
+            </div>
+
+            <!-- FOLLOW UP -->
+            <div class="email-tab-panel" id="etab-followup" style="display:none;">
+              <div class="t-form">
+                <div class="t-group"><label>Artist</label><select id="tl-fu-artist" class="t-input"></select></div>
+                <div class="t-row">
+                  <div class="t-group"><label>Venue</label><input type="text" id="tl-fu-venue" class="t-input" placeholder="Venue name"></div>
+                  <div class="t-group"><label>City</label><input type="text" id="tl-fu-city" class="t-input" placeholder="City"></div>
+                </div>
+                <div class="t-row">
+                  <div class="t-group"><label>Original Date Requested</label><input type="text" id="tl-fu-original-date" class="t-input" placeholder="e.g. Oct 4"></div>
+                  <div class="t-group"><label>Days Since First Email</label><input type="number" id="tl-fu-days" class="t-input" value="10" min="1"></div>
+                </div>
+                <div class="t-group"><label>Deal Type</label>
+                  <select id="tl-fu-deal" class="t-input">
+                    <option value="guarantee or best of">Guarantee or Best Of</option>
+                    <option value="guarantee">Guarantee</option>
+                    <option value="door deal">Door Deal</option>
+                  </select>
+                </div>
+                <button class="t-btn t-btn-primary" id="tl-email-gen-follow_up" onclick="onGenerateEmail('follow_up')">◈ Generate Follow-Up</button>
+              </div>
+            </div>
+
+            <!-- COUNTER OFFER -->
+            <div class="email-tab-panel" id="etab-counter" style="display:none;">
+              <div class="t-form">
+                <div class="t-group"><label>Artist</label><select id="tl-ctr-artist" class="t-input"></select></div>
+                <div class="t-row">
+                  <div class="t-group"><label>Venue</label><input type="text" id="tl-ctr-venue" class="t-input" placeholder="Venue name"></div>
+                  <div class="t-group"><label>City</label><input type="text" id="tl-ctr-city" class="t-input" placeholder="City"></div>
+                </div>
+                <div class="t-row">
+                  <div class="t-group"><label>Their Offer</label><input type="text" id="tl-ctr-their-offer" class="t-input" placeholder="e.g. $500 guarantee"></div>
+                  <div class="t-group"><label>Our Counter</label><input type="text" id="tl-ctr-counter" class="t-input" placeholder="e.g. $900 guarantee"></div>
+                </div>
+                <div class="t-group"><label>Deal Structure</label>
+                  <select id="tl-ctr-deal" class="t-input">
+                    <option value="guarantee">Guarantee</option>
+                    <option value="guarantee vs door best of">Best Of</option>
+                    <option value="door deal">Door Deal</option>
+                  </select>
+                </div>
+                <div class="t-group"><label>Reasoning (optional)</label><input type="text" id="tl-ctr-reasoning" class="t-input" placeholder="e.g. market rate for this tier, artist drew 180 last visit"></div>
+                <button class="t-btn t-btn-primary" id="tl-email-gen-counter_offer" onclick="onGenerateEmail('counter_offer')">◈ Generate Counter Offer</button>
+              </div>
+            </div>
+
+            <!-- ADVANCE -->
+            <div class="email-tab-panel" id="etab-advance" style="display:none;">
+              <div class="t-form">
+                <div class="t-group"><label>Artist</label><select id="tl-adv-artist" class="t-input"></select></div>
+                <div class="t-row">
+                  <div class="t-group"><label>Venue</label><input type="text" id="tl-adv-venue" class="t-input" placeholder="Venue name"></div>
+                  <div class="t-group"><label>City</label><input type="text" id="tl-adv-city" class="t-input" placeholder="City"></div>
+                </div>
+                <div class="t-row">
+                  <div class="t-group"><label>Show Date</label><input type="date" id="tl-adv-date" class="t-input"></div>
+                  <div class="t-group"><label>Load-In Time</label><input type="text" id="tl-adv-loadin" class="t-input" placeholder="5:00 PM"></div>
+                </div>
+                <div class="t-group"><label>Soundcheck Time</label><input type="text" id="tl-adv-soundcheck" class="t-input" placeholder="6:00 PM"></div>
+                <button class="t-btn t-btn-primary" id="tl-email-gen-advance" onclick="onGenerateEmail('advance')">◈ Generate Advance Email</button>
+              </div>
+            </div>
+          </div><!-- /left -->
+
+          <!-- RIGHT: Preview Panel -->
+          <div id="tl-email-result-panel" style="display:none;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem;flex-wrap:wrap;gap:0.5rem;">
+              <div>
+                <div style="font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:#555;margin-bottom:0.2rem;">Subject Line</div>
+                <div id="tl-email-result-subject" style="font-size:0.85rem;font-weight:600;color:#ccc;"></div>
+              </div>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <button id="tl-copy-html" class="t-btn t-btn-secondary t-btn-sm">Copy HTML</button>
+                <button id="tl-copy-text" class="t-btn t-btn-secondary t-btn-sm">Copy Plain Text</button>
+              </div>
+            </div>
+            <div style="font-size:0.6rem;color:#444;margin-bottom:0.5rem;">HTML preview — copy and paste into Gmail's "Insert HTML" or compose mode</div>
+            <div id="tl-email-result-preview" style="border:1px solid #1e1e1e;border-radius:2px;overflow:hidden;background:#fff;"></div>
+          </div>
+
+        </div>
+      </div>
+
+
       <!-- ONBOARDING WIZARD OVERLAY -->
       <div id="tourWizardOverlay" class="tour-wizard-overlay" style="display:none;">
         <div class="tour-wizard-box">
@@ -678,19 +925,36 @@
   <script src="/js/data.js"></script>
   <script src="/js/admin.js"></script>
   <script src="/js/tour-planner.js"></script>
+  <script src="/js/tour-library.js"></script>
   <script>
-    // Extend showView for tour tab
+    // Extend showView for tour/library/outreach
     const _origShowView = showView;
     showView = function(name) {
       _origShowView(name);
       if (name === 'tour') {
         if (typeof initTourPlanner === 'function') initTourPlanner();
-        // Show wizard on first visit
-        if (!localStorage.getItem('mk_tour_wizard_seen')) {
-          setTimeout(openTourWizard, 400);
-        }
+        if (!localStorage.getItem('mk_tour_wizard_seen')) setTimeout(openTourWizard, 400);
+      }
+      if (name === 'library') {
+        if (typeof initTourLibrary === 'function') initTourLibrary();
+      }
+      if (name === 'outreach') {
+        if (typeof initTourLibrary === 'function') initEmailGenerator();
       }
     };
+    // Library sub-tab switcher
+    function switchLibTab(tab) {
+      document.querySelectorAll('.lib-tab-panel').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('[data-ltab]').forEach(b => b.classList.remove('active'));
+      const el = document.getElementById('ltab-' + tab);
+      if (el) el.style.display = 'block';
+      const btn = document.querySelector('[data-ltab="' + tab + '"]');
+      if (btn) btn.classList.add('active');
+      // Refresh content
+      if (tab === 'venues' && typeof renderVenueBank === 'function') renderVenueBank();
+      if (tab === 'markets' && typeof renderMarketTracker === 'function') renderMarketTracker();
+      if (tab === 'saved' && typeof renderTourLibrary === 'function') renderTourLibrary();
+    }
     // Load Maps API securely via proxy
     (async () => {
       try {

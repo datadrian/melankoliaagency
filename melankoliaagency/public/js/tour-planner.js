@@ -103,6 +103,27 @@ const TourMap = (() => {
   async function renderLegs(legs) {
     clear();
     if (!legs?.length) return;
+
+    // Draw reference tour ghost layer if set
+    const refTour = typeof tlGetReferenceTour === 'function' ? tlGetReferenceTour() : null;
+    if (refTour?.data?.legs) {
+      const refLegs = refTour.data.legs.filter(l => !l.day_off);
+      const refCoords = [];
+      for (const leg of refLegs) {
+        const loc = await TourAPI.geocode(`${leg.city}, ${leg.country || ''}`).catch(() => null);
+        if (!loc) continue;
+        refCoords.push({ lat: loc.lat, lng: loc.lng });
+        if (!map) break;
+        const m = new google.maps.Marker({
+          position: { lat: loc.lat, lng: loc.lng }, map,
+          icon: { path: google.maps.SymbolPath.CIRCLE, fillColor: '#333', fillOpacity: 0.5, strokeColor: '#222', strokeWeight: 1, scale: 7 },
+          title: `[REF] ${leg.city}`, zIndex: 1
+        });
+        markers.push(m);
+      }
+      if (refCoords.length > 1) drawLine(refCoords, '#333', 0.3);
+    }
+
     const coords = [];
     for (const leg of legs) {
       const loc = await TourAPI.geocode(`${leg.city}, ${leg.country || ''}`).catch(() => null);
@@ -310,6 +331,13 @@ async function onGenerateTour(e) {
     await TourMap.renderLegs(tour.legs);
     addChatMsg('ai', `"${tour.tour_name}" — ${tour.total_shows} shows across ${tour.total_days} days. ${tour.warnings?.length ? '⚠ ' + tour.warnings[0] : 'Routing looks solid.'}`);
 
+    // Show save prompt with pre-filled name + meta
+    const saveNameEl = document.getElementById('tp-save-name');
+    if (saveNameEl) saveNameEl.value = tour.tour_name || '';
+    if (typeof tlAutoSavePrompt === 'function') {
+      tlAutoSavePrompt(tour, { artist, region, startDate, endDate, name: tour.tour_name, status: 'draft' });
+    }
+
   } catch (err) {
     addChatMsg('ai', `Error: ${err.message}`);
     setTourResults(`<div class="t-warning">Failed to generate tour. ${err.message}</div>`);
@@ -395,7 +423,9 @@ async function onFindVenues() {
   try {
     const venues = await TourAPI.ai('suggest_venues', { city, country, genre, capacity });
     renderVenueResults(venues, city, country);
-    addChatMsg('ai', `Found ${venues.length} venues in ${city} suited for ${genre}.`);
+    addChatMsg('ai', `Found ${venues.length} venues in ${city} suited for ${genre}. Saved to Venue Bank.`);
+    // Auto-save to venue intelligence bank
+    if (typeof tlAutoSaveVenues === 'function') tlAutoSaveVenues(city, country, venues);
   } catch (err) {
     addChatMsg('ai', `Venue search failed: ${err.message}`);
   } finally {
