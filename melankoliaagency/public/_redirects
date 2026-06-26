@@ -2,3 +2,5 @@
 /band-app/*  /band-app/index.html   200
 /advancing   /advancing/index.html   200
 /advancing/*  /advancing/index.html   200
+/tour-dashboard   /tour-dashboard/index.html   200
+/tour-dashboard/*  /tour-dashboard/index.html   200

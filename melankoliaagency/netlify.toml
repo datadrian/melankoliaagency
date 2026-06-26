@@ -8,6 +8,18 @@
   included_files = ["netlify/functions/node_modules/**"]
 
 [[redirects]]
+  from = "/tour-dashboard"
+  to = "/tour-dashboard/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/tour-dashboard/*"
+  to = "/tour-dashboard/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/artists/*"
   to = "/artist.html"
   status = 200
