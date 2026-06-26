@@ -5,1234 +5,556 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Melankolia — Tour Dashboard</title>
 <style>
-  :root {
-    --bg: #0a0a0a;
-    --surface: #111;
-    --surface2: #161616;
-    --border: #1e1e1e;
-    --border2: #2a2a2a;
-    --gold: #c8a96e;
-    --gold2: #a8893e;
-    --text: #e8e8e8;
-    --muted: #666;
-    --muted2: #444;
-    --red: #c05050;
-    --green: #5a9a6a;
-    --blue: #5080b0;
-    --mono: 'Courier New', monospace;
-    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; }
-
-  /* ── LAYOUT ── */
-  #app { display: flex; height: 100vh; overflow: hidden; }
-  #sidebar { width: 220px; min-width: 220px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-  /* ── SIDEBAR ── */
-  .sidebar-logo { padding: 20px 16px 14px; border-bottom: 1px solid var(--border); }
-  .sidebar-logo .wordmark { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); }
-  .sidebar-logo .sub { font-family: var(--mono); font-size: 8px; letter-spacing: 0.2em; color: var(--muted); margin-top: 2px; }
-  .nav-section { padding: 12px 0 4px; }
-  .nav-label { font-family: var(--mono); font-size: 7px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted2); padding: 0 16px 6px; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; cursor: pointer; border-left: 2px solid transparent; color: var(--muted); font-size: 13px; transition: all 0.15s; user-select: none; }
-  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
-  .nav-item.active { color: var(--gold); border-left-color: var(--gold); background: rgba(200,169,110,0.06); }
-  .nav-item svg { width: 14px; height: 14px; flex-shrink: 0; }
-  .sidebar-bottom { margin-top: auto; padding: 12px 16px; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 8px; color: var(--muted); letter-spacing: 0.1em; }
-
-  /* ── TOPBAR ── */
-  #topbar { height: 52px; min-height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; gap: 16px; }
-  .topbar-title { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text); font-weight: 700; }
-  .topbar-actions { margin-left: auto; display: flex; gap: 8px; }
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border: none; cursor: pointer; font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; border-radius: 2px; transition: all 0.15s; }
-  .btn-gold { background: var(--gold); color: #000; }
-  .btn-gold:hover { background: #d4b87e; }
-  .btn-outline { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
-  .btn-outline:hover { color: var(--text); border-color: var(--muted); }
-  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); }
-  .btn-danger:hover { background: var(--red); color: #fff; }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  /* ── VIEWS ── */
-  #content { flex: 1; overflow-y: auto; padding: 28px 32px; }
-  .view { display: none; }
-  .view.active { display: block; }
-
-  /* ── CARDS ── */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; }
-  .card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .card-title { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); }
-  .card-body { padding: 18px; }
-
-  /* ── GRID ── */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-
-  /* ── STAT TILES ── */
-  .stat-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 18px; }
-  .stat-label { font-family: var(--mono); font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-  .stat-value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; }
-  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
-
-  /* ── TABLES ── */
-  .tbl { width: 100%; border-collapse: collapse; }
-  .tbl th { font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); padding: 0 12px 10px; text-align: left; border-bottom: 1px solid var(--border); }
-  .tbl td { padding: 11px 12px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 13px; vertical-align: middle; }
-  .tbl tr:last-child td { border-bottom: none; }
-  .tbl tr:hover td { background: rgba(255,255,255,0.02); }
-  .tbl-actions { display: flex; gap: 6px; }
-
-  /* ── BADGES ── */
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 2px; font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
-  .badge-pending { background: rgba(180,140,60,0.15); color: #c8a040; border: 1px solid rgba(180,140,60,0.3); }
-  .badge-approved { background: rgba(90,154,106,0.15); color: #6aba80; border: 1px solid rgba(90,154,106,0.3); }
-  .badge-published { background: rgba(80,128,176,0.15); color: #70a8e0; border: 1px solid rgba(80,128,176,0.3); }
-  .badge-missing { background: rgba(180,80,80,0.15); color: #e08080; border: 1px solid rgba(180,80,80,0.3); }
-  .badge-draft { background: rgba(80,80,80,0.2); color: var(--muted); border: 1px solid var(--border2); }
-
-  /* ── FORMS ── */
-  .form-grid { display: grid; gap: 14px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label { font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
-  .field input, .field select, .field textarea { background: var(--surface2); border: 1px solid var(--border2); color: var(--text); padding: 9px 12px; font-size: 13px; font-family: var(--sans); border-radius: 2px; outline: none; width: 100%; }
-  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--gold); }
-  .field select option { background: #1a1a1a; }
-  .field textarea { resize: vertical; min-height: 80px; }
-
-  /* ── MODAL ── */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: none; align-items: center; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 4px; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
-  .modal-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .modal-title { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); }
-  .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 0; }
-  .modal-body { padding: 20px; }
-  .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
-
-  /* ── ROUTE PLANNER ── */
-  #route-planner-view { display: none; }
-  #route-planner-view.active { display: grid; grid-template-columns: 380px 1fr; gap: 0; height: calc(100vh - 52px); overflow: hidden; }
-  #rp-panel { overflow-y: auto; padding: 20px; border-right: 1px solid var(--border); background: var(--surface); }
-  #rp-map-container { position: relative; background: #0d0d0d; }
-  #rp-map { width: 100%; height: 100%; }
-  #rp-results { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(10,10,10,0.95); border-top: 1px solid var(--border); max-height: 45%; overflow-y: auto; padding: 16px; display: none; }
-  .rp-section { margin-bottom: 18px; }
-  .rp-section-title { font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
-  .anchor-item { background: var(--surface2); border: 1px solid var(--border2); border-radius: 2px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start; }
-  .anchor-item .anchor-info { flex: 1; }
-  .anchor-item .anchor-city { font-size: 13px; font-weight: 600; }
-  .anchor-item .anchor-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .anchor-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 0 0 8px; }
-  .anchor-remove:hover { color: var(--red); }
-  .show-card { background: var(--surface2); border: 1px solid var(--border2); border-radius: 2px; margin-bottom: 8px; padding: 12px 14px; }
-  .show-card-date { font-family: var(--mono); font-size: 9px; color: var(--gold); margin-bottom: 4px; }
-  .show-card-venue { font-size: 13px; font-weight: 600; }
-  .show-card-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
-  .show-card.anchor { border-left: 3px solid var(--gold); }
-  .ai-output { font-family: var(--mono); font-size: 11px; color: var(--text); line-height: 1.7; white-space: pre-wrap; }
-
-  /* ── ADVANCING CENTER ── */
-  .adv-filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-  .filter-pill { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--muted); font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
-  .filter-pill.active { background: var(--gold); color: #000; border-color: var(--gold); }
-  .adv-show-row { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; margin-bottom: 8px; }
-  .adv-show-header { display: flex; align-items: center; gap: 14px; padding: 14px 16px; cursor: pointer; }
-  .adv-show-date { font-family: var(--mono); font-size: 10px; color: var(--gold); min-width: 80px; }
-  .adv-show-venue { flex: 1; font-size: 13px; font-weight: 600; }
-  .adv-show-city { font-size: 12px; color: var(--muted); }
-  .adv-show-band { font-size: 11px; color: var(--muted); min-width: 100px; }
-  .adv-show-status { min-width: 90px; text-align: right; }
-  .adv-show-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); }
-  .adv-show-body.open { display: block; }
-  .adv-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .link-box { background: var(--surface2); border: 1px solid var(--border2); border-radius: 2px; padding: 8px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); word-break: break-all; display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-  .link-box .link-url { flex: 1; color: var(--text); }
-  .link-copy { background: none; border: none; color: var(--gold); cursor: pointer; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 0; }
-
-  /* ── BANDS VIEW ── */
-  .band-card { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
-  .band-initial { width: 38px; height: 38px; background: rgba(200,169,110,0.1); border: 1px solid rgba(200,169,110,0.3); border-radius: 2px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--gold); flex-shrink: 0; }
-  .band-info { flex: 1; }
-  .band-name { font-size: 14px; font-weight: 600; }
-  .band-username { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 3px; }
-  .band-actions { display: flex; gap: 8px; }
-
-  /* ── MISC ── */
-  .empty-state { text-align: center; padding: 48px; color: var(--muted); }
-  .empty-state svg { opacity: 0.2; margin-bottom: 12px; }
-  .empty-state p { font-size: 13px; margin-bottom: 4px; }
-  .empty-state small { font-size: 11px; }
-  .section-title { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
-  .divider { height: 1px; background: var(--border); margin: 24px 0; }
-  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 3px; padding: 12px 18px; font-size: 13px; z-index: 200; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.success { border-color: var(--green); color: #7dc890; }
-  .toast.error { border-color: var(--red); color: #e09090; }
-  .loading { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.6s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 10; flex-direction: column; gap: 12px; }
-  .spinner-overlay.show { display: flex; }
-  .spinner-overlay .loading { width: 32px; height: 32px; border-width: 3px; }
-  .spinner-overlay p { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
-
-  @media (max-width: 900px) {
-    #sidebar { display: none; }
-    #route-planner-view.active { grid-template-columns: 1fr; }
-    #rp-map-container { height: 40vh; }
-  }
+:root{--bg:#0a0a0a;--surface:#111;--s2:#161616;--s3:#1c1c1c;--border:#1e1e1e;--b2:#2a2a2a;--gold:#c8a96e;--gdim:rgba(200,169,110,0.1);--text:#e8e8e8;--muted:#666;--muted2:#3a3a3a;--red:#c05050;--green:#5a9a6a;--blue:#5080b0;--mono:'Courier New',monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
+#app{display:flex;height:100vh;overflow:hidden}
+#sb{width:210px;min-width:210px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border)}.sb-logo .wm{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.35em;text-transform:uppercase;color:var(--gold)}.sb-logo .sub{font-family:var(--mono);font-size:7px;letter-spacing:.2em;color:var(--muted);margin-top:2px}
+.nav-g{padding:10px 0 2px}.nav-gl{font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2);padding:0 14px 5px}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;border-left:2px solid transparent;color:var(--muted);font-size:13px;transition:all .12s;user-select:none}.ni:hover{color:var(--text);background:rgba(255,255,255,.02)}.ni.active{color:var(--gold);border-left-color:var(--gold);background:var(--gdim)}.ni svg{width:14px;height:14px;flex-shrink:0}
+.sb-bot{margin-top:auto;padding:10px 14px;border-top:1px solid var(--border);font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.1em}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{height:50px;min-height:50px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:14px;flex-shrink:0}
+.tb-title{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700}.tb-actions{margin-left:auto;display:flex;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border:none;cursor:pointer;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border-radius:2px;transition:all .12s;white-space:nowrap}
+.btn-gold{background:var(--gold);color:#000}.btn-gold:hover{background:#d4b87e}.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--b2)}.btn-ghost:hover{color:var(--text);border-color:var(--muted)}.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(192,80,80,.3)}.btn-danger:hover{background:var(--red);color:#fff}.btn-sm{padding:4px 9px;font-size:8px}.btn:disabled{opacity:.35;cursor:not-allowed}
+#cscroll{flex:1;overflow-y:auto;padding:24px 28px}.view{display:none}.view.active{display:block}
+#view-route{display:none}#view-route.active{display:grid;grid-template-columns:370px 1fr;flex:1;overflow:hidden;height:calc(100vh - 50px)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:2px}.card-hd{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}.card-title{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}.card-body{padding:16px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}.stat{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:16px}.stat-lbl{font-family:var(--mono);font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}.stat-val{font-size:26px;font-weight:700;line-height:1}.stat-sub{font-size:11px;color:var(--muted);margin-top:5px}
+.tbl{width:100%;border-collapse:collapse}.tbl th{font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:0 10px 9px;text-align:left;border-bottom:1px solid var(--border)}.tbl td{padding:10px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle}.tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:rgba(255,255,255,.015)}
+.badge{display:inline-block;padding:2px 7px;border-radius:2px;font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.b-miss{background:rgba(192,80,80,.1);color:#d08080;border:1px solid rgba(192,80,80,.2)}.b-pend{background:rgba(180,140,60,.1);color:#c8a040;border:1px solid rgba(180,140,60,.2)}.b-appr{background:rgba(90,154,106,.1);color:#6aba80;border:1px solid rgba(90,154,106,.2)}.b-pub{background:rgba(80,128,176,.1);color:#70a8e0;border:1px solid rgba(80,128,176,.2)}.b-anch{background:rgba(200,169,110,.12);color:var(--gold);border:1px solid rgba(200,169,110,.25)}
+.fg{display:flex;flex-direction:column;gap:12px}.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}.field label{font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}.field input,.field select,.field textarea{background:var(--s2);border:1px solid var(--b2);color:var(--text);padding:8px 11px;font-size:13px;font-family:var(--sans);border-radius:2px;outline:none;width:100%}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}.field select option{background:#1a1a1a}.field textarea{resize:vertical;min-height:70px;line-height:1.5}
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:none;align-items:center;justify-content:center}.mbg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--b2);border-radius:3px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto}.modal-hd{padding:16px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}.modal-title{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}.modal-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1}.modal-body{padding:18px}.modal-ft{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.adv-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.fpill{padding:5px 11px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--muted);font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .12s}.fpill:hover{color:var(--text)}.fpill.active{background:var(--gold);color:#000;border-color:var(--gold)}
+.show-row{background:var(--surface);border:1px solid var(--border);border-radius:2px;margin-bottom:7px}.show-hd{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer}.show-hd:hover{background:rgba(255,255,255,.02)}.show-date{font-family:var(--mono);font-size:9px;color:var(--gold);min-width:72px}.show-ven{flex:1;font-size:13px;font-weight:600}.show-city{font-size:11px;color:var(--muted)}.show-band{font-size:11px;color:var(--muted);min-width:90px}.show-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}.show-body.open{display:block}
+.link-box{background:var(--s2);border:1px solid var(--b2);border-radius:2px;padding:7px 11px;font-family:var(--mono);font-size:9px;display:flex;align-items:center;gap:8px;margin-top:8px}.link-url{flex:1;color:var(--text);word-break:break-all}.copy-btn{background:none;border:none;color:var(--gold);cursor:pointer;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase}
+.show-actions{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.band-card{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px}.band-init{width:36px;height:36px;background:var(--gdim);border:1px solid rgba(200,169,110,.25);border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--gold);flex-shrink:0}.band-info{flex:1}.band-name{font-size:13px;font-weight:600}.band-un{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px}
+#rp-left{overflow-y:auto;background:var(--surface);border-right:1px solid var(--border);flex-shrink:0}#rp-left-inner{padding:16px}#rp-right{display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.rp-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--s2);flex-shrink:0}.rp-tab{flex:1;padding:11px 4px;text-align:center;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .12s}.rp-tab:hover{color:var(--text)}.rp-tab.active{color:var(--gold);border-bottom-color:var(--gold);background:var(--surface)}
+.rp-panel{display:none;flex:1;overflow:hidden;flex-direction:column}.rp-panel.active{display:flex}
+#rp-map-wrap{flex:1;position:relative;min-height:0}#rp-map{width:100%;height:100%}
+.spin-over{position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:5}.spin-over.show{display:flex}
+.spin{width:28px;height:28px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.spin-msg{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+#rp-drawer{background:rgba(8,8,8,.97);border-top:1px solid var(--border);max-height:48%;overflow-y:auto;padding:14px 16px;display:none;flex-shrink:0}#rp-drawer.open{display:block}
+.drawer-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.drawer-title{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.leg-card{background:var(--s2);border:1px solid var(--b2);border-radius:2px;padding:10px 13px;margin-bottom:6px}.leg-card.is-anchor{border-left:3px solid var(--gold)}.leg-card.is-dayoff{opacity:.5}.leg-date{font-family:var(--mono);font-size:8px;color:var(--gold);margin-bottom:3px}.leg-city{font-size:13px;font-weight:600}.leg-meta{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}.leg-note{font-size:11px;color:#777;margin-top:5px;font-style:italic}
+.result-panel{flex:1;overflow-y:auto;padding:18px}.panel-sec{margin-bottom:20px}.panel-sec-title{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.brow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}.brow:last-child{border:none}.brow.bold{font-weight:700}.brow.profit{color:var(--green);font-weight:700}.brow.loss{color:var(--red);font-weight:700}
+.tip-item{background:var(--s2);border:1px solid var(--b2);border-radius:2px;padding:8px 11px;font-size:12px;color:var(--muted);margin-bottom:6px}.tip-item::before{content:"→ ";color:var(--gold)}
+.venue-card{background:var(--s2);border:1px solid var(--b2);border-radius:2px;padding:13px;margin-bottom:10px}.venue-name{font-size:14px;font-weight:600;margin-bottom:5px}.venue-meta{font-size:11px;color:var(--muted);line-height:1.7}.venue-tip{font-size:11px;color:#777;margin-top:7px;border-top:1px solid var(--border);padding-top:7px}.venue-contact{font-size:11px;color:var(--gold);margin-top:5px}
+.deal-result{background:var(--s2);border:1px solid var(--b2);border-radius:2px;padding:16px}.deal-verdict{font-size:22px;font-weight:700;margin-bottom:6px;text-transform:capitalize}.deal-verdict.strong{color:var(--green)}.deal-verdict.fair{color:var(--gold)}.deal-verdict.low{color:orange}.deal-verdict.insulting{color:var(--red)}.dlist{padding:5px 0;font-size:12px;color:var(--muted)}.dlist::before{content:"• ";color:var(--gold)}
+#chat-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}#chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}.chat-msg{max-width:85%;padding:10px 13px;border-radius:3px;font-size:13px;line-height:1.55}.chat-msg.user{background:var(--gdim);border:1px solid rgba(200,169,110,.15);align-self:flex-end}.chat-msg.ai{background:var(--s2);border:1px solid var(--b2);align-self:flex-start}
+.typing{display:inline-flex;gap:4px;align-items:center}.typing span{width:5px;height:5px;background:var(--muted);border-radius:50%;animation:blink 1.2s infinite}.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+#chat-input-row{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0}#chat-inp{flex:1;background:var(--s2);border:1px solid var(--b2);color:var(--text);padding:9px 12px;font-size:13px;border-radius:2px;outline:none;font-family:var(--sans)}#chat-inp:focus{border-color:var(--gold)}
+.rp-sec{margin-bottom:18px}.rp-sec-title{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.anc-item{background:var(--s2);border:1px solid var(--b2);border-radius:2px;padding:9px 11px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:flex-start}.anc-city{font-size:13px;font-weight:600}.anc-meta{font-size:11px;color:var(--muted);margin-top:2px}.anc-rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:0 0 0 8px}.anc-rm:hover{color:var(--red)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--b2);border-radius:2px;padding:10px 16px;font-size:13px;z-index:300;opacity:0;transform:translateY(6px);transition:all .2s;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}.toast.ok{border-color:var(--green);color:#7dc890}.toast.err{border-color:var(--red);color:#e09090}
 </style>
 </head>
 <body>
-
 <div id="app">
-
-  <!-- SIDEBAR -->
-  <nav id="sidebar">
-    <div class="sidebar-logo">
-      <div class="wordmark">Melankolia</div>
-      <div class="sub">Tour Dashboard</div>
-    </div>
-    <div class="nav-section">
-      <div class="nav-label">Overview</div>
-      <div class="nav-item active" data-view="overview">
-        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2V2zm0 7h5v5H2V9zm7-7h5v5H9V2zm0 7h5v5H9V9z"/></svg>
-        Dashboard
+<nav id="sb">
+  <div class="sb-logo"><div class="wm">Melankolia</div><div class="sub">Internal Dashboard</div></div>
+  <div class="nav-g"><div class="nav-gl">Overview</div>
+    <div class="ni active" data-view="overview"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2V2zm7 0h5v5H9V2zM2 9h5v5H2V9zm7 0h5v5H9V9z"/></svg>Dashboard</div>
+  </div>
+  <div class="nav-g"><div class="nav-gl">Route Planner</div>
+    <div class="ni" data-view="route"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C5.2 1 3 3.2 3 6c0 3.8 5 9 5 9s5-5.2 5-9c0-2.8-2.2-5-5-5zm0 7a2 2 0 110-4 2 2 0 010 4z"/></svg>Tour Route Builder</div>
+  </div>
+  <div class="nav-g"><div class="nav-gl">Show Management</div>
+    <div class="ni" data-view="advancing"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM4 8a4 4 0 118 0 4 4 0 01-8 0zm4.5-2a.5.5 0 00-1 0v2.2l1.6 1.1a.5.5 0 00.5-.8L8.5 7.4V6z"/></svg>Advancing Center</div>
+    <div class="ni" data-view="tours"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 012.5 1h3A1.5 1.5 0 017 2.5v3A1.5 1.5 0 015.5 7h-3A1.5 1.5 0 011 5.5v-3zm8 0A1.5 1.5 0 0110.5 1h3A1.5 1.5 0 0115 2.5v3A1.5 1.5 0 0113.5 7h-3A1.5 1.5 0 019 5.5v-3zm-8 8A1.5 1.5 0 012.5 9h3A1.5 1.5 0 017 10.5v3A1.5 1.5 0 015.5 15h-3A1.5 1.5 0 011 13.5v-3zm8 0A1.5 1.5 0 0110.5 9h3A1.5 1.5 0 0115 10.5v3A1.5 1.5 0 0113.5 15h-3A1.5 1.5 0 019 13.5v-3z"/></svg>Tour Archive</div>
+    <div class="ni" data-view="bands"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zM2 14s-1 0-1-1 1-4 7-4 7 3 7 4-1 1-1 1H2z"/></svg>Bands &amp; Access</div>
+  </div>
+  <div class="sb-bot">melankoliaagency.com</div>
+</nav>
+<div id="main">
+  <div id="topbar"><div class="tb-title" id="tb-title">Dashboard</div><div class="tb-actions" id="tb-actions"></div></div>
+  <div id="cscroll">
+    <div class="view active" id="view-overview">
+      <div class="stats-row">
+        <div class="stat"><div class="stat-lbl">Active Tours</div><div class="stat-val" id="st-tours">—</div><div class="stat-sub" id="st-tours-s">loading</div></div>
+        <div class="stat"><div class="stat-lbl">Upcoming Shows</div><div class="stat-val" id="st-shows">—</div><div class="stat-sub">next 60 days</div></div>
+        <div class="stat"><div class="stat-lbl">Pending Advancing</div><div class="stat-val" id="st-pend">—</div><div class="stat-sub">needs action</div></div>
+        <div class="stat"><div class="stat-lbl">Band Portal Logins</div><div class="stat-val" id="st-bands">—</div><div class="stat-sub">active bands</div></div>
+      </div>
+      <div class="two-col">
+        <div class="card"><div class="card-hd"><div class="card-title">Shows This Week</div><button class="btn btn-ghost btn-sm" onclick="nav('advancing')">All Shows</button></div><div class="card-body" id="week-shows"></div></div>
+        <div class="card"><div class="card-hd"><div class="card-title">Recent Activity</div></div><div class="card-body" id="activity"></div></div>
       </div>
     </div>
-    <div class="nav-section">
-      <div class="nav-label">Tours</div>
-      <div class="nav-item" data-view="advancing">
-        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM3 8a5 5 0 1110 0A5 5 0 013 8zm4.5-2.5a.5.5 0 011 0V8l2.1 1.4a.5.5 0 01-.6.8L7.5 8.7A.5.5 0 017.5 8V5.5z"/></svg>
-        Advancing Center
+    <div class="view" id="view-advancing">
+      <div class="adv-filters">
+        <button class="fpill active" data-f="all">All Shows</button>
+        <button class="fpill" data-f="missing">Missing Advancing</button>
+        <button class="fpill" data-f="pending">Submitted</button>
+        <button class="fpill" data-f="approved">Approved</button>
+        <button class="fpill" data-f="published">Published to Band</button>
       </div>
-      <div class="nav-item" data-view="route-planner">
-        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C5.2 1 3 3.2 3 6c0 3.8 5 9 5 9s5-5.2 5-9c0-2.8-2.2-5-5-5zm0 7a2 2 0 110-4 2 2 0 010 4z"/></svg>
-        Route Planner
-      </div>
+      <div id="adv-list"></div>
     </div>
-    <div class="nav-section">
-      <div class="nav-label">Management</div>
-      <div class="nav-item" data-view="bands">
-        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zM2 14s-1 0-1-1 1-4 7-4 7 3 7 4-1 1-1 1H2z"/></svg>
-        Bands & Access
-      </div>
-      <div class="nav-item" data-view="tours">
-        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 012.5 1h3A1.5 1.5 0 017 2.5v3A1.5 1.5 0 015.5 7h-3A1.5 1.5 0 011 5.5v-3zm8 0A1.5 1.5 0 0110.5 1h3A1.5 1.5 0 0115 2.5v3A1.5 1.5 0 0113.5 7h-3A1.5 1.5 0 019 5.5v-3zm-8 8A1.5 1.5 0 012.5 9h3A1.5 1.5 0 017 10.5v3A1.5 1.5 0 015.5 15h-3A1.5 1.5 0 011 13.5v-3zm8 0A1.5 1.5 0 0110.5 9h3A1.5 1.5 0 0115 10.5v3A1.5 1.5 0 0113.5 15h-3A1.5 1.5 0 019 13.5v-3z"/></svg>
-        Tour Archive
-      </div>
-    </div>
-    <div class="sidebar-bottom">melankoliaagency.com</div>
-  </nav>
-
-  <!-- MAIN -->
-  <div id="main">
-    <div id="topbar">
-      <div class="topbar-title" id="topbar-title">Dashboard</div>
-      <div class="topbar-actions" id="topbar-actions"></div>
-    </div>
-
-    <!-- OVERVIEW VIEW -->
-    <div id="content">
-      <div class="view active" id="view-overview">
-        <div class="grid-3" style="margin-bottom:24px">
-          <div class="stat-tile">
-            <div class="stat-label">Active Tours</div>
-            <div class="stat-value" id="stat-tours">—</div>
-            <div class="stat-sub" id="stat-tours-sub">loading...</div>
-          </div>
-          <div class="stat-tile">
-            <div class="stat-label">Upcoming Shows</div>
-            <div class="stat-value" id="stat-shows">—</div>
-            <div class="stat-sub" id="stat-shows-sub">next 60 days</div>
-          </div>
-          <div class="stat-tile">
-            <div class="stat-label">Advancing Pending</div>
-            <div class="stat-value" id="stat-pending">—</div>
-            <div class="stat-sub">awaiting promoter or approval</div>
-          </div>
+    <div class="view" id="view-tours"><div id="tours-list"></div></div>
+    <div class="view" id="view-bands"><div id="bands-list"></div></div>
+  </div>
+  <div id="view-route">
+    <div id="rp-left"><div id="rp-left-inner">
+      <div class="rp-sec"><div class="rp-sec-title">Artist &amp; Tour</div><div class="fg">
+        <div class="fr">
+          <div class="field"><label>Artist</label><select id="rp-artist"><option value="">Select...</option><option>Automelodi</option><option>Bestial Mouths</option><option>Bootblacks</option><option>Zanias</option><option>Blood Handsome</option><option>Blood Rave</option><option>CD Ghost</option><option>Corbeau Hangs</option><option>Creux Lies</option><option>Dame Area</option><option>Daniel Myer</option><option>Die Sexual</option><option>Donzii</option><option>Jorge Elbrecht</option><option>Light Asylum</option><option>Male Tears</option><option>Mellow Code</option><option>Nox Novacula</option><option>Sacred Skin</option><option>Secret Attraction</option><option>Sleek Teeth</option><option>Some Ember</option><option>Street Fever</option><option>Topographies</option><option>XTR Human</option><option>Yama Uba</option></select></div>
+          <div class="field"><label>Region</label><select id="rp-region"><option value="Europe">Europe</option><option value="North America">North America</option><option value="UK">UK</option><option value="DACH">DACH</option><option value="Benelux">Benelux</option><option value="Scandinavia">Scandinavia</option><option value="Iberia">Iberia</option><option value="Latin America">Latin America</option></select></div>
         </div>
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">Recent Activity</div>
-            </div>
-            <div class="card-body" id="activity-feed">
-              <div class="empty-state"><p>Loading...</p></div>
+        <div class="fr">
+          <div class="field"><label>Start Date</label><input type="date" id="rp-start"></div>
+          <div class="field"><label>End Date</label><input type="date" id="rp-end"></div>
+        </div>
+        <div class="fr">
+          <div class="field"><label>Start City</label><input type="text" id="rp-scity" placeholder="e.g. Berlin"></div>
+          <div class="field"><label>End City (opt)</label><input type="text" id="rp-ecity" placeholder="e.g. Paris"></div>
+        </div>
+        <div class="fr">
+          <div class="field"><label>Target Shows</label><input type="number" id="rp-nshows" placeholder="8" min="2" max="30"></div>
+          <div class="field"><label>Deal Preference</label><select id="rp-deal"><option value="guarantee or best-of">Guarantee / Best-of</option><option value="guarantee">Guarantee only</option><option value="door deal">Door Deal</option><option value="revenue share">Revenue Share</option></select></div>
+        </div>
+        <div class="field"><label>Notes &amp; Preferences</label><textarea id="rp-notes" placeholder="Avoid Mondays, need Paris, warehouse venues preferred..."></textarea></div>
+        <div class="field"><label>Copy Route From Previous Tour</label><select id="rp-copy-tour"><option value="">— Start fresh —</option></select></div>
+      </div></div>
+      <div class="rp-sec"><div class="rp-sec-title">&#9875; Anchor Shows</div>
+        <div id="anc-list" style="margin-bottom:9px"></div>
+        <div class="fr" style="margin-bottom:7px">
+          <div class="field"><label>City</label><input type="text" id="anc-city" placeholder="Amsterdam"></div>
+          <div class="field"><label>Date</label><input type="date" id="anc-date"></div>
+        </div>
+        <div class="fr" style="margin-bottom:9px">
+          <div class="field"><label>Venue (opt)</label><input type="text" id="anc-venue" placeholder="Paradiso"></div>
+          <div class="field"><label>Deal (opt)</label><input type="text" id="anc-deal" placeholder="€800 guarantee"></div>
+        </div>
+        <button class="btn btn-ghost" onclick="addAnchor()" style="width:100%;margin-bottom:14px">+ Add Anchor Show</button>
+      </div>
+      <div class="rp-sec"><div class="rp-sec-title">Budget Inputs</div>
+        <div class="fr"><div class="field"><label>People on Tour</label><input type="number" id="b-people" value="4" min="1" max="10"></div><div class="field"><label>Avg Guarantee (€)</label><input type="number" id="b-guar" placeholder="800"></div></div>
+        <div class="fr" style="margin-top:10px"><div class="field"><label>Tour Support (€)</label><input type="number" id="b-support" placeholder="0"></div><div class="field"><label>Van Rental?</label><select id="b-van"><option value="false">No — own vehicle</option><option value="true">Yes — renting</option></select></div></div>
+      </div>
+      <div class="rp-sec"><div class="rp-sec-title">Venue Finder</div>
+        <div class="fr"><div class="field"><label>City</label><input type="text" id="v-city" placeholder="Hamburg"></div><div class="field"><label>Country</label><input type="text" id="v-country" placeholder="Germany"></div></div>
+        <div class="fr" style="margin-top:8px"><div class="field"><label>Genre Focus</label><input type="text" id="v-genre" value="darkwave/EBM/post-punk"></div><div class="field"><label>Capacity</label><input type="text" id="v-cap" placeholder="200-500"></div></div>
+        <button class="btn btn-ghost" onclick="findVenues()" style="width:100%;margin-top:9px">Find Venues in This City</button>
+      </div>
+      <div class="rp-sec"><div class="rp-sec-title">Deal Advisor</div><div class="fg">
+        <div class="fr"><div class="field"><label>Artist</label><input type="text" id="d-artist" placeholder="Bootblacks"></div><div class="field"><label>City</label><input type="text" id="d-city" placeholder="Berlin"></div></div>
+        <div class="fr"><div class="field"><label>Venue</label><input type="text" id="d-venue" placeholder="SO36"></div><div class="field"><label>Capacity</label><input type="number" id="d-cap" placeholder="500"></div></div>
+        <div class="fr"><div class="field"><label>Offer Type</label><select id="d-type"><option value="guarantee">Guarantee</option><option value="door">Door Deal</option><option value="best_of">Best-of</option></select></div><div class="field"><label>Offer Amount (€)</label><input type="number" id="d-amt" placeholder="600"></div></div>
+        <div class="field"><label>Artist Draw in This Market</label><select id="d-draw"><option value="unknown">Unknown / first time</option><option value="light (50-100 expected)">Light (50–100)</option><option value="moderate (100-200 expected)">Moderate (100–200)</option><option value="strong (200+ expected)">Strong (200+)</option><option value="sold out history">Sold Out History</option></select></div>
+        <button class="btn btn-ghost" onclick="adviseDeal()" style="width:100%">Evaluate This Deal</button>
+      </div></div>
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
+        <button class="btn btn-gold" onclick="generateRoute()" style="width:100%;padding:13px;margin-bottom:8px">&#9654; Generate Tour Route</button>
+        <button class="btn btn-ghost" onclick="clearAll()" style="width:100%">Clear Everything</button>
+      </div>
+      <div style="height:24px"></div>
+    </div></div>
+    <div id="rp-right">
+      <div class="rp-tabs">
+        <div class="rp-tab active" data-panel="map">Map + Route</div>
+        <div class="rp-tab" data-panel="budget">Budget</div>
+        <div class="rp-tab" data-panel="venues">Venues</div>
+        <div class="rp-tab" data-panel="deal">Deal Advisor</div>
+        <div class="rp-tab" data-panel="chat">AI Agent</div>
+      </div>
+      <div class="rp-panel active" id="panel-map">
+        <div id="rp-map-wrap">
+          <div id="rp-map"></div>
+          <div class="spin-over" id="rp-spin"><div class="spin"></div><div class="spin-msg" id="spin-msg">Generating route…</div></div>
+        </div>
+        <div id="rp-drawer">
+          <div class="drawer-hd">
+            <div class="drawer-title" id="drawer-title">Route Plan</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="analyzeAnchors()">Analyze Anchors</button>
+              <button class="btn btn-ghost btn-sm" onclick="openEmailModal()">Generate Venue Emails</button>
+              <button class="btn btn-gold btn-sm" onclick="saveRouteAsTour()">Save as Tour</button>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('rp-drawer').classList.remove('open')">Hide</button>
             </div>
           </div>
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">Shows This Week</div>
-              <button class="btn btn-outline" onclick="switchView('advancing')">View All</button>
-            </div>
-            <div class="card-body" id="shows-this-week">
-              <div class="empty-state"><p>Loading...</p></div>
-            </div>
-          </div>
+          <div id="drawer-legs"></div>
+          <div id="drawer-summary" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.7"></div>
         </div>
       </div>
-
-      <!-- ADVANCING CENTER VIEW -->
-      <div class="view" id="view-advancing">
-        <div class="adv-filters" id="adv-filters">
-          <button class="filter-pill active" data-filter="all">All Shows</button>
-          <button class="filter-pill" data-filter="missing">Missing Advancing</button>
-          <button class="filter-pill" data-filter="pending">Submitted</button>
-          <button class="filter-pill" data-filter="approved">Approved</button>
-          <button class="filter-pill" data-filter="published">Published</button>
-        </div>
-        <div id="adv-list"><div class="empty-state"><p>Loading shows...</p></div></div>
-      </div>
-
-      <!-- BANDS VIEW -->
-      <div class="view" id="view-bands">
-        <div id="bands-list"><div class="empty-state"><p>Loading...</p></div></div>
-      </div>
-
-      <!-- TOURS VIEW -->
-      <div class="view" id="view-tours">
-        <div id="tours-list"><div class="empty-state"><p>Loading...</p></div></div>
-      </div>
-    </div>
-
-    <!-- ROUTE PLANNER VIEW (full-screen, outside scroll container) -->
-    <div id="route-planner-view">
-      <div id="rp-panel">
-        <div class="rp-section">
-          <div class="rp-section-title">Artist & Tour</div>
-          <div class="form-grid">
-            <div class="field">
-              <label>Artist</label>
-              <select id="rp-artist">
-                <option value="">Select artist...</option>
-                <option>Automelodi</option><option>Bestial Mouths</option><option>Bootblacks</option>
-                <option>Zanias</option><option>Blood Handsome</option><option>Blood Rave</option>
-                <option>CD Ghost</option><option>Corbeau Hangs</option><option>Creux Lies</option>
-                <option>Dame Area</option><option>Daniel Myer</option><option>Die Sexual</option>
-                <option>Donzii</option><option>Jorge Elbrecht</option><option>Light Asylum</option>
-                <option>Male Tears</option><option>Mellow Code</option><option>Nox Novacula</option>
-                <option>Sacred Skin</option><option>Secret Attraction</option><option>Sleek Teeth</option>
-                <option>Some Ember</option><option>Street Fever</option><option>Topographies</option>
-                <option>XTR Human</option><option>Yama Uba</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Region</label>
-              <select id="rp-region">
-                <option value="Europe">Europe</option>
-                <option value="North America">North America</option>
-                <option value="UK">UK</option>
-                <option value="DACH">DACH (DE/AT/CH)</option>
-                <option value="Benelux">Benelux</option>
-                <option value="Scandinavia">Scandinavia</option>
-                <option value="Iberia">Iberia</option>
-                <option value="Latin America">Latin America</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <div class="field">
-                <label>Start Date</label>
-                <input type="date" id="rp-start-date">
-              </div>
-              <div class="field">
-                <label>End Date</label>
-                <input type="date" id="rp-end-date">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="field">
-                <label>Start City</label>
-                <input type="text" id="rp-start-city" placeholder="e.g. Berlin">
-              </div>
-              <div class="field">
-                <label>End City (opt)</label>
-                <input type="text" id="rp-end-city" placeholder="e.g. Paris">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="field">
-                <label>Target Shows</label>
-                <input type="number" id="rp-num-shows" placeholder="8" min="2" max="30">
-              </div>
-              <div class="field">
-                <label>Deal Type</label>
-                <select id="rp-deal-type">
-                  <option value="guarantee">Guarantee</option>
-                  <option value="guarantee or best-of">Guarantee / Best-of</option>
-                  <option value="door deal">Door Deal</option>
-                  <option value="revenue share">Revenue Share</option>
-                </select>
-              </div>
-            </div>
-            <div class="field">
-              <label>Notes / Preferences</label>
-              <textarea id="rp-notes" placeholder="e.g. avoid Mondays, prefer warehouse venues, need Paris..."></textarea>
-            </div>
+      <div class="rp-panel" id="panel-budget"><div class="result-panel" id="budget-content"><div class="empty">Generate a route first — budget auto-runs after.</div></div></div>
+      <div class="rp-panel" id="panel-venues"><div class="result-panel" id="venues-content"><div class="empty">Enter a city in Venue Finder on the left and click Find Venues.</div></div></div>
+      <div class="rp-panel" id="panel-deal"><div class="result-panel" id="deal-content"><div class="empty">Fill in Deal Advisor on the left and click Evaluate.</div></div></div>
+      <div class="rp-panel" id="panel-chat">
+        <div id="chat-panel">
+          <div id="chat-msgs">
+            <div class="chat-msg ai">Hey — I'm your booking agent AI. Ask me about routing, markets, guarantees, venue choices, day-of-week strategy, advancing timelines — anything. What are you working on?</div>
           </div>
-        </div>
-
-        <div class="rp-section">
-          <div class="rp-section-title">Anchor Shows <span style="color:var(--muted);font-weight:400">(optional)</span></div>
-          <div id="anchor-list" style="margin-bottom:10px"></div>
-          <div class="form-row" style="margin-bottom:8px">
-            <div class="field">
-              <label>City</label>
-              <input type="text" id="anc-city" placeholder="e.g. Amsterdam">
-            </div>
-            <div class="field">
-              <label>Date</label>
-              <input type="date" id="anc-date">
-            </div>
+          <div id="chat-input-row">
+            <input id="chat-inp" type="text" placeholder="Ask about routing, deals, markets, venues…">
+            <button class="btn btn-gold" onclick="sendChat()">Send</button>
           </div>
-          <div class="form-row" style="margin-bottom:10px">
-            <div class="field">
-              <label>Venue (opt)</label>
-              <input type="text" id="anc-venue" placeholder="e.g. Paradiso">
-            </div>
-            <div class="field">
-              <label>Deal (opt)</label>
-              <input type="text" id="anc-deal" placeholder="e.g. €800 guarantee">
-            </div>
-          </div>
-          <button class="btn btn-outline" onclick="addAnchor()" style="width:100%">+ Add Anchor</button>
-        </div>
-
-        <button class="btn btn-gold" onclick="generateRoute()" id="rp-generate-btn" style="width:100%;margin-bottom:12px;padding:12px">
-          Generate Tour Route
-        </button>
-        <button class="btn btn-outline" onclick="clearRoute()" style="width:100%">Clear</button>
-      </div>
-
-      <div id="rp-map-container">
-        <div id="rp-map"></div>
-        <div class="spinner-overlay" id="rp-spinner">
-          <div class="loading"></div>
-          <p id="rp-spinner-msg">Generating route...</p>
-        </div>
-        <div id="rp-results">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold)">Route Plan</div>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-outline" onclick="saveRouteAsTour()" id="rp-save-btn">Save as Tour</button>
-              <button class="btn btn-outline" onclick="document.getElementById('rp-results').style.display='none'">Hide</button>
-            </div>
-          </div>
-          <div id="rp-show-list"></div>
-          <div id="rp-ai-notes" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"></div>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<!-- CREATE TOUR MODAL -->
-<div class="modal-overlay" id="modal-create-tour">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">New Tour</div>
-      <button class="modal-close" onclick="closeModal('modal-create-tour')">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-grid">
-        <div class="field"><label>Tour Name</label><input type="text" id="ct-name" placeholder="e.g. Bootblacks EU Fall 2026"></div>
-        <div class="field"><label>Artist</label>
-          <select id="ct-band">
-            <option value="">Select band...</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <div class="field"><label>Start Date</label><input type="date" id="ct-start"></div>
-          <div class="field"><label>End Date</label><input type="date" id="ct-end"></div>
-        </div>
-        <div class="field"><label>Notes</label><textarea id="ct-notes" placeholder="Internal notes..."></textarea></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-create-tour')">Cancel</button>
-      <button class="btn btn-gold" onclick="createTour()">Create Tour</button>
+</div>
+<!-- MODALS -->
+<div class="mbg" id="m-tour"><div class="modal">
+  <div class="modal-hd"><div class="modal-title">New Tour</div><button class="modal-x" onclick="closeM('m-tour')">&#215;</button></div>
+  <div class="modal-body"><div class="fg">
+    <div class="field"><label>Tour Name</label><input type="text" id="ct-name" placeholder="Bootblacks EU Fall 2026"></div>
+    <div class="field"><label>Artist</label><select id="ct-band"><option value="">Select band...</option></select></div>
+    <div class="fr"><div class="field"><label>Start Date</label><input type="date" id="ct-start"></div><div class="field"><label>End Date</label><input type="date" id="ct-end"></div></div>
+    <div class="field"><label>Notes</label><textarea id="ct-notes" placeholder="Internal notes..."></textarea></div>
+  </div></div>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeM('m-tour')">Cancel</button><button class="btn btn-gold" onclick="createTour()">Create Tour</button></div>
+</div></div>
+<div class="mbg" id="m-show"><div class="modal">
+  <div class="modal-hd"><div class="modal-title">Add Show</div><button class="modal-x" onclick="closeM('m-show')">&#215;</button></div>
+  <div class="modal-body"><div class="fg">
+    <div class="fr"><div class="field"><label>Tour</label><select id="cs-tour"></select></div><div class="field"><label>Artist</label><select id="cs-band"></select></div></div>
+    <div class="fr"><div class="field"><label>Date</label><input type="date" id="cs-date"></div><div class="field"><label>City</label><input type="text" id="cs-city" placeholder="Berlin"></div></div>
+    <div class="fr"><div class="field"><label>Country</label><input type="text" id="cs-country" placeholder="Germany"></div><div class="field"><label>Capacity</label><input type="number" id="cs-cap" placeholder="300"></div></div>
+    <div class="field"><label>Venue Name</label><input type="text" id="cs-venue" placeholder="Berghain Kantine"></div>
+  </div></div>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeM('m-show')">Cancel</button><button class="btn btn-gold" onclick="createShow()">Add Show</button></div>
+</div></div>
+<div class="mbg" id="m-band"><div class="modal" style="width:420px">
+  <div class="modal-hd"><div class="modal-title">Add Band Access</div><button class="modal-x" onclick="closeM('m-band')">&#215;</button></div>
+  <div class="modal-body"><div class="fg">
+    <div class="field"><label>Band Name</label><input type="text" id="cb-name"></div>
+    <div class="field"><label>Username</label><input type="text" id="cb-user" autocapitalize="off" autocorrect="off"></div>
+    <div class="field"><label>Password</label><input type="text" id="cb-pw"></div>
+    <button class="btn btn-ghost" onclick="document.getElementById('cb-pw').value=genPw()" type="button">Generate Password</button>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted);padding:9px 11px;background:var(--s2);border-radius:2px">Band logs in at <span style="color:var(--gold)">melankoliaagency.com/band-app/</span></div>
+  </div></div>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeM('m-band')">Cancel</button><button class="btn btn-gold" onclick="createBand()">Create Access</button></div>
+</div></div>
+<div class="mbg" id="m-pw"><div class="modal" style="width:360px">
+  <div class="modal-hd"><div class="modal-title" id="m-pw-title">Reset Password</div><button class="modal-x" onclick="closeM('m-pw')">&#215;</button></div>
+  <div class="modal-body"><div class="fg">
+    <div class="field"><label>New Password</label><input type="text" id="rpw-val"></div>
+    <button class="btn btn-ghost" onclick="document.getElementById('rpw-val').value=genPw()" type="button">Generate</button>
+  </div></div>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeM('m-pw')">Cancel</button><button class="btn btn-gold" onclick="confirmPwReset()">Save</button></div>
+</div></div>
+<div class="mbg" id="m-email"><div class="modal" style="width:660px;max-width:96vw">
+  <div class="modal-hd"><div class="modal-title">Venue Outreach Emails</div><button class="modal-x" onclick="closeM('m-email')">&#215;</button></div>
+  <div class="modal-body">
+    <div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-bottom:12px;letter-spacing:.1em">Select a show leg to generate a branded venue outreach email.</div>
+    <div class="field" style="margin-bottom:14px"><label>Select Show / City</label><select id="email-leg-sel" onchange="previewEmail()"></select></div>
+    <div style="border:1px solid var(--b2);border-radius:2px;overflow:hidden">
+      <div style="background:var(--s2);padding:8px 12px;font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:.1em;border-bottom:1px solid var(--b2)">EMAIL PREVIEW</div>
+      <div id="email-preview" style="padding:16px;font-size:12px;line-height:1.7;color:var(--text);white-space:pre-wrap;max-height:320px;overflow-y:auto;font-family:Georgia,serif"></div>
     </div>
   </div>
-</div>
-
-<!-- CREATE SHOW MODAL -->
-<div class="modal-overlay" id="modal-create-show">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Add Show</div>
-      <button class="modal-close" onclick="closeModal('modal-create-show')">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-grid">
-        <div class="field"><label>Tour</label>
-          <select id="cs-tour"></select>
-        </div>
-        <div class="field"><label>Artist(s)</label>
-          <select id="cs-band"></select>
-        </div>
-        <div class="form-row">
-          <div class="field"><label>Date</label><input type="date" id="cs-date"></div>
-          <div class="field"><label>City</label><input type="text" id="cs-city" placeholder="Berlin"></div>
-        </div>
-        <div class="form-row">
-          <div class="field"><label>Country</label><input type="text" id="cs-country" placeholder="Germany"></div>
-          <div class="field"><label>Capacity</label><input type="number" id="cs-capacity" placeholder="300"></div>
-        </div>
-        <div class="field"><label>Venue Name</label><input type="text" id="cs-venue" placeholder="Berghain Kantine"></div>
-        <div class="field"><label>Promoter Email (optional)</label><input type="email" id="cs-promoter-email" placeholder="promoter@venue.com"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-create-show')">Cancel</button>
-      <button class="btn btn-gold" onclick="createShow()">Add Show</button>
-    </div>
+  <div class="modal-ft">
+    <button class="btn btn-ghost" onclick="closeM('m-email')">Close</button>
+    <button class="btn btn-ghost" onclick="copyEmailText()">Copy Text</button>
+    <button class="btn btn-gold" onclick="openInGmail()">Open in Gmail</button>
   </div>
-</div>
-
-<!-- CREATE BAND MODAL -->
-<div class="modal-overlay" id="modal-create-band">
-  <div class="modal" style="width:440px">
-    <div class="modal-header">
-      <div class="modal-title">Add Band Access</div>
-      <button class="modal-close" onclick="closeModal('modal-create-band')">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-grid">
-        <div class="field"><label>Band Name</label><input type="text" id="cb-name" placeholder="Bootblacks"></div>
-        <div class="field"><label>Username</label><input type="text" id="cb-username" placeholder="bootblacks" autocapitalize="off" autocorrect="off"></div>
-        <div class="field"><label>Password</label><input type="text" id="cb-password" placeholder="Generate or set manually"></div>
-        <button class="btn btn-outline" onclick="generatePassword()" type="button">Generate Password</button>
-      </div>
-      <div style="margin-top:14px;padding:10px 12px;background:var(--surface2);border-radius:2px;font-family:var(--mono);font-size:10px;color:var(--muted)">
-        Band logs in at <span style="color:var(--gold)">melankoliaagency.com/band-app/</span> with these credentials.
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-create-band')">Cancel</button>
-      <button class="btn btn-gold" onclick="createBand()">Create Access</button>
-    </div>
-  </div>
-</div>
-
-<!-- RESET PASSWORD MODAL -->
-<div class="modal-overlay" id="modal-reset-pw">
-  <div class="modal" style="width:380px">
-    <div class="modal-header">
-      <div class="modal-title">Reset Password</div>
-      <button class="modal-close" onclick="closeModal('modal-reset-pw')">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-grid">
-        <div class="field"><label>New Password</label><input type="text" id="rp-new-pw" placeholder=""></div>
-        <button class="btn btn-outline" onclick="document.getElementById('rp-new-pw').value = genPw()" type="button">Generate</button>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('modal-reset-pw')">Cancel</button>
-      <button class="btn btn-gold" onclick="confirmResetPw()">Save Password</button>
-    </div>
-  </div>
-</div>
-
+</div></div>
 <div class="toast" id="toast"></div>
-
 <script>
-const API = '/.netlify/functions/advancing-api';
-const MAPS_FN = '/.netlify/functions/maps-config';
-const AI_FN = '/.netlify/functions/ai-tour';
-const ADMIN_TOKEN = 'melankolia-agency-2025-internal';
+const API='/.netlify/functions/advancing-api';
+const AI='/.netlify/functions/ai-tour';
+const MAPS_FN='/.netlify/functions/maps-config';
+const TOK='melankolia-agency-2025-internal';
+let allShows=[],allTours=[],allBands=[];
+let advFilter='all';
+let anchors=[];
+let routeMap=null,rMarkers=[],rPolyline=null,generatedRoute=null;
+let chatHistory=[],pwResetTarget=null;
 
-// ── STATE ──
-let allShows = [], allTours = [], allBands = [];
-let advFilter = 'all';
-let anchorShows = [];
-let routeMap = null, routeMarkers = [], routePolyline = null;
-let generatedRoute = null;
-let resetPwTarget = null;
-
-// ── INIT ──
-document.addEventListener('DOMContentLoaded', () => {
-  setupNav();
-  setupFilters();
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.ni').forEach(el=>el.addEventListener('click',()=>nav(el.dataset.view)));
+  document.querySelectorAll('.rp-tab').forEach(el=>el.addEventListener('click',()=>switchTab(el.dataset.panel)));
+  document.querySelectorAll('.fpill').forEach(el=>el.addEventListener('click',()=>{
+    document.querySelectorAll('.fpill').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');advFilter=el.dataset.f;renderAdv();
+  }));
+  document.querySelectorAll('.mbg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open')}));
+  document.getElementById('chat-inp').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
   loadAll();
 });
 
-function setupNav() {
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => switchView(item.dataset.view));
-  });
-}
-
-function setupFilters() {
-  document.querySelectorAll('#adv-filters .filter-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      document.querySelectorAll('#adv-filters .filter-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      advFilter = pill.dataset.filter;
-      renderAdvancing();
-    });
-  });
-}
-
-async function loadAll() {
-  try {
-    const [toursRes, bandsRes, showsRes] = await Promise.all([
-      apiCall('agency_list_tours'),
-      apiCall('agency_list_bands'),
-      apiCall('agency_list_shows', { limit: 200 })
-    ]);
-    allTours = toursRes?.data || [];
-    allBands = bandsRes?.data || [];
-    allShows = showsRes?.data || [];
-    renderOverview();
-    renderAdvancing();
-    renderBands();
-    renderTours();
-    populateBandDropdowns();
-  } catch(e) {
-    toast('Failed to load data: ' + e.message, 'error');
-  }
-}
-
-// ── API ──
-async function apiCall(action, params = {}) {
-  const res = await fetch(API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Agency-Token': ADMIN_TOKEN },
-    body: JSON.stringify({ action, ...params })
-  });
-  const json = await res.json();
-  if (!json.success) throw new Error(json.error || 'API error');
-  return json;
-}
-
-// ── VIEWS ──
-function switchView(view) {
-  document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.view === view));
-
-  // Toggle main content vs route planner
-  const content = document.getElementById('content');
-  const rpView = document.getElementById('route-planner-view');
-
-  if (view === 'route-planner') {
-    content.style.display = 'none';
-    rpView.classList.add('active');
-    document.getElementById('topbar-title').textContent = 'Route Planner';
-    setTopbarActions(`<button class="btn btn-gold" onclick="document.getElementById('modal-create-tour').classList.add('open')">New Tour from Route</button>`);
+function nav(view){
+  document.querySelectorAll('.ni').forEach(i=>i.classList.toggle('active',i.dataset.view===view));
+  const cs=document.getElementById('cscroll'),rp=document.getElementById('view-route');
+  const titles={overview:'Dashboard',route:'Tour Route Builder',advancing:'Advancing Center',tours:'Tour Archive',bands:'Bands & Access'};
+  document.getElementById('tb-title').textContent=titles[view]||view;
+  if(view==='route'){
+    cs.style.display='none';rp.classList.add('active');
+    document.getElementById('tb-actions').innerHTML='<button class="btn btn-ghost btn-sm" onclick="clearAll()">Clear</button>';
     initMap();
   } else {
-    content.style.display = '';
-    rpView.classList.remove('active');
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-' + view)?.classList.add('active');
-
-    const titles = { overview: 'Dashboard', advancing: 'Advancing Center', bands: 'Bands & Access', tours: 'Tour Archive' };
-    document.getElementById('topbar-title').textContent = titles[view] || view;
-    updateTopbarActions(view);
+    cs.style.display='';rp.classList.remove('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+view)?.classList.add('active');
+    const acts={overview:'',advancing:'<button class="btn btn-gold" onclick="openAddShow()">+ Add Show</button>',tours:'<button class="btn btn-gold" onclick="openCreateTour()">+ New Tour</button>',bands:'<button class="btn btn-gold" onclick="openCreateBand()">+ Add Band</button>'};
+    document.getElementById('tb-actions').innerHTML=acts[view]||'';
   }
 }
 
-function setTopbarActions(html) {
-  document.getElementById('topbar-actions').innerHTML = html;
+async function loadAll(){
+  try{
+    const [tr,ba,sh]=await Promise.all([apiCall('agency_list_tours'),apiCall('agency_list_bands'),apiCall('agency_list_shows',{limit:300})]);
+    allTours=tr?.data||[];allBands=ba?.data||[];allShows=sh?.data||[];
+    renderOverview();renderAdv();renderBands();renderTours();populateDropdowns();populateCopyTourDropdown();
+  }catch(e){toast('Load error: '+e.message,'err');}
+}
+async function apiCall(action,params={}){
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','X-Agency-Token':TOK},body:JSON.stringify({action,...params})});
+  const j=await r.json();if(!j.success)throw new Error(j.error||'API error');return j;
+}
+async function aiCall(action,data){
+  const r=await fetch(AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,data})});
+  const j=await r.json();if(j.error)throw new Error(j.error);return j.data;
 }
 
-function updateTopbarActions(view) {
-  const actions = {
-    overview: '',
-    advancing: `<button class="btn btn-gold" onclick="openCreateShow()">+ Add Show</button>`,
-    bands: `<button class="btn btn-gold" onclick="openCreateBand()">+ Add Band</button>`,
-    tours: `<button class="btn btn-gold" onclick="openCreateTour()">+ New Tour</button>`
-  };
-  setTopbarActions(actions[view] || '');
+function renderOverview(){
+  const now=new Date(),in60=new Date(now.getTime()+60*864e5);
+  const upcoming=allShows.filter(s=>{const d=new Date(s.date);return d>=now&&d<=in60;});
+  const pending=allShows.filter(s=>!s.sheet_status||s.sheet_status==='missing'||s.sheet_status==='pending');
+  document.getElementById('st-tours').textContent=allTours.filter(t=>!t.archived).length;
+  document.getElementById('st-tours-s').textContent=allTours.length+' total';
+  document.getElementById('st-shows').textContent=upcoming.length;
+  document.getElementById('st-pend').textContent=pending.length;
+  document.getElementById('st-bands').textContent=allBands.length;
+  const weekEnd=new Date(now.getTime()+7*864e5);
+  const week=allShows.filter(s=>{const d=new Date(s.date);return d>=now&&d<=weekEnd;}).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  document.getElementById('week-shows').innerHTML=week.length?week.map(s=>'<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-family:var(--mono);font-size:9px;color:var(--gold);min-width:60px">'+fd(s.date)+'</div><div style="flex:1"><div style="font-size:12px;font-weight:600">'+esc(s.venue_name||'TBD')+'</div><div style="font-size:11px;color:var(--muted)">'+esc(s.city)+' · '+esc(bandName(s.band_ids))+'</div></div>'+sBadge(s.sheet_status)+'</div>').join(''):'<div class="empty">No shows this week</div>';
+  const recent=[...allShows].sort((a,b)=>new Date(b.updated_date||b.created_date)-new Date(a.updated_date||a.created_date)).slice(0,7);
+  document.getElementById('activity').innerHTML=recent.map(s=>'<div style="display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start"><div style="width:6px;height:6px;border-radius:50%;background:'+sColor(s.sheet_status)+';flex-shrink:0;margin-top:4px"></div><div><div style="font-size:12px">'+esc(s.venue_name||'Show')+' · '+esc(s.city)+'</div><div style="font-size:11px;color:var(--muted)">'+fd(s.date)+' · '+sLabel(s.sheet_status)+'</div></div></div>').join('')||'<div class="empty">No activity yet</div>';
 }
 
-// ── OVERVIEW ──
-function renderOverview() {
-  const now = new Date();
-  const in60 = new Date(now.getTime() + 60 * 86400000);
-  const upcoming = allShows.filter(s => { const d = new Date(s.date); return d >= now && d <= in60; });
-  const pending = allShows.filter(s => !s.sheet_status || s.sheet_status === 'missing' || s.sheet_status === 'pending');
-  const activeTours = allTours.filter(t => !t.archived);
-
-  document.getElementById('stat-tours').textContent = activeTours.length;
-  document.getElementById('stat-tours-sub').textContent = `${allTours.length} total tours`;
-  document.getElementById('stat-shows').textContent = upcoming.length;
-  document.getElementById('stat-pending').textContent = pending.length;
-
-  // This week
-  const weekEnd = new Date(now.getTime() + 7 * 86400000);
-  const thisWeek = allShows.filter(s => { const d = new Date(s.date); return d >= now && d <= weekEnd; })
-    .sort((a,b) => new Date(a.date) - new Date(b.date));
-
-  const weekEl = document.getElementById('shows-this-week');
-  if (thisWeek.length === 0) {
-    weekEl.innerHTML = '<div class="empty-state"><p>No shows this week</p></div>';
-  } else {
-    weekEl.innerHTML = thisWeek.map(s => `
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-        <div style="font-family:var(--mono);font-size:9px;color:var(--gold);min-width:64px">${fmtDate(s.date)}</div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:600">${esc(s.venue_name||'TBD')}</div>
-          <div style="font-size:11px;color:var(--muted)">${esc(s.city)}, ${esc(s.country||'')} · ${esc(getBandName(s.band_ids))}</div>
-        </div>
-        ${statusBadge(s.sheet_status)}
-      </div>
-    `).join('');
-  }
-
-  // Activity feed
-  const recent = [...allShows].sort((a,b) => new Date(b.updated_date||b.created_date) - new Date(a.updated_date||a.created_date)).slice(0, 6);
-  const actEl = document.getElementById('activity-feed');
-  actEl.innerHTML = recent.map(s => `
-    <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);align-items:center">
-      <div style="width:6px;height:6px;border-radius:50%;background:${statusColor(s.sheet_status)};flex-shrink:0;margin-top:3px"></div>
-      <div>
-        <div style="font-size:12px">${esc(s.venue_name||'Show')} · ${esc(s.city)}</div>
-        <div style="font-size:11px;color:var(--muted)">${fmtDate(s.date)} · ${statusLabel(s.sheet_status)}</div>
-      </div>
-    </div>
-  `).join('') || '<div class="empty-state"><p>No activity yet</p></div>';
+function renderAdv(){
+  const f=advFilter==='all'?allShows:allShows.filter(s=>advFilter==='missing'?(!s.sheet_status||s.sheet_status==='missing'):s.sheet_status===advFilter);
+  const sorted=[...f].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const el=document.getElementById('adv-list');
+  if(!sorted.length){el.innerHTML='<div class="empty">No shows in this filter</div>';return;}
+  el.innerHTML=sorted.map(s=>'<div class="show-row"><div class="show-hd" onclick="this.nextElementSibling.classList.toggle(\'open\')"><div class="show-date">'+fd(s.date)+'</div><div style="flex:1"><div class="show-ven">'+esc(s.venue_name||'TBD')+'</div><div class="show-city">'+esc(s.city)+', '+esc(s.country||'')+'</div></div><div class="show-band">'+esc(bandName(s.band_ids))+'</div><div>'+sBadge(s.sheet_status)+'</div></div><div class="show-body">'+(s.promoter_token?'<div class="link-box"><span style="color:var(--muted);font-size:8px;min-width:90px">PROMOTER LINK</span><span class="link-url">'+location.origin+'/advancing/'+s.promoter_token+'</span><button class="copy-btn" onclick="copyTxt(\''+location.origin+'/advancing/'+s.promoter_token+'\')">Copy</button></div>':'')+'<div class="show-actions">'+(!s.promoter_token?'<button class="btn btn-ghost btn-sm" onclick="regenLink(\''+s.id+'\')">Generate Link</button>':'')+(s.promoter_token?'<button class="btn btn-ghost btn-sm" onclick="copyTxt(\''+location.origin+'/advancing/'+s.promoter_token+'\')">Copy Link</button><button class="btn btn-ghost btn-sm" onclick="emailPromoter(\''+s.id+'\')">Email Promoter</button><button class="btn btn-ghost btn-sm" onclick="regenLink(\''+s.id+'\')">Regen Link</button>':'')+(s.sheet_status==='pending'?'<button class="btn btn-gold btn-sm" onclick="publishSheet(\''+s.id+'\')">Approve &amp; Publish to Band</button>':'')+((s.sheet_status==='approved'||s.sheet_status==='published')?'<button class="btn btn-ghost btn-sm" onclick="window.open(\'/advancing/'+s.promoter_token+'\',\'_blank\')">View Sheet</button>':'')+'</div></div></div>').join('');
 }
+async function regenLink(id){try{const r=await apiCall('agency_regenerate_promoter_link',{show_id:id});const s=allShows.find(x=>x.id===id);if(s)s.promoter_token=r.data.token;renderAdv();toast('New promoter link ready','ok');}catch(e){toast(e.message,'err');}}
+async function publishSheet(id){try{await apiCall('agency_publish_sheet',{show_id:id});const s=allShows.find(x=>x.id===id);if(s)s.sheet_status='published';renderAdv();renderOverview();toast('Published to band app','ok');}catch(e){toast(e.message,'err');}}
+function emailPromoter(id){const s=allShows.find(x=>x.id===id);if(!s)return;const link=location.origin+'/advancing/'+s.promoter_token;const sub=encodeURIComponent('Advancing: '+(s.venue_name||'Show')+' – '+fdLong(s.date));const body=encodeURIComponent('Hi,\n\nPlease submit your advancing details using the link below:\n\n'+link+'\n\nThanks,\nMelankolia Agency\nbooking@melankoliaagency.com');window.open('mailto:?subject='+sub+'&body='+body);}
 
-// ── ADVANCING CENTER ──
-function renderAdvancing() {
-  const filtered = advFilter === 'all' ? allShows :
-    allShows.filter(s => {
-      if (advFilter === 'missing') return !s.sheet_status || s.sheet_status === 'missing';
-      return s.sheet_status === advFilter;
-    });
-  const sorted = [...filtered].sort((a,b) => new Date(a.date) - new Date(b.date));
-
-  const el = document.getElementById('adv-list');
-  if (sorted.length === 0) {
-    el.innerHTML = `<div class="empty-state"><p>No shows in this filter</p><small>Add shows with the button above</small></div>`;
-    return;
-  }
-
-  el.innerHTML = sorted.map(s => `
-    <div class="adv-show-row" id="adv-row-${s.id}">
-      <div class="adv-show-header" onclick="toggleAdvRow('${s.id}')">
-        <div class="adv-show-date">${fmtDate(s.date)}</div>
-        <div style="flex:1">
-          <div class="adv-show-venue">${esc(s.venue_name||'TBD')}</div>
-          <div class="adv-show-city">${esc(s.city)}, ${esc(s.country||'')}</div>
-        </div>
-        <div class="adv-show-band">${esc(getBandName(s.band_ids))}</div>
-        <div class="adv-show-status">${statusBadge(s.sheet_status)}</div>
-      </div>
-      <div class="adv-show-body" id="adv-body-${s.id}">
-        ${s.promoter_token ? `
-          <div class="link-box">
-            <span style="color:var(--muted);font-size:9px">PROMOTER LINK</span>
-            <span class="link-url">${window.location.origin}/advancing/${s.promoter_token}</span>
-            <button class="link-copy" onclick="copyLink('${window.location.origin}/advancing/${s.promoter_token}')">Copy</button>
-          </div>` : ''}
-        <div class="adv-actions">
-          ${!s.promoter_token ? `<button class="btn btn-outline" onclick="regenLink('${s.id}')">Generate Promoter Link</button>` : ''}
-          ${s.promoter_token ? `<button class="btn btn-outline" onclick="copyLink('${window.location.origin}/advancing/${s.promoter_token}')">Copy Promoter Link</button>
-            <button class="btn btn-outline" onclick="emailPromoter('${s.id}')">Email Promoter</button>` : ''}
-          ${s.sheet_status === 'pending' ? `<button class="btn btn-gold" onclick="approveSheet('${s.id}')">Approve & Publish to Band</button>` : ''}
-          ${s.sheet_status === 'approved' || s.sheet_status === 'published' ? `<button class="btn btn-outline" onclick="viewSheet('${s.id}')">View Advancing Sheet</button>` : ''}
-          <button class="btn btn-outline" onclick="regenLink('${s.id}')">Regen Link</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function toggleAdvRow(id) {
-  const body = document.getElementById('adv-body-' + id);
-  body.classList.toggle('open');
-}
-
-async function regenLink(showId) {
-  try {
-    const r = await apiCall('agency_regenerate_promoter_link', { show_id: showId });
-    const show = allShows.find(s => s.id === showId);
-    if (show) show.promoter_token = r.data.token;
-    renderAdvancing();
-    toast('New promoter link generated', 'success');
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-async function approveSheet(showId) {
-  try {
-    await apiCall('agency_publish_sheet', { show_id: showId });
-    const show = allShows.find(s => s.id === showId);
-    if (show) show.sheet_status = 'published';
-    renderAdvancing();
-    renderOverview();
-    toast('Sheet approved and published to band app', 'success');
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-async function viewSheet(showId) {
-  const show = allShows.find(s => s.id === showId);
-  if (!show) return;
-  window.open(`/advancing/${show.promoter_token}`, '_blank');
-}
-
-function emailPromoter(showId) {
-  const show = allShows.find(s => s.id === showId);
-  if (!show) return;
-  const link = `${window.location.origin}/advancing/${show.promoter_token}`;
-  const subject = encodeURIComponent(`Advancing: ${show.venue_name || 'Show'} – ${fmtDateLong(show.date)}`);
-  const body = encodeURIComponent(`Hi,\n\nPlease submit your advancing details for the upcoming show using the link below:\n\n${link}\n\nThis link is unique to your show. Please fill in all sections including schedule, backline, contacts, and settlement info.\n\nThanks,\nMelankolia Agency`);
-  window.open(`mailto:?subject=${subject}&body=${body}`);
-}
-
-function copyLink(url) {
-  navigator.clipboard.writeText(url).then(() => toast('Link copied', 'success'));
-}
-
-// ── BANDS ──
-function renderBands() {
-  const el = document.getElementById('bands-list');
-  if (allBands.length === 0) {
-    el.innerHTML = `<div class="empty-state"><p>No bands yet</p><small>Add band access with the button above</small></div>`;
-    return;
-  }
-  el.innerHTML = allBands.map(b => `
-    <div class="band-card">
-      <div class="band-initial">${(b.name||'?')[0].toUpperCase()}</div>
-      <div class="band-info">
-        <div class="band-name">${esc(b.name)}</div>
-        <div class="band-username">username: ${esc(b.username)} · band-app login</div>
-      </div>
-      <div class="band-actions">
-        <button class="btn btn-outline" onclick="openResetPw('${b.id}', '${esc(b.name)}')">Reset PW</button>
-        <button class="btn btn-danger" onclick="deleteBand('${b.id}', '${esc(b.name)}')">Remove</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function openCreateBand() {
-  document.getElementById('cb-name').value = '';
-  document.getElementById('cb-username').value = '';
-  document.getElementById('cb-password').value = genPw();
-  document.getElementById('modal-create-band').classList.add('open');
-}
-
-function generatePassword() {
-  document.getElementById('cb-password').value = genPw();
-}
-
-function genPw() {
-  const w = ['dark','wave','post','punk','ebm','cold','black','nox','void','ash','dusk','veil','echo'];
-  const n = Math.floor(Math.random()*900)+100;
-  return w[Math.floor(Math.random()*w.length)] + w[Math.floor(Math.random()*w.length)] + n;
-}
-
-async function createBand() {
-  const name = document.getElementById('cb-name').value.trim();
-  const username = document.getElementById('cb-username').value.trim().toLowerCase().replace(/\s+/g,'-');
-  const password = document.getElementById('cb-password').value.trim();
-  if (!name || !username || !password) return toast('Fill in all fields', 'error');
-  try {
-    const r = await apiCall('agency_create_band', { name, username, password });
-    allBands.push({ id: r.data.band_id, name, username });
-    renderBands();
-    closeModal('modal-create-band');
-    toast(`${name} can now log in at melankoliaagency.com/band-app/`, 'success');
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-function openResetPw(bandId, bandName) {
-  resetPwTarget = bandId;
-  document.getElementById('rp-new-pw').value = genPw();
-  document.getElementById('modal-reset-pw').querySelector('.modal-title').textContent = `Reset PW — ${bandName}`;
-  document.getElementById('modal-reset-pw').classList.add('open');
-}
-
-async function confirmResetPw() {
-  const pw = document.getElementById('rp-new-pw').value.trim();
-  if (!pw) return toast('Enter a password', 'error');
-  try {
-    await apiCall('agency_update_band_password', { band_id: resetPwTarget, new_password: pw });
-    closeModal('modal-reset-pw');
-    toast('Password updated', 'success');
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-async function deleteBand(bandId, name) {
-  if (!confirm(`Remove ${name}'s access? They will no longer be able to log in.`)) return;
-  try {
-    await apiCall('agency_delete_band', { band_id: bandId });
-    allBands = allBands.filter(b => b.id !== bandId);
-    renderBands();
-    toast(`${name} removed`, 'success');
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-// ── TOURS ──
-function renderTours() {
-  const el = document.getElementById('tours-list');
-  if (allTours.length === 0) {
-    el.innerHTML = `<div class="empty-state"><p>No tours yet</p><small>Create a tour to start organizing shows</small></div>`;
-    return;
-  }
-  el.innerHTML = allTours.map(t => {
-    const shows = allShows.filter(s => s.tour_id === t.id);
-    const band = allBands.find(b => b.id === t.band_id);
-    return `
-    <div class="card" style="margin-bottom:12px">
-      <div class="card-header">
-        <div>
-          <div class="card-title">${esc(t.name)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">${band?.name||'—'} · ${fmtDate(t.start_date)} – ${fmtDate(t.end_date)} · ${shows.length} shows</div>
-        </div>
-        <button class="btn btn-outline" onclick="openCreateShow('${t.id}')">+ Add Show</button>
-      </div>
-      <div class="card-body">
-        ${shows.length === 0 ? '<div style="color:var(--muted);font-size:12px">No shows yet</div>' :
-          `<table class="tbl">
-            <thead><tr><th>Date</th><th>Venue</th><th>City</th><th>Status</th><th></th></tr></thead>
-            <tbody>${shows.sort((a,b)=>new Date(a.date)-new Date(b.date)).map(s=>`
-              <tr>
-                <td style="font-family:var(--mono);font-size:10px;color:var(--gold)">${fmtDate(s.date)}</td>
-                <td>${esc(s.venue_name||'TBD')}</td>
-                <td style="color:var(--muted)">${esc(s.city)}, ${esc(s.country||'')}</td>
-                <td>${statusBadge(s.sheet_status)}</td>
-                <td>
-                  <div class="tbl-actions">
-                    ${s.promoter_token ? `<button class="btn btn-outline" style="font-size:8px;padding:4px 8px" onclick="copyLink('${window.location.origin}/advancing/${s.promoter_token}')">Copy Link</button>` : `<button class="btn btn-outline" style="font-size:8px;padding:4px 8px" onclick="regenLink('${s.id}')">Get Link</button>`}
-                  </div>
-                </td>
-              </tr>
-            `).join('')}</tbody>
-          </table>`}
-      </div>
-    </div>`;
+function renderTours(){
+  const el=document.getElementById('tours-list');
+  if(!allTours.length){el.innerHTML='<div class="empty">No tours yet — create one or generate a route and save it</div>';return;}
+  el.innerHTML=allTours.map(t=>{
+    const shows=allShows.filter(s=>s.tour_id===t.id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const band=allBands.find(b=>b.id===t.band_id);
+    return '<div class="card" style="margin-bottom:14px"><div class="card-hd"><div><div class="card-title">'+esc(t.name)+'</div><div style="font-size:11px;color:var(--muted);margin-top:3px">'+(band?.name||'—')+' · '+fd(t.start_date)+' – '+fd(t.end_date)+' · '+shows.length+' shows</div></div><button class="btn btn-ghost btn-sm" onclick="openAddShow(\''+t.id+'\')">+ Add Show</button></div><div class="card-body">'+(shows.length?'<table class="tbl"><thead><tr><th>Date</th><th>Venue</th><th>City</th><th>Status</th><th></th></tr></thead><tbody>'+shows.map(s=>'<tr><td style="font-family:var(--mono);font-size:9px;color:var(--gold)">'+fd(s.date)+'</td><td>'+esc(s.venue_name||'TBD')+'</td><td style="color:var(--muted)">'+esc(s.city)+', '+esc(s.country||'')+'</td><td>'+sBadge(s.sheet_status)+'</td><td>'+(s.promoter_token?'<button class="btn btn-ghost btn-sm" onclick="copyTxt(\''+location.origin+'/advancing/'+s.promoter_token+'\')">Copy Link</button>':'<button class="btn btn-ghost btn-sm" onclick="regenLink(\''+s.id+'\')">Get Link</button>')+'</td></tr>').join('')+'</tbody></table>':'<div style="color:var(--muted);font-size:12px">No shows yet</div>')+'</div></div>';
   }).join('');
 }
 
-// ── CREATE TOUR ──
-function openCreateTour() {
-  document.getElementById('ct-name').value = '';
-  document.getElementById('ct-start').value = '';
-  document.getElementById('ct-end').value = '';
-  document.getElementById('ct-notes').value = '';
-  document.getElementById('modal-create-tour').classList.add('open');
+function renderBands(){
+  const el=document.getElementById('bands-list');
+  if(!allBands.length){el.innerHTML='<div class="empty">No bands yet — add portal access above</div>';return;}
+  el.innerHTML=allBands.map(b=>'<div class="band-card"><div class="band-init">'+(b.name||'?')[0].toUpperCase()+'</div><div class="band-info"><div class="band-name">'+esc(b.name)+'</div><div class="band-un">login: '+esc(b.username)+'</div></div><div style="display:flex;gap:7px"><button class="btn btn-ghost btn-sm" onclick="openResetPw(\''+b.id+'\',\''+esc(b.name)+'\')">Reset PW</button><button class="btn btn-danger btn-sm" onclick="deleteBand(\''+b.id+'\',\''+esc(b.name)+'\')">Remove</button></div></div>').join('');
 }
 
-async function createTour() {
-  const name = document.getElementById('ct-name').value.trim();
-  const band_id = document.getElementById('ct-band').value;
-  const start_date = document.getElementById('ct-start').value;
-  const end_date = document.getElementById('ct-end').value;
-  if (!name || !band_id) return toast('Name and artist required', 'error');
-  try {
-    const r = await apiCall('agency_create_tour', { name, band_id, start_date, end_date });
-    allTours.push({ id: r.data.tour_id, name, band_id, start_date, end_date });
-    renderTours();
-    renderOverview();
-    closeModal('modal-create-tour');
-    toast('Tour created', 'success');
-  } catch(e) { toast(e.message, 'error'); }
+function openCreateTour(){document.getElementById('ct-name').value='';document.getElementById('ct-start').value='';document.getElementById('ct-end').value='';document.getElementById('ct-notes').value='';openM('m-tour');}
+async function createTour(){
+  const name=document.getElementById('ct-name').value.trim(),band_id=document.getElementById('ct-band').value,start_date=document.getElementById('ct-start').value,end_date=document.getElementById('ct-end').value;
+  if(!name||!band_id)return toast('Name + artist required','err');
+  try{const r=await apiCall('agency_create_tour',{name,band_id,start_date,end_date});allTours.push({id:r.data.tour_id,name,band_id,start_date,end_date});renderTours();renderOverview();populateCopyTourDropdown();closeM('m-tour');toast('Tour created','ok');}catch(e){toast(e.message,'err');}
+}
+function openAddShow(tourId=''){
+  document.getElementById('cs-date').value='';document.getElementById('cs-city').value='';document.getElementById('cs-country').value='';document.getElementById('cs-venue').value='';document.getElementById('cs-cap').value='';
+  document.getElementById('cs-tour').innerHTML=allTours.map(t=>'<option value="'+t.id+'"'+(t.id===tourId?' selected':'')+'>'+esc(t.name)+'</option>').join('');
+  openM('m-show');
+}
+async function createShow(){
+  const tour_id=document.getElementById('cs-tour').value,band_id=document.getElementById('cs-band').value,date=document.getElementById('cs-date').value,city=document.getElementById('cs-city').value.trim(),country=document.getElementById('cs-country').value.trim(),venue_name=document.getElementById('cs-venue').value.trim(),capacity=parseInt(document.getElementById('cs-cap').value)||0;
+  if(!tour_id||!date||!city)return toast('Tour, date, city required','err');
+  try{const r=await apiCall('agency_create_show',{tour_id,band_ids:band_id?[band_id]:[],date,city,country,venue_name,capacity});allShows.push({id:r.data.show_id,tour_id,band_ids:band_id?[band_id]:[],date,city,country,venue_name,capacity,promoter_token:r.data.token,sheet_status:'missing'});renderAdv();renderTours();renderOverview();closeM('m-show');toast('Show added','ok');}catch(e){toast(e.message,'err');}
 }
 
-// ── CREATE SHOW ──
-function openCreateShow(tourId = '') {
-  document.getElementById('cs-date').value = '';
-  document.getElementById('cs-city').value = '';
-  document.getElementById('cs-country').value = '';
-  document.getElementById('cs-venue').value = '';
-  document.getElementById('cs-capacity').value = '';
-  document.getElementById('cs-promoter-email').value = '';
-  // Populate tour dropdown
-  const tourSel = document.getElementById('cs-tour');
-  tourSel.innerHTML = allTours.map(t => `<option value="${t.id}" ${t.id===tourId?'selected':''}>${esc(t.name)}</option>`).join('');
-  document.getElementById('modal-create-show').classList.add('open');
+function openCreateBand(){document.getElementById('cb-name').value='';document.getElementById('cb-user').value='';document.getElementById('cb-pw').value=genPw();openM('m-band');}
+async function createBand(){
+  const name=document.getElementById('cb-name').value.trim(),username=document.getElementById('cb-user').value.trim().toLowerCase().replace(/\s+/g,'-'),password=document.getElementById('cb-pw').value.trim();
+  if(!name||!username||!password)return toast('Fill all fields','err');
+  try{const r=await apiCall('agency_create_band',{name,username,password});allBands.push({id:r.data.band_id,name,username});renderBands();populateDropdowns();closeM('m-band');toast(name+' access created','ok');}catch(e){toast(e.message,'err');}
+}
+function openResetPw(id,name){pwResetTarget=id;document.getElementById('m-pw-title').textContent='Reset PW — '+name;document.getElementById('rpw-val').value=genPw();openM('m-pw');}
+async function confirmPwReset(){const pw=document.getElementById('rpw-val').value.trim();if(!pw)return;try{await apiCall('agency_update_band_password',{band_id:pwResetTarget,new_password:pw});closeM('m-pw');toast('Password updated','ok');}catch(e){toast(e.message,'err');}}
+async function deleteBand(id,name){if(!confirm('Remove '+name+'? They lose band portal access.'))return;try{await apiCall('agency_delete_band',{band_id:id});allBands=allBands.filter(b=>b.id!==id);renderBands();toast(name+' removed','ok');}catch(e){toast(e.message,'err');}}
+
+function switchTab(panel){
+  document.querySelectorAll('.rp-tab').forEach(t=>t.classList.toggle('active',t.dataset.panel===panel));
+  document.querySelectorAll('.rp-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+panel));
+}
+async function initMap(){
+  if(routeMap)return;
+  try{
+    const cfg=await(await fetch(MAPS_FN)).json();
+    await loadScript('https://maps.googleapis.com/maps/api/js?key='+cfg.key+'&libraries=places');
+    routeMap=new google.maps.Map(document.getElementById('rp-map'),{center:{lat:51,lng:10},zoom:5,styles:[
+      {elementType:'geometry',stylers:[{color:'#1a1a1a'}]},{elementType:'labels.text.fill',stylers:[{color:'#888'}]},{elementType:'labels.text.stroke',stylers:[{color:'#111'}]},
+      {featureType:'road',elementType:'geometry',stylers:[{color:'#2a2a2a'}]},{featureType:'water',elementType:'geometry',stylers:[{color:'#0d0d0d'}]},
+      {featureType:'landscape',elementType:'geometry',stylers:[{color:'#131313'}]},{featureType:'poi',stylers:[{visibility:'off'}]},{featureType:'transit',stylers:[{visibility:'off'}]},
+      {featureType:'administrative.country',elementType:'geometry.stroke',stylers:[{color:'#333'}]}
+    ]});
+  }catch(e){toast('Map error: '+e.message,'err');}
+}
+function loadScript(src){return new Promise((res,rej)=>{if(document.querySelector('script[src="'+src+'"]')){res();return;}const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+
+function addAnchor(){
+  const city=document.getElementById('anc-city').value.trim(),date=document.getElementById('anc-date').value,venue=document.getElementById('anc-venue').value.trim(),deal=document.getElementById('anc-deal').value.trim();
+  if(!city||!date)return toast('City and date required for anchor','err');
+  anchors.push({city,date,venue,deal});renderAnchors();
+  document.getElementById('anc-city').value='';document.getElementById('anc-date').value='';document.getElementById('anc-venue').value='';document.getElementById('anc-deal').value='';
+}
+function removeAnchor(i){anchors.splice(i,1);renderAnchors();}
+function renderAnchors(){
+  document.getElementById('anc-list').innerHTML=anchors.map((a,i)=>'<div class="anc-item"><div><div class="anc-city">&#9875; '+esc(a.city)+(a.venue?' — '+esc(a.venue):'')+'</div><div class="anc-meta">'+a.date+(a.deal?' · '+esc(a.deal):'')+'</div></div><button class="anc-rm" onclick="removeAnchor('+i+')">&#215;</button></div>').join('');
 }
 
-async function createShow() {
-  const tour_id = document.getElementById('cs-tour').value;
-  const band_id = document.getElementById('cs-band').value;
-  const date = document.getElementById('cs-date').value;
-  const city = document.getElementById('cs-city').value.trim();
-  const country = document.getElementById('cs-country').value.trim();
-  const venue_name = document.getElementById('cs-venue').value.trim();
-  const capacity = parseInt(document.getElementById('cs-capacity').value) || 0;
-  if (!tour_id || !date || !city) return toast('Tour, date, and city required', 'error');
-  try {
-    const r = await apiCall('agency_create_show', { tour_id, band_ids: band_id ? [band_id] : [], date, city, country, venue_name, capacity });
-    const show = { id: r.data.show_id, tour_id, band_ids: band_id ? [band_id] : [], date, city, country, venue_name, capacity, promoter_token: r.data.token, sheet_status: 'missing' };
-    allShows.push(show);
-    renderAdvancing();
-    renderTours();
-    renderOverview();
-    closeModal('modal-create-show');
-    toast('Show added — promoter link ready', 'success');
-  } catch(e) { toast(e.message, 'error'); }
+async function generateRoute(){
+  const artist=document.getElementById('rp-artist').value,region=document.getElementById('rp-region').value,startDate=document.getElementById('rp-start').value,endDate=document.getElementById('rp-end').value,startCity=document.getElementById('rp-scity').value.trim(),endCity=document.getElementById('rp-ecity').value.trim(),numShows=parseInt(document.getElementById('rp-nshows').value)||8,dealType=document.getElementById('rp-deal').value,preferences=document.getElementById('rp-notes').value.trim(),copyTourId=document.getElementById('rp-copy-tour').value;
+  if(!artist||!startDate||!endDate||!startCity)return toast('Artist, start city, and dates required','err');
+  let extra='';
+  if(copyTourId){const pt=allTours.find(t=>t.id===copyTourId);if(pt){const ps=allShows.filter(s=>s.tour_id===copyTourId);extra=' Reference previous tour "'+pt.name+'" which played: '+ps.map(s=>s.city).join(', ')+'. Reuse successful markets and routing where it fits.';}}
+  showSpin('Routing with Gemini Pro…');
+  try{
+    const data=await aiCall('generate_tour',{artist,region,startCity,endCity,startDate,endDate,numShows,dealType,preferences:preferences+extra,anchorShows:anchors});
+    generatedRoute=data;setSpin('Plotting on map…');
+    await plotRoute(data);hideSpin();renderDrawer(data);runBudget(data);
+    toast('Route ready — '+data.total_shows+' shows, '+data.total_days+' days','ok');
+  }catch(e){hideSpin();toast('Route error: '+e.message,'err');}
 }
 
-// ── ROUTE PLANNER ──
-async function initMap() {
-  if (routeMap) return;
-  try {
-    const res = await fetch(MAPS_FN);
-    const data = await res.json();
-    const key = data.key;
-    await loadScript(`https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places`);
-    routeMap = new google.maps.Map(document.getElementById('rp-map'), {
-      center: { lat: 51, lng: 10 },
-      zoom: 5,
-      mapTypeId: 'roadmap',
-      styles: [
-        {elementType:'geometry',stylers:[{color:'#1a1a1a'}]},
-        {elementType:'labels.text.fill',stylers:[{color:'#888'}]},
-        {elementType:'labels.text.stroke',stylers:[{color:'#111'}]},
-        {featureType:'road',elementType:'geometry',stylers:[{color:'#2a2a2a'}]},
-        {featureType:'water',elementType:'geometry',stylers:[{color:'#0d0d0d'}]},
-        {featureType:'landscape',elementType:'geometry',stylers:[{color:'#131313'}]},
-        {featureType:'poi',stylers:[{visibility:'off'}]},
-        {featureType:'transit',stylers:[{visibility:'off'}]},
-        {featureType:'administrative.country',elementType:'geometry.stroke',stylers:[{color:'#333'}]},
-      ]
-    });
-  } catch(e) {
-    console.error('Map init error', e);
+async function analyzeAnchors(){
+  if(!generatedRoute)return toast('Generate a route first','err');
+  showSpin('Analyzing anchor strategy…');
+  try{
+    const data=await aiCall('analyze_anchors',{legs:generatedRoute.legs||[],artist:document.getElementById('rp-artist').value,region:document.getElementById('rp-region').value});
+    hideSpin();
+    document.getElementById('drawer-summary').innerHTML='<div style="font-family:var(--mono);font-size:8px;color:var(--gold);margin-bottom:8px;letter-spacing:.15em;text-transform:uppercase">Anchor Analysis — '+esc(data.overall_verdict||'')+'</div><div style="margin-bottom:10px;font-size:12px">'+esc(data.verdict_summary||'')+'</div>'+(data.gap_analysis||[]).map(g=>'<div style="padding:5px 0;border-bottom:1px solid var(--border);font-size:11px">&#9888; '+esc(g.between||'')+' ('+(g.gap_km||'?')+'km) — fill: '+esc((g.suggested_fills||[]).join(', '))+'</div>').join('')+(data.missing_markets&&data.missing_markets.length?'<div style="margin-top:10px;font-size:11px;color:var(--muted)">Also consider: '+esc(data.missing_markets.join(', '))+'</div>':'');
+  }catch(e){hideSpin();toast('Analysis error: '+e.message,'err');}
+}
+
+async function runBudget(route){
+  const people=parseInt(document.getElementById('b-people').value)||4,avgGuar=parseInt(document.getElementById('b-guar').value)||800,support=parseInt(document.getElementById('b-support').value)||0,vanRental=document.getElementById('b-van').value==='true',numShows=route?.total_shows||8,numDays=route?.total_days||14,region=document.getElementById('rp-region').value,cities=(route?.legs||[]).filter(l=>!l.day_off).map(l=>l.city);
+  switchTab('budget');
+  document.getElementById('budget-content').innerHTML='<div class="empty"><div class="spin" style="width:20px;height:20px;border-width:2px;margin:0 auto"></div></div>';
+  try{
+    const d=await aiCall('estimate_budget',{cities,numPeople:people,numDays,numShows,region,vanRental,avgGuarantee:avgGuar,tourSupport:support});
+    const net=d.net_profit_loss||0;
+    document.getElementById('budget-content').innerHTML='<div class="panel-sec"><div class="panel-sec-title">Revenue</div>'+br('Show Guarantees',fmt(d.revenue&&d.revenue.show_guarantees_total))+br('Merch Estimate',fmt(d.revenue&&d.revenue.merch_estimate))+(support?br('Tour Support',fmt(d.revenue&&d.revenue.tour_support)):'')+br('Total Revenue',fmt(d.revenue&&d.revenue.total_projected_revenue),true)+'</div><div class="panel-sec"><div class="panel-sec-title">Expenses</div>'+br('Fuel',fmt(d.expenses&&d.expenses.fuel_total))+(vanRental?br('Van Rental',fmt(d.expenses&&d.expenses.van_rental_total)):'')+br('Lodging',fmt(d.expenses&&d.expenses.lodging_total))+br('Food / Per Diem',fmt(d.expenses&&d.expenses.food_per_diem_total))+br('Agent Commission',fmt(d.expenses&&d.expenses.agent_commission))+br('Misc',fmt(d.expenses&&d.expenses.miscellaneous))+br('Total Expenses',fmt(d.expenses&&d.expenses.total_expenses),true)+'</div><div class="panel-sec"><div class="panel-sec-title">Summary</div><div class="brow '+(net>=0?'profit':'loss')+'"><span>Net '+(net>=0?'Profit':'Loss')+'</span><span>'+fmt(net)+'</span></div>'+br('Break-even guar/show',fmt(d.break_even_guarantee_per_show))+br('Merch target/show',fmt(d.merch_target_per_show))+'<div class="brow"><span>Viable?</span><span style="color:'+(d.is_viable?'var(--green)':'var(--red)')+'">'+(d.is_viable?'Yes':'No — needs work')+'</span></div><div style="font-size:11px;color:var(--muted);padding:8px 0;line-height:1.6">'+esc(d.viability_note||'')+'</div></div><div class="panel-sec"><div class="panel-sec-title">Savings Tips</div>'+(d.savings_tips||[]).map(t=>'<div class="tip-item">'+esc(t)+'</div>').join('')+'</div>';
+  }catch(e){document.getElementById('budget-content').innerHTML='<div class="empty">Budget error: '+esc(e.message)+'</div>';}
+}
+
+async function findVenues(){
+  const city=document.getElementById('v-city').value.trim(),country=document.getElementById('v-country').value.trim(),genre=document.getElementById('v-genre').value.trim(),capacity=document.getElementById('v-cap').value.trim();
+  if(!city)return toast('Enter a city','err');
+  switchTab('venues');
+  document.getElementById('venues-content').innerHTML='<div class="empty"><div class="spin" style="width:20px;height:20px;border-width:2px;margin:0 auto"></div></div>';
+  try{
+    const venues=await aiCall('suggest_venues',{city,country,genre,capacity});
+    document.getElementById('venues-content').innerHTML='<div style="font-family:var(--mono);font-size:8px;color:var(--gold);margin-bottom:14px;letter-spacing:.18em;text-transform:uppercase">Venues in '+esc(city)+'</div>'+venues.map(v=>'<div class="venue-card"><div class="venue-name">'+esc(v.name)+'<span style="font-size:11px;font-weight:400;color:var(--muted)"> '+(v.capacity?'· cap '+v.capacity:'')+' · '+esc(v.tier||'')+'</span></div><div class="venue-meta">'+(v.type?'<span class="badge b-anch" style="margin-bottom:5px">'+esc(v.type)+'</span><br>':'')+(v.known_for?'Known for: '+esc(v.known_for)+'<br>':'')+(v.deal_type_typical?'Typical deal: '+esc(v.deal_type_typical):'')+'</div>'+(v.notes?'<div class="venue-tip">'+esc(v.notes)+'</div>':'')+(v.booking_contact_tip?'<div class="venue-contact">'+esc(v.booking_contact_tip)+'</div>':'')+'</div>').join('');
+  }catch(e){document.getElementById('venues-content').innerHTML='<div class="empty">Error: '+esc(e.message)+'</div>';}
+}
+
+async function adviseDeal(){
+  const artist=document.getElementById('d-artist').value.trim(),city=document.getElementById('d-city').value.trim(),venue=document.getElementById('d-venue').value.trim(),capacity=document.getElementById('d-cap').value,offerType=document.getElementById('d-type').value,offerAmount=document.getElementById('d-amt').value,artistDraw=document.getElementById('d-draw').value;
+  if(!artist||!city)return toast('Artist and city required','err');
+  switchTab('deal');
+  document.getElementById('deal-content').innerHTML='<div class="empty"><div class="spin" style="width:20px;height:20px;border-width:2px;margin:0 auto"></div></div>';
+  try{
+    const d=await aiCall('advise_deal',{artist,city,venue,capacity:parseInt(capacity)||null,artistDraw,offerType,offerAmount:parseInt(offerAmount)||0});
+    document.getElementById('deal-content').innerHTML='<div class="deal-result"><div class="deal-verdict '+(d.offer_assessment||'').replace('_','-')+'">'+capFirst(d.offer_assessment||'Unknown')+'</div><div style="font-size:12px;color:var(--muted);margin-bottom:14px">Assessment for '+esc(artist)+' in '+esc(city)+'</div>'+br('Market Rate Range',esc(d.market_rate_range||'—'))+br('Counter Suggestion',d.counter_suggestion?'€'+d.counter_suggestion:'—')+br('Recommended Structure',esc(d.deal_structure_recommendation||'—'))+'<div style="margin-top:14px;margin-bottom:6px;font-family:var(--mono);font-size:8px;color:var(--gold);letter-spacing:.15em;text-transform:uppercase">Negotiation Points</div>'+(d.negotiation_points||[]).map(p=>'<div class="dlist">'+esc(p)+'</div>').join('')+'<div style="margin-top:12px;margin-bottom:6px;font-family:var(--mono);font-size:8px;color:var(--gold);letter-spacing:.15em;text-transform:uppercase">Additional Asks</div>'+(d.additional_asks||[]).map(p=>'<div class="dlist">'+esc(p)+'</div>').join('')+'<div style="margin-top:12px;font-size:11px;color:var(--muted)"><strong>Accept if:</strong> '+esc(d.accept_if||'—')+'</div><div style="margin-top:6px;font-size:11px;color:var(--red)"><strong>Walk away if:</strong> '+esc(d.walk_away_if||'—')+'</div></div>';
+  }catch(e){document.getElementById('deal-content').innerHTML='<div class="empty">Error: '+esc(e.message)+'</div>';}
+}
+
+async function sendChat(){
+  const inp=document.getElementById('chat-inp'),msg=inp.value.trim();if(!msg)return;inp.value='';
+  const msgs=document.getElementById('chat-msgs');
+  msgs.innerHTML+='<div class="chat-msg user">'+esc(msg)+'</div>';
+  const t=document.createElement('div');t.className='chat-msg ai';t.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';msgs.appendChild(t);msgs.scrollTop=msgs.scrollHeight;
+  chatHistory.push({role:'user',content:msg});
+  const ctx=generatedRoute?'Active tour: '+(generatedRoute.tour_name||'')+', '+generatedRoute.total_shows+' shows, artist: '+document.getElementById('rp-artist').value+', region: '+document.getElementById('rp-region').value:'No active route generated yet';
+  try{const d=await aiCall('chat',{message:msg,context:ctx,history:chatHistory.slice(-6)});t.textContent=d.reply||'';chatHistory.push({role:'assistant',content:d.reply||''});}catch(e){t.textContent='Error: '+e.message;}
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+async function plotRoute(data){
+  if(!routeMap)return;
+  rMarkers.forEach(m=>m.setMap(null));rMarkers=[];if(rPolyline){rPolyline.setMap(null);rPolyline=null;}
+  const legs=(data.legs||[]).filter(l=>!l.day_off);if(!legs.length)return;
+  const geo=new google.maps.Geocoder(),bounds=new google.maps.LatLngBounds(),path=[];
+  for(const leg of legs){
+    const loc=await geocodeCity(geo,leg.city+', '+(leg.country||''));if(!loc)continue;
+    bounds.extend(loc);path.push(loc);
+    rMarkers.push(new google.maps.Marker({position:loc,map:routeMap,title:leg.date+' — '+leg.city,icon:{path:google.maps.SymbolPath.CIRCLE,fillColor:leg.is_anchor_show?'#c8a96e':'#666',fillOpacity:1,strokeColor:leg.is_anchor_show?'#e8c97e':'#444',strokeWeight:leg.is_anchor_show?2:1,scale:leg.is_anchor_show?10:6}}));
   }
-}
-
-function loadScript(src) {
-  return new Promise((res, rej) => {
-    if (document.querySelector(`script[src="${src}"]`)) { res(); return; }
-    const s = document.createElement('script');
-    s.src = src; s.onload = res; s.onerror = rej;
-    document.head.appendChild(s);
-  });
-}
-
-let anchors = [];
-function addAnchor() {
-  const city = document.getElementById('anc-city').value.trim();
-  const date = document.getElementById('anc-date').value;
-  const venue = document.getElementById('anc-venue').value.trim();
-  const deal = document.getElementById('anc-deal').value.trim();
-  if (!city || !date) return toast('City and date required for anchor', 'error');
-  anchors.push({ city, date, venue, deal });
-  renderAnchors();
-  document.getElementById('anc-city').value = '';
-  document.getElementById('anc-date').value = '';
-  document.getElementById('anc-venue').value = '';
-  document.getElementById('anc-deal').value = '';
-}
-
-function removeAnchor(i) {
-  anchors.splice(i, 1);
-  renderAnchors();
-}
-
-function renderAnchors() {
-  const el = document.getElementById('anchor-list');
-  el.innerHTML = anchors.map((a, i) => `
-    <div class="anchor-item">
-      <div class="anchor-info">
-        <div class="anchor-city">⚓ ${esc(a.city)}${a.venue ? ` — ${esc(a.venue)}` : ''}</div>
-        <div class="anchor-meta">${a.date}${a.deal ? ` · ${esc(a.deal)}` : ''}</div>
-      </div>
-      <button class="anchor-remove" onclick="removeAnchor(${i})">×</button>
-    </div>
-  `).join('');
-}
-
-async function generateRoute() {
-  const artist = document.getElementById('rp-artist').value;
-  const region = document.getElementById('rp-region').value;
-  const startDate = document.getElementById('rp-start-date').value;
-  const endDate = document.getElementById('rp-end-date').value;
-  const startCity = document.getElementById('rp-start-city').value.trim();
-  const numShows = document.getElementById('rp-num-shows').value;
-  const dealType = document.getElementById('rp-deal-type').value;
-  const preferences = document.getElementById('rp-notes').value.trim();
-
-  if (!artist || !startDate || !endDate || !startCity) {
-    return toast('Artist, start city, and dates required', 'error');
-  }
-
-  const spinner = document.getElementById('rp-spinner');
-  const spinnerMsg = document.getElementById('rp-spinner-msg');
-  spinner.classList.add('show');
-  spinnerMsg.textContent = 'Generating route with AI…';
-
-  try {
-    const res = await fetch(AI_FN, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'generate_tour',
-        data: { artist, region, startCity, startDate, endDate, numShows: parseInt(numShows)||8, dealType, preferences, anchorShows: anchors }
-      })
-    });
-    const json = await res.json();
-    if (json.error) throw new Error(json.error);
-    generatedRoute = json;
-    spinnerMsg.textContent = 'Plotting on map…';
-    await plotRoute(json);
-    spinner.classList.remove('show');
-    showRouteResults(json);
-  } catch(e) {
-    spinner.classList.remove('show');
-    toast('Route generation failed: ' + e.message, 'error');
-  }
-}
-
-async function plotRoute(routeData) {
-  if (!routeMap) return;
-  // Clear previous
-  routeMarkers.forEach(m => m.setMap(null));
-  routeMarkers = [];
-  if (routePolyline) routePolyline.setMap(null);
-
-  const shows = routeData.shows || [];
-  if (shows.length === 0) return;
-
-  const geocoder = new google.maps.Geocoder();
-  const bounds = new google.maps.LatLngBounds();
-  const path = [];
-
-  for (const show of shows) {
-    const loc = show.lat && show.lng ? { lat: show.lat, lng: show.lng } : await geocodeCity(geocoder, show.city + ', ' + (show.country||''));
-    if (!loc) continue;
-    bounds.extend(loc);
-    path.push(loc);
-    const marker = new google.maps.Marker({
-      position: loc, map: routeMap,
-      title: `${show.date} — ${show.city}`,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        fillColor: show.is_anchor ? '#c8a96e' : '#888',
-        fillOpacity: 1, strokeColor: show.is_anchor ? '#c8a96e' : '#555',
-        strokeWeight: show.is_anchor ? 2 : 1, scale: show.is_anchor ? 9 : 6
-      }
-    });
-    routeMarkers.push(marker);
-  }
-
-  routePolyline = new google.maps.Polyline({
-    path, map: routeMap,
-    strokeColor: '#c8a96e', strokeOpacity: 0.4, strokeWeight: 1.5
-  });
-
+  rPolyline=new google.maps.Polyline({path,map:routeMap,strokeColor:'#c8a96e',strokeOpacity:.3,strokeWeight:1.5});
   routeMap.fitBounds(bounds);
 }
+function geocodeCity(geo,city){return new Promise(res=>{geo.geocode({address:city},(r,s)=>{if(s==='OK')res(r[0].geometry.location.toJSON());else res(null);});});}
 
-function geocodeCity(geocoder, city) {
-  return new Promise(res => {
-    geocoder.geocode({ address: city }, (results, status) => {
-      if (status === 'OK') res(results[0].geometry.location.toJSON());
-      else res(null);
-    });
-  });
+function renderDrawer(data){
+  const legs=data.legs||[];
+  document.getElementById('drawer-title').textContent=(data.tour_name||'Route')+' · '+data.total_shows+' shows · '+data.total_days+' days · ~'+(data.estimated_total_km||'?')+'km';
+  document.getElementById('drawer-legs').innerHTML=legs.map(l=>'<div class="leg-card '+(l.is_anchor_show?'is-anchor':'')+' '+(l.day_off?'is-dayoff':'')+'"><div class="leg-date">'+l.date+(l.day_of_week?' · '+l.day_of_week:'')+(l.is_anchor_show?' &#9875; ANCHOR':'')+(l.day_off?' — REST/TRAVEL':'')+'</div><div class="leg-city">'+esc(l.city)+(l.country?', '+esc(l.country):'')+'</div><div class="leg-meta">'+(l.suggested_venue?esc(l.suggested_venue)+' · ':'')+esc(l.venue_type||'')+(l.drive_from_previous_km?' · '+l.drive_from_previous_km+'km':'')+(l.drive_hours?' ('+l.drive_hours+'h)':'')+(l.suggested_guarantee_usd?' · ~€'+Math.round(l.suggested_guarantee_usd*0.92)+' guar':'')+'</div>'+(l.notes?'<div class="leg-note">'+esc(l.notes)+'</div>':'')+(l.advancing_notes?'<div class="leg-note" style="color:var(--blue)">Adv: '+esc(l.advancing_notes)+'</div>':'')+'</div>').join('');
+  document.getElementById('drawer-summary').innerHTML='<strong style="color:var(--text)">'+esc(data.routing_strategy||'')+'</strong> — '+esc(data.summary||'')+(data.anchor_strategy?'<br><br><em style="color:var(--muted)">'+esc(data.anchor_strategy)+'</em>':'');
+  document.getElementById('rp-drawer').classList.add('open');
+  document.getElementById('email-leg-sel').innerHTML=(data.legs||[]).filter(l=>!l.day_off).map((l,i)=>'<option value="'+i+'">'+l.date+' — '+l.city+(l.suggested_venue?' @ '+l.suggested_venue:'')+'</option>').join('');
 }
 
-function showRouteResults(routeData) {
-  const shows = routeData.shows || [];
-  const el = document.getElementById('rp-show-list');
-  el.innerHTML = shows.map(s => `
-    <div class="show-card ${s.is_anchor ? 'anchor' : ''}">
-      <div class="show-card-date">${s.date}${s.is_anchor ? ' ⚓' : ''}</div>
-      <div class="show-card-venue">${esc(s.city)}${s.country ? ', ' + esc(s.country) : ''}</div>
-      <div class="show-card-meta">${esc(s.venue_suggestion||'')}${s.deal ? ' · ' + esc(s.deal) : ''}${s.drive_from_prev ? ' · ' + s.drive_from_prev : ''}</div>
-    </div>
-  `).join('');
-
-  const notesEl = document.getElementById('rp-ai-notes');
-  notesEl.innerHTML = routeData.notes ? `<div class="ai-output">${esc(routeData.notes)}</div>` : '';
-
-  document.getElementById('rp-results').style.display = 'block';
+async function saveRouteAsTour(){
+  if(!generatedRoute)return;
+  const artist=document.getElementById('rp-artist').value;
+  document.getElementById('ct-name').value=generatedRoute.tour_name||artist+' Tour';
+  document.getElementById('ct-start').value=document.getElementById('rp-start').value;
+  document.getElementById('ct-end').value=document.getElementById('rp-end').value;
+  const band=allBands.find(b=>b.name.toLowerCase()===artist.toLowerCase());
+  if(band)document.getElementById('ct-band').value=band.id;
+  openM('m-tour');
 }
 
-async function saveRouteAsTour() {
-  if (!generatedRoute) return;
-  const artist = document.getElementById('rp-artist').value;
-  const startDate = document.getElementById('rp-start-date').value;
-  const endDate = document.getElementById('rp-end-date').value;
-  const band = allBands.find(b => b.name.toLowerCase() === artist.toLowerCase());
-  document.getElementById('ct-name').value = `${artist} Tour ${startDate?.slice(0,7)||''}`;
-  document.getElementById('ct-start').value = startDate;
-  document.getElementById('ct-end').value = endDate;
-  if (band) document.getElementById('ct-band').value = band.id;
-  switchView('tours');
-  openCreateTour();
+function openEmailModal(){if(!generatedRoute)return toast('Generate a route first','err');openM('m-email');previewEmail();}
+function previewEmail(){
+  const idx=parseInt(document.getElementById('email-leg-sel').value)||0;
+  const legs=(generatedRoute&&generatedRoute.legs||[]).filter(l=>!l.day_off);
+  const leg=legs[idx];if(!leg)return;
+  const artist=document.getElementById('rp-artist').value;
+  const email='Subject: Booking Inquiry — '+artist+' / '+leg.date+' / '+leg.city+'\n\nDear Promoter,\n\nI\'m writing on behalf of '+artist+', booked through Melankolia Agency — we represent artists across darkwave, EBM, post-punk, industrial, and related underground genres.\n\nWe are routing a tour through '+document.getElementById('rp-region').value+' and have identified '+leg.city+' as a priority market on '+leg.date+(leg.day_of_week?' ('+leg.day_of_week+')':'')+'.\n\n'+(leg.suggested_venue?'We understand '+leg.suggested_venue+' is a key venue for this genre in your market and would love to discuss availability.':'We are actively seeking the right venue partner in your market.')+'\n\nArtist overview:\n• '+artist+' — underground / dark electronic / post-punk\n• Represented by Melankolia Agency (melankoliaagency.com)\n• Full EPK, press, and streaming links available on request\n\nTour context:\n• Confirmed dates routing through this region\n• '+(leg.deal_suggestion?'Deal preference: '+leg.deal_suggestion:'Open to guarantee or door deal')+'\n'+(leg.suggested_guarantee_usd?'• Target: ~€'+Math.round(leg.suggested_guarantee_usd*0.92)+' guarantee\n':'')+'\nWould you be open to discussing a show on '+leg.date+' or nearby dates?\n\nBest regards,\nMelankolia Agency\nbooking@melankoliaagency.com\nmelankoliaagency.com';
+  document.getElementById('email-preview').textContent=email;
 }
+function copyEmailText(){navigator.clipboard.writeText(document.getElementById('email-preview').textContent).then(()=>toast('Email copied','ok'));}
+function openInGmail(){const txt=document.getElementById('email-preview').textContent;const lines=txt.split('\n');const subj=lines[0].replace('Subject: ','');const body=lines.slice(2).join('\n');window.open('https://mail.google.com/mail/?view=cm&su='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body),'_blank');}
 
-function clearRoute() {
-  routeMarkers.forEach(m => m.setMap(null));
-  routeMarkers = [];
-  if (routePolyline) routePolyline.setMap(null);
-  routePolyline = null;
-  generatedRoute = null;
-  document.getElementById('rp-results').style.display = 'none';
-  anchors = [];
-  renderAnchors();
-}
-
-// ── HELPERS ──
-function populateBandDropdowns() {
-  const opts = allBands.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
-  document.getElementById('ct-band').innerHTML = '<option value="">Select band...</option>' + opts;
-  document.getElementById('cs-band').innerHTML = '<option value="">Select band...</option>' + opts;
-}
-
-function getBandName(band_ids) {
-  if (!band_ids?.length) return '—';
-  const b = allBands.find(b => band_ids.includes(b.id));
-  return b?.name || '—';
-}
-
-function statusBadge(status) {
-  const map = {
-    missing: '<span class="badge badge-missing">Missing</span>',
-    pending: '<span class="badge badge-pending">Submitted</span>',
-    approved: '<span class="badge badge-approved">Approved</span>',
-    published: '<span class="badge badge-published">Published</span>',
-  };
-  return map[status] || '<span class="badge badge-draft">No Sheet</span>';
-}
-
-function statusLabel(status) {
-  const map = { missing: 'Advancing missing', pending: 'Submitted — needs review', approved: 'Approved', published: 'Published to band' };
-  return map[status] || 'No advancing sheet';
-}
-
-function statusColor(status) {
-  return { missing: '#c05050', pending: '#c8a040', approved: '#5a9a6a', published: '#5080b0' }[status] || '#444';
-}
-
-function fmtDate(d) {
-  if (!d) return '—';
-  try { return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); }
-  catch { return d; }
-}
-
-function fmtDateLong(d) {
-  if (!d) return '';
-  try { return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' }); }
-  catch { return d; }
-}
-
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-function toast(msg, type = '') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'toast show ' + type;
-  setTimeout(() => el.classList.remove('show'), 3200);
-}
-
-// Close modal on overlay click
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
-});
+function populateCopyTourDropdown(){document.getElementById('rp-copy-tour').innerHTML='<option value="">— Start fresh —</option>'+allTours.map(t=>'<option value="'+t.id+'">'+esc(t.name)+'</option>').join('');}
+function populateDropdowns(){const opts=allBands.map(b=>'<option value="'+b.id+'">'+esc(b.name)+'</option>').join('');document.getElementById('ct-band').innerHTML='<option value="">Select band...</option>'+opts;document.getElementById('cs-band').innerHTML='<option value="">Select band...</option>'+opts;}
+function bandName(ids){if(!ids||!ids.length)return'—';const b=allBands.find(b=>ids.includes(b.id));return b?b.name:'—';}
+function sBadge(s){return({missing:'<span class="badge b-miss">Missing</span>',pending:'<span class="badge b-pend">Submitted</span>',approved:'<span class="badge b-appr">Approved</span>',published:'<span class="badge b-pub">Published</span>'})[s]||'<span class="badge" style="background:rgba(80,80,80,.2);color:var(--muted);border:1px solid var(--b2)">No Sheet</span>';}
+function sColor(s){return({missing:'#c05050',pending:'#c8a040',approved:'#5a9a6a',published:'#5080b0'})[s]||'#444';}
+function sLabel(s){return({missing:'Advancing missing',pending:'Submitted — needs review',approved:'Approved',published:'Published to band'})[s]||'No advancing sheet';}
+function fd(d){if(!d)return'—';try{return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});}catch(e){return d;}}
+function fdLong(d){if(!d)return'';try{return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}catch(e){return d;}}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function capFirst(s){return s?s[0].toUpperCase()+s.slice(1):'';}
+function genPw(){const w=['dark','wave','void','ash','dusk','veil','echo','nox','cold','post'];return w[Math.floor(Math.random()*w.length)]+w[Math.floor(Math.random()*w.length)]+(Math.floor(Math.random()*900)+100);}
+function copyTxt(t){navigator.clipboard.writeText(t).then(()=>toast('Copied','ok'));}
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+function showSpin(m){document.getElementById('rp-spin').classList.add('show');document.getElementById('spin-msg').textContent=m||'Loading…';}
+function setSpin(m){document.getElementById('spin-msg').textContent=m;}
+function hideSpin(){document.getElementById('rp-spin').classList.remove('show');}
+function br(label,val,bold){return'<div class="brow'+(bold?' bold':'')+'"><span>'+esc(label)+'</span><span>'+esc(val)+'</span></div>';}
+function fmt(n){if(n==null)return'—';return'€'+Math.round(n).toLocaleString();}
+function clearAll(){rMarkers.forEach(m=>m.setMap(null));rMarkers=[];if(rPolyline){rPolyline.setMap(null);rPolyline=null;}generatedRoute=null;anchors=[];renderAnchors();document.getElementById('rp-drawer').classList.remove('open');document.getElementById('budget-content').innerHTML='<div class="empty">Generate a route first.</div>';document.getElementById('venues-content').innerHTML='<div class="empty">Enter a city and click Find Venues.</div>';document.getElementById('deal-content').innerHTML='<div class="empty">Fill in Deal Advisor and click Evaluate.</div>';}
+function toast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+(type==='ok'?'ok':type==='err'?'err':'');setTimeout(()=>el.classList.remove('show'),3200);}
 </script>
 </body>
 </html>
