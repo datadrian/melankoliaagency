@@ -17,6 +17,27 @@
   to = "/tour-planner/index.html"
   status = 200
 
+
+[[redirects]]
+  from = "/band-app"
+  to = "/band-app/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/band-app/*"
+  to = "/band-app/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/advancing/*"
+  to = "/advancing/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/advancing"
+  to = "/advancing/index.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -30,3 +51,18 @@
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type"
+
+[[redirects]]
+  from = "/band-app"
+  to = "/band-app/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/band-app/*"
+  to = "/band-app/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/advancing/*"
+  to = "/advancing/index.html"
+  status = 200

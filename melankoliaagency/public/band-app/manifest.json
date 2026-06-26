@@ -1,0 +1,13 @@
+{
+  "name": "Melankolia Band Portal",
+  "short_name": "Melankolia",
+  "description": "Tour advancing and show info for Melankolia Agency artists",
+  "start_url": "/band-app/",
+  "display": "standalone",
+  "background_color": "#080808",
+  "theme_color": "#080808",
+  "icons": [
+    { "src": "/img/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/img/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

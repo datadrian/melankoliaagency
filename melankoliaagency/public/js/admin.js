@@ -17,6 +17,7 @@ function showView(name) {
   if (name === 'videos')   renderVideoAdmin();
   if (name === 'bookings') renderBookings();
   if (name === 'dashboard') renderDashboard();
+  if (name === 'advancing') { if (typeof initAdvancing === 'function') initAdvancing(); }
 }
 
 document.querySelectorAll('.sidebar-link[data-view]').forEach(link => {

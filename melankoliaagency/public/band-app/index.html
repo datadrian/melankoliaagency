@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#080808">
+<title>Melankolia — Band Portal</title>
+<link rel="manifest" href="/band-app/manifest.json">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --gold: #c8a96e; --bg: #080808; --bg2: #0d0d0d; --bg3: #111;
+    --border: #1e1e1e; --text: #e0e0e0; --muted: #555; --danger: #c0392b;
+    --mono: 'Courier New', Courier, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--sans); }
+  
+  /* ── APP SHELL ── */
+  #app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+  
+  /* Top bar */
+  .topbar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 12px 16px 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: max(12px, env(safe-area-inset-top, 12px));
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .topbar-logo { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); }
+  .topbar-band { font-size: 13px; font-weight: 600; color: var(--text); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .notif-badge {
+    width: 20px; height: 20px; background: var(--gold); color: #000;
+    border-radius: 50%; font-size: 10px; font-weight: 700;
+    display: none; align-items: center; justify-content: center;
+  }
+  .logout-btn { background: none; border: 1px solid #222; color: #555; font-size: 10px; font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 8px; cursor: pointer; border-radius: 2px; }
+  .logout-btn:active { color: var(--danger); border-color: var(--danger); }
+
+  /* Content scroll area */
+  .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    background: var(--bg2); border-top: 1px solid var(--border);
+    display: flex; flex-shrink: 0;
+    padding-bottom: var(--safe-bottom);
+  }
+  .nav-btn {
+    flex: 1; background: none; border: none; color: var(--muted);
+    font-family: var(--mono); font-size: 8px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 10px 4px 8px; cursor: pointer; transition: color 0.15s;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    position: relative;
+  }
+  .nav-btn .nav-icon { font-size: 18px; line-height: 1; }
+  .nav-btn.active { color: var(--gold); }
+  .nav-dot { position: absolute; top: 6px; right: calc(50% - 14px); width: 6px; height: 6px; background: var(--gold); border-radius: 50%; display: none; }
+
+  /* ── SCREENS ── */
+  .screen { display: none; padding: 16px; }
+  .screen.active { display: block; }
+
+  /* LOGIN */
+  #screen-login {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-height: 100dvh;
+    background: var(--bg); padding: 32px 24px;
+  }
+  .login-logo { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.4em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+  .login-sub { font-family: var(--mono); font-size: 8px; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 48px; }
+  .login-box { width: 100%; max-width: 320px; }
+  .login-field { margin-bottom: 12px; }
+  .login-field label { display: block; font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .login-field input { width: 100%; background: #111; border: 1px solid var(--border); color: var(--text); padding: 12px 14px; font-size: 15px; font-family: var(--sans); outline: none; border-radius: 2px; }
+  .login-field input:focus { border-color: var(--gold); }
+  .login-btn { width: 100%; background: var(--gold); color: #000; border: none; font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; padding: 14px; cursor: pointer; border-radius: 2px; margin-top: 4px; }
+  .login-btn:disabled { background: #222; color: #555; cursor: not-allowed; }
+  .login-error { color: #d07070; font-size: 12px; text-align: center; margin-top: 10px; min-height: 16px; }
+
+  /* SHOWS LIST */
+  .tour-group { margin-bottom: 24px; }
+  .tour-label { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); padding: 0 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .show-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 3px;
+    margin-bottom: 8px; overflow: hidden; cursor: pointer;
+    transition: border-color 0.15s; -webkit-tap-highlight-color: transparent;
+  }
+  .show-card:active { border-color: var(--gold); }
+  .show-card-top { padding: 14px 14px 10px; display: flex; align-items: flex-start; gap: 12px; }
+  .show-date-col { flex-shrink: 0; width: 40px; text-align: center; }
+  .show-date-day { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
+  .show-date-mon { font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+  .show-date-dow { font-family: var(--mono); font-size: 7px; color: #444; margin-top: 1px; }
+  .show-info { flex: 1; min-width: 0; }
+  .show-venue-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .show-city { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .show-status-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .show-status-chip {
+    font-family: var(--mono); font-size: 7px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px;
+  }
+  .chip-published { background: rgba(200,169,110,0.15); border: 1px solid rgba(200,169,110,0.3); color: var(--gold); }
+  .chip-pending { background: rgba(80,80,80,0.2); border: 1px solid #333; color: #555; }
+  .chip-new { background: rgba(200,169,110,0.25); border: 1px solid var(--gold); color: var(--gold); }
+  .show-time-chip { font-family: var(--mono); font-size: 8px; color: #444; }
+
+  /* SHOW DETAIL */
+  .back-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; color: var(--muted); font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; padding: 0 0 16px; }
+  .back-btn:active { color: var(--gold); }
+  .detail-header { margin-bottom: 20px; }
+  .detail-venue { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .detail-meta { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+  .detail-address-link { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--gold); text-decoration: none; margin-bottom: 4px; }
+  .detail-address-link:active { opacity: 0.7; }
+
+  /* Advancing Pending Banner */
+  .pending-banner { background: #111; border: 1px solid #222; border-radius: 3px; padding: 16px; text-align: center; margin: 20px 0; }
+  .pending-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.3; }
+  .pending-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* Advancing Sheet */
+  .adv-section { margin-bottom: 16px; }
+  .adv-section-title { font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+  .adv-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid #111; }
+  .adv-row:last-child { border-bottom: none; }
+  .adv-label { font-size: 11px; color: var(--muted); flex-shrink: 0; width: 120px; }
+  .adv-value { font-size: 13px; color: var(--text); text-align: right; flex: 1; line-height: 1.4; }
+  .adv-value.highlight { color: var(--gold); font-weight: 600; }
+  .adv-value.empty { color: #333; font-style: italic; }
+  .adv-value a { color: var(--gold); text-decoration: none; }
+  
+  /* Schedule big display */
+  .schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+  .sched-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 2px; padding: 10px 12px; }
+  .sched-label { font-family: var(--mono); font-size: 7px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .sched-time { font-size: 20px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+  .sched-time.showtime { color: var(--gold); }
+
+  /* Backline pills */
+  .backline-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .bl-pill { font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; }
+  .bl-yes { background: rgba(200,169,110,0.12); border: 1px solid rgba(200,169,110,0.3); color: var(--gold); }
+  .bl-no { background: #111; border: 1px solid #1a1a1a; color: #333; }
+
+  /* Contact cards */
+  .contact-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 2px; padding: 10px 12px; margin-bottom: 8px; }
+  .contact-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .contact-role { font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .contact-links { display: flex; gap: 8px; flex-wrap: wrap; }
+  .contact-link { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--gold); text-decoration: none; }
+  .contact-link:active { opacity: 0.7; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 60px 24px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+  .empty-icon { font-size: 2.5rem; opacity: 0.15; margin-bottom: 12px; }
+
+  /* Loading spinner */
+  .loading { display: flex; align-items: center; justify-content: center; height: 200px; }
+  .spin { width: 28px; height: 28px; border: 2px solid #222; border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Notifications screen */
+  .notif-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 3px; padding: 14px; margin-bottom: 8px; }
+  .notif-item.unread { border-color: rgba(200,169,110,0.3); }
+  .notif-venue { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .notif-msg { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .notif-time { font-family: var(--mono); font-size: 8px; color: #333; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="screen-login">
+  <div class="login-logo">Melankolia</div>
+  <div class="login-sub">Band Portal</div>
+  <div class="login-box">
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="login-user" autocapitalize="none" autocorrect="off" autocomplete="username" placeholder="">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" autocomplete="current-password" placeholder="">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- MAIN APP SHELL (hidden until logged in) -->
+<div id="app" style="display:none;">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="topbar-logo">Melankolia</div>
+        <div class="topbar-band" id="topbar-band-name">—</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="notif-badge" id="notif-badge">0</div>
+      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="content" id="main-content">
+    <!-- SHOWS SCREEN -->
+    <div id="screen-shows" class="screen active" style="display:block;">
+      <div class="loading"><div class="spin"></div></div>
+    </div>
+
+    <!-- SHOW DETAIL SCREEN -->
+    <div id="screen-detail" class="screen"></div>
+
+    <!-- NOTIFICATIONS SCREEN -->
+    <div id="screen-notifications" class="screen"></div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-shows" onclick="switchTab('shows')">
+      <span class="nav-icon">◈</span> Shows
+    </button>
+    <button class="nav-btn" id="nav-notifications" onclick="switchTab('notifications')">
+      <span class="nav-icon">🔔</span> Updates
+      <span class="nav-dot" id="nav-notif-dot"></span>
+    </button>
+  </div>
+</div>
+
+<script>
+const API = '/.netlify/functions/advancing-api';
+const SESSION_KEY = 'mk_band_session';
+
+let session = null;
+let allShows = [];
+let allTours = {};
+let allNotifications = [];
+let currentShowId = null;
+
+// ── AUTH ──────────────────────────────────────────────
+
+async function doLogin() {
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!user || !pass) { errEl.textContent = 'Enter username and password.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Signing in...'; errEl.textContent = '';
+  try {
+    const res = await fetch(API, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'band_login', username: user, password: pass })
+    });
+    const json = await res.json();
+    if (json.success) {
+      session = json.data;
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      enterApp();
+    } else {
+      errEl.textContent = 'Invalid username or password.';
+      btn.disabled = false; btn.textContent = 'Sign In';
+    }
+  } catch(e) {
+    errEl.textContent = 'Connection error. Try again.';
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem(SESSION_KEY);
+  session = null; allShows = []; allTours = {}; allNotifications = [];
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-btn').disabled = false;
+  document.getElementById('login-btn').textContent = 'Sign In';
+}
+
+async function enterApp() {
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('topbar-band-name').textContent = session.name || '';
+  await loadShows();
+}
+
+// ── DATA ──────────────────────────────────────────────
+
+async function loadShows() {
+  document.getElementById('screen-shows').innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  try {
+    const res = await fetch(API, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'band_get_shows', band_id: session.band_id, session_token: session.session_token })
+    });
+    const json = await res.json();
+    if (!json.success) { doLogout(); return; }
+    allShows = json.data.shows || [];
+    allTours = json.data.tours || {};
+    allNotifications = json.data.notifications || [];
+    renderShows();
+    updateNotifBadge();
+  } catch(e) {
+    document.getElementById('screen-shows').innerHTML = '<div class="empty-state"><div class="empty-icon">✕</div>Connection error. Pull to refresh.</div>';
+  }
+}
+
+// ── RENDER SHOWS ──────────────────────────────────────
+
+function renderShows() {
+  const el = document.getElementById('screen-shows');
+  if (!allShows.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">◈</div>No shows scheduled yet.</div>';
+    return;
+  }
+
+  // Group by tour
+  const byTour = {};
+  const noTour = [];
+  allShows.forEach(s => {
+    if (s.tour_id && allTours[s.tour_id]) {
+      const tid = s.tour_id;
+      if (!byTour[tid]) byTour[tid] = [];
+      byTour[tid].push(s);
+    } else {
+      noTour.push(s);
+    }
+  });
+
+  let html = '';
+  Object.entries(byTour).forEach(([tid, shows]) => {
+    const tour = allTours[tid];
+    html += `<div class="tour-group"><div class="tour-label">${escHtml(tour.name || 'Tour')}</div>`;
+    shows.forEach(s => { html += renderShowCard(s); });
+    html += '</div>';
+  });
+  if (noTour.length) {
+    html += '<div class="tour-group"><div class="tour-label">Other Shows</div>';
+    noTour.forEach(s => { html += renderShowCard(s); });
+    html += '</div>';
+  }
+  el.innerHTML = html;
+
+  // Wire click handlers
+  el.querySelectorAll('.show-card').forEach(card => {
+    card.addEventListener('click', () => openShowDetail(card.dataset.id));
+  });
+}
+
+function renderShowCard(s) {
+  const d = parseDate(s.date);
+  const isNew = allNotifications.some(n => n.show_id === s.id && !n.read);
+  const published = s.status === 'published';
+  const showtime = s.advancing?.showtime ? formatTime(s.advancing.showtime) : '';
+
+  return `<div class="show-card" data-id="${s.id}">
+    <div class="show-card-top">
+      <div class="show-date-col">
+        <div class="show-date-day">${d.day}</div>
+        <div class="show-date-mon">${d.mon}</div>
+        <div class="show-date-dow">${d.dow}</div>
+      </div>
+      <div class="show-info">
+        <div class="show-venue-name">${escHtml(s.venue_name)}</div>
+        <div class="show-city">${escHtml([s.city, s.country].filter(Boolean).join(', '))}</div>
+        <div class="show-status-row">
+          ${isNew ? '<span class="show-status-chip chip-new">New</span>' : ''}
+          <span class="show-status-chip ${published ? 'chip-published' : 'chip-pending'}">${published ? 'Advanced' : 'Pending'}</span>
+          ${showtime ? `<span class="show-time-chip">Show ${showtime}</span>` : ''}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── SHOW DETAIL ────────────────────────────────────────
+
+function openShowDetail(show_id) {
+  currentShowId = show_id;
+  const show = allShows.find(s => s.id === show_id);
+  if (!show) return;
+
+  switchTab('detail');
+  const el = document.getElementById('screen-detail');
+
+  const d = parseDate(show.date);
+  const adv = show.advancing;
+  const published = show.status === 'published';
+
+  const mapsUrl = adv?.venue_address
+    ? `https://maps.google.com/?q=${encodeURIComponent(adv.venue_address)}`
+    : show.venue_address
+    ? `https://maps.google.com/?q=${encodeURIComponent(show.venue_address)}`
+    : null;
+
+  let html = `
+    <button class="back-btn" onclick="switchTab('shows')">← Back to Shows</button>
+    <div class="detail-header">
+      <div class="detail-venue">${escHtml(show.venue_name)}</div>
+      <div class="detail-meta">${escHtml([show.city, show.country].filter(Boolean).join(', '))} · ${d.full}</div>
+      ${mapsUrl ? `<a class="detail-address-link" href="${mapsUrl}" target="_blank">📍 ${escHtml(adv?.venue_address || show.venue_address || 'View on Maps')}</a>` : ''}
+      ${show.age_restriction ? `<div style="font-size:12px;color:#555;margin-top:2px;">${escHtml(show.age_restriction)}</div>` : ''}
+    </div>`;
+
+  if (!published || !adv) {
+    html += `<div class="pending-banner">
+      <div class="pending-icon">⏳</div>
+      <div class="pending-text">Advancing info is being confirmed with the venue.<br>We'll notify you when it's ready.</div>
+    </div>`;
+  } else {
+    // SCHEDULE
+    html += `<div class="adv-section">
+      <div class="adv-section-title">Schedule</div>
+      <div class="schedule-grid">
+        ${schedItem('Load In', adv.load_in_time)}
+        ${schedItem('Soundcheck', adv.soundcheck_time)}
+        ${schedItem('Doors', adv.doors_time)}
+        ${schedItem('Showtime', adv.showtime, true)}
+      </div>
+      ${adv.set_length_mins ? `<div style="font-size:11px;color:#444;margin-top:6px;">Set length: ${adv.set_length_mins} min</div>` : ''}
+      ${adv.curfew_time ? `<div style="font-size:11px;color:#444;margin-top:2px;">Curfew: ${formatTime(adv.curfew_time)}</div>` : ''}
+    </div>`;
+
+    // CONTACTS
+    html += `<div class="adv-section"><div class="adv-section-title">Contacts</div>`;
+    if (adv.promoter?.name) html += contactCard(adv.promoter.name, 'Promoter', adv.promoter.phone, adv.promoter.email);
+    if (adv.day_of_contact?.name) html += contactCard(adv.day_of_contact.name, 'Day-Of Contact', adv.day_of_contact.phone, '');
+    if (adv.sound_engineer?.name) html += contactCard(adv.sound_engineer.name, 'Sound Engineer', adv.sound_engineer.contact, '');
+    html += `</div>`;
+
+    // SOUND & BACKLINE
+    html += `<div class="adv-section"><div class="adv-section-title">Sound & Backline</div>`;
+    if (adv.pa_specs) html += advRow('PA / House', adv.pa_specs);
+    if (adv.monitoring) html += advRow('Monitoring', adv.monitoring);
+    if (adv.backline) {
+      const bl = adv.backline;
+      html += `<div class="adv-row"><div class="adv-label">Backline</div><div class="adv-value">
+        <div class="backline-pills">
+          ${blPill('Drum Kit', bl.drum_kit)} ${blPill('Bass Amp', bl.bass_amp)}
+          ${blPill('Guitar Amp', bl.guitar_amp)} ${blPill('Keys/DI', bl.keys)} ${blPill('DI Boxes', bl.di_boxes)}
+        </div>
+        ${bl.drum_kit && bl.drum_kit_specs ? `<div style="font-size:11px;color:#555;margin-top:4px;">${escHtml(bl.drum_kit_specs)}</div>` : ''}
+        ${bl.bass_amp && bl.bass_amp_specs ? `<div style="font-size:11px;color:#555;margin-top:2px;">Bass: ${escHtml(bl.bass_amp_specs)}</div>` : ''}
+        ${bl.guitar_amp && bl.guitar_amp_specs ? `<div style="font-size:11px;color:#555;margin-top:2px;">Guitar: ${escHtml(bl.guitar_amp_specs)}</div>` : ''}
+        ${bl.di_boxes && bl.di_count ? `<div style="font-size:11px;color:#555;margin-top:2px;">${escHtml(bl.di_count)} DI box(es)</div>` : ''}
+      </div></div>`;
+    }
+    html += `</div>`;
+
+    // GUEST LIST
+    if (adv.guest_list?.spots || adv.guest_list?.send_to) {
+      html += `<div class="adv-section"><div class="adv-section-title">Guest List</div>`;
+      if (adv.guest_list.spots) html += advRow('Spots', adv.guest_list.spots);
+      if (adv.guest_list.deadline) html += advRow('Deadline', adv.guest_list.deadline);
+      if (adv.guest_list.send_to) html += advRow('Send List To', adv.guest_list.send_to, true);
+      html += `</div>`;
+    }
+
+    // MERCH
+    html += `<div class="adv-section"><div class="adv-section-title">Merch</div>`;
+    html += advRow('Table', adv.merch?.table ? '✓ Available' : '✗ Not provided');
+    if (adv.merch?.venue_cut_pct) html += advRow('Venue Cut', adv.merch.venue_cut_pct + '%');
+    if (adv.merch?.settlement_contact) html += advRow('Settlement', adv.merch.settlement_contact);
+    html += `</div>`;
+
+    // SETTLEMENT
+    html += `<div class="adv-section"><div class="adv-section-title">Settlement</div>`;
+    if (adv.settlement?.method) html += advRow('Method', adv.settlement.method, true);
+    if (adv.settlement?.who_pays) html += advRow('See', adv.settlement.who_pays);
+    if (adv.settlement?.when) html += advRow('When', adv.settlement.when);
+    html += `</div>`;
+
+    // HOTEL
+    if (adv.hotel?.name) {
+      const hotelMaps = adv.hotel.address ? `https://maps.google.com/?q=${encodeURIComponent(adv.hotel.address)}` : null;
+      html += `<div class="adv-section"><div class="adv-section-title">Accommodation</div>`;
+      html += advRow('Hotel', adv.hotel.name, true);
+      if (adv.hotel.address) html += `<div class="adv-row"><div class="adv-label">Address</div><div class="adv-value"><a href="${hotelMaps}" target="_blank">${escHtml(adv.hotel.address)}</a></div></div>`;
+      if (adv.hotel.check_in) html += advRow('Check-In', adv.hotel.check_in);
+      if (adv.hotel.check_out) html += advRow('Check-Out', adv.hotel.check_out);
+      if (adv.hotel.confirmation_no) html += advRow('Confirmation #', adv.hotel.confirmation_no, true);
+      if (adv.hotel.notes) html += advRow('Notes', adv.hotel.notes);
+      html += `</div>`;
+    }
+
+    // CATERING
+    if (adv.catering_rider) {
+      html += `<div class="adv-section"><div class="adv-section-title">Catering & Hospitality</div>`;
+      html += advRow('Rider', adv.catering_rider);
+      html += `</div>`;
+    }
+
+    // WIFI
+    if (adv.wifi?.network) {
+      html += `<div class="adv-section"><div class="adv-section-title">Wi-Fi</div>`;
+      html += advRow('Network', adv.wifi.network, true);
+      if (adv.wifi.password) html += advRow('Password', adv.wifi.password, true);
+      html += `</div>`;
+    }
+
+    // PARKING
+    if (adv.parking_instructions) {
+      html += `<div class="adv-section"><div class="adv-section-title">Parking</div>`;
+      html += advRow('Instructions', adv.parking_instructions);
+      html += `</div>`;
+    }
+
+    // GREEN ROOM
+    if (adv.green_room_info) {
+      html += `<div class="adv-section"><div class="adv-section-title">Green Room</div>`;
+      html += advRow('Info', adv.green_room_info);
+      html += `</div>`;
+    }
+
+    // ADDITIONAL NOTES
+    if (adv.additional_notes) {
+      html += `<div class="adv-section"><div class="adv-section-title">Additional Notes</div>`;
+      html += advRow('Notes', adv.additional_notes);
+      html += `</div>`;
+    }
+  }
+
+  el.innerHTML = html;
+  document.getElementById('main-content').scrollTo(0, 0);
+}
+
+// ── NOTIFICATIONS ──────────────────────────────────────
+
+function renderNotifications() {
+  const el = document.getElementById('screen-notifications');
+  if (!allNotifications.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🔔</div>No updates yet.</div>';
+    return;
+  }
+  el.innerHTML = allNotifications.map(n => `
+    <div class="notif-item ${n.read ? '' : 'unread'}">
+      <div class="notif-venue">${escHtml(n.type === 'advancing_published' ? '✓ Advancing Ready' : n.type)}</div>
+      <div class="notif-msg">${escHtml(n.message)}</div>
+      <div class="notif-time">${relTime(n.created_at)}</div>
+    </div>
+  `).join('');
+
+  // Mark all as read
+  const unreadIds = allNotifications.filter(n => !n.read).map(n => n.id);
+  if (unreadIds.length) {
+    fetch(API, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'band_mark_notifications_read', band_id: session.band_id, session_token: session.session_token, notification_ids: unreadIds })
+    }).then(() => {
+      allNotifications.forEach(n => { n.read = true; });
+      updateNotifBadge();
+    }).catch(() => {});
+  }
+}
+
+function updateNotifBadge() {
+  const count = allNotifications.filter(n => !n.read).length;
+  const badge = document.getElementById('notif-badge');
+  const dot = document.getElementById('nav-notif-dot');
+  if (count > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = count > 9 ? '9+' : count;
+    if (dot) dot.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+    if (dot) dot.style.display = 'none';
+  }
+}
+
+// ── NAVIGATION ────────────────────────────────────────
+
+function switchTab(tab) {
+  document.querySelectorAll('.screen').forEach(s => { s.style.display = 'none'; s.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+  if (tab === 'shows') {
+    document.getElementById('screen-shows').style.display = 'block';
+    document.getElementById('nav-shows').classList.add('active');
+  } else if (tab === 'detail') {
+    document.getElementById('screen-detail').style.display = 'block';
+  } else if (tab === 'notifications') {
+    document.getElementById('screen-notifications').style.display = 'block';
+    document.getElementById('nav-notifications').classList.add('active');
+    renderNotifications();
+  }
+  document.getElementById('main-content').scrollTo(0, 0);
+}
+
+// ── HELPER RENDERERS ──────────────────────────────────
+
+function schedItem(label, time, gold = false) {
+  return `<div class="sched-item">
+    <div class="sched-label">${label}</div>
+    <div class="sched-time${gold ? ' showtime' : ''}">${time ? formatTime(time) : '—'}</div>
+  </div>`;
+}
+function advRow(label, value, highlight = false) {
+  const empty = !value || value === 'false';
+  return `<div class="adv-row">
+    <div class="adv-label">${escHtml(label)}</div>
+    <div class="adv-value${highlight ? ' highlight' : ''}${empty ? ' empty' : ''}">${empty ? 'TBC' : escHtml(String(value))}</div>
+  </div>`;
+}
+function blPill(label, val) {
+  return `<span class="bl-pill ${val ? 'bl-yes' : 'bl-no'}">${label}</span>`;
+}
+function contactCard(name, role, phone, email) {
+  return `<div class="contact-card">
+    <div class="contact-role">${escHtml(role)}</div>
+    <div class="contact-name">${escHtml(name)}</div>
+    <div class="contact-links">
+      ${phone ? `<a class="contact-link" href="tel:${encodeURIComponent(phone)}">📞 ${escHtml(phone)}</a>` : ''}
+      ${email ? `<a class="contact-link" href="mailto:${encodeURIComponent(email)}">✉ ${escHtml(email)}</a>` : ''}
+    </div>
+  </div>`;
+}
+
+// ── UTILS ────────────────────────────────────────────
+
+function formatTime(t) {
+  if (!t) return '—';
+  try {
+    const [h, m] = t.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hr = h % 12 || 12;
+    return `${hr}:${String(m).padStart(2,'0')} ${ampm}`;
+  } catch { return t; }
+}
+function parseDate(dateStr) {
+  if (!dateStr) return { day: '—', mon: '—', dow: '—', full: '—' };
+  try {
+    const d = new Date(dateStr + 'T12:00:00');
+    return {
+      day: d.getDate(),
+      mon: d.toLocaleDateString('en', { month: 'short' }).toUpperCase(),
+      dow: d.toLocaleDateString('en', { weekday: 'short' }).toUpperCase(),
+      full: d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    };
+  } catch { return { day: '—', mon: '—', dow: '—', full: dateStr }; }
+}
+function relTime(iso) {
+  if (!iso) return '';
+  const ms = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(ms / 60000);
+  if (m < 2) return 'just now';
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  return Math.floor(h / 24) + 'd ago';
+}
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── BOOT ─────────────────────────────────────────────
+
+// Enter key on login
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('login-user').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+
+// Check for saved session
+const saved = localStorage.getItem(SESSION_KEY);
+if (saved) {
+  try {
+    session = JSON.parse(saved);
+    enterApp();
+  } catch { localStorage.removeItem(SESSION_KEY); }
+}
+</script>
+</body>
+</html>
