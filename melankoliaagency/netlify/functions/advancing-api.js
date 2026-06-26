@@ -6,7 +6,7 @@
  * No Gemini 2.x. Firebase Admin SDK only here.
  */
 
-const { getDb, COLS } = require('./_firebase');
+const { getDb, COLS, admin } = require('./_firebase');
 const crypto = require('crypto');
 
 const CORS = {
@@ -215,7 +215,7 @@ exports.handler = async (event) => {
 
       // Update tour.show_ids
       await db.collection(COLS.TOURS).doc(tour_id).update({
-        show_ids: require('firebase-admin').firestore.FieldValue.arrayUnion(showRef.id)
+        show_ids: admin.firestore.FieldValue.arrayUnion(showRef.id)
       });
 
       // Audit log
