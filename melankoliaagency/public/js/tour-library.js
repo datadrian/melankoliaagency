@@ -579,8 +579,11 @@ function tlAutoSaveVenues(city, country, venues) {
    INIT
    ==================================================== */
 
+let _tourLibraryInited = false;
+
 function initTourLibrary() {
-  // Populate artist filters
+  // Always refresh dynamic content
+
   const artists = getArtists ? getArtists() : [];
 
   ['tl-artist-filter', 'tl-perf-artist'].forEach(id => {
@@ -589,18 +592,25 @@ function initTourLibrary() {
     sel.innerHTML = '<option value="">All artists</option>' + artists.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
   });
 
-  document.getElementById('tl-artist-filter')?.addEventListener('change', renderTourLibrary);
-  document.getElementById('tl-status-filter')?.addEventListener('change', renderTourLibrary);
-  document.getElementById('tl-perf-artist')?.addEventListener('change', renderMarketTracker);
-  document.getElementById('tp-reference-tour')?.addEventListener('change', e => tlSetReferenceTour(e.target.value));
+  if (!_tourLibraryInited) {
+    _tourLibraryInited = true;
+    document.getElementById('tl-artist-filter')?.addEventListener('change', renderTourLibrary);
+    document.getElementById('tl-status-filter')?.addEventListener('change', renderTourLibrary);
+    document.getElementById('tl-perf-artist')?.addEventListener('change', renderMarketTracker);
+    document.getElementById('tp-reference-tour')?.addEventListener('change', e => tlSetReferenceTour(e.target.value));
+  }
 
   // Email generator sub-tabs
   document.querySelectorAll('.email-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.email-tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.email-tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.email-tab-panel').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none';
+      });
       btn.classList.add('active');
-      document.getElementById('etab-' + btn.dataset.etab)?.classList.add('active');
+      const panel = document.getElementById('etab-' + btn.dataset.etab);
+      if (panel) { panel.classList.add('active'); panel.style.display = 'block'; }
     });
   });
 

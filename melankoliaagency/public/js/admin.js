@@ -123,6 +123,11 @@ function renderDashboard() {
   const bookings= getBookings();
   const epks    = artists.filter(a => a.epk).length;
   document.getElementById('statArtists').textContent  = artists.filter(a=>a.status==='active').length;
+  try {
+    const tours = JSON.parse(localStorage.getItem('mk_saved_tours') || '[]');
+    const tourEl = document.getElementById('statTours');
+    if (tourEl) tourEl.textContent = tours.length;
+  } catch(e) {}
   document.getElementById('statVideos').textContent   = videos.length;
   document.getElementById('statEpks').textContent     = epks;
   document.getElementById('statBookings').textContent = bookings.length;

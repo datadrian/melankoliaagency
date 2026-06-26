@@ -158,10 +158,14 @@ let tourState = {
 };
 
 /* ---- INIT ---- */
+let _tourPlannerInited = false;
+
 function initTourPlanner() {
   if (tourState.mapsReady) {
     TourMap.init('tourMap');
   }
+  if (_tourPlannerInited) return;
+  _tourPlannerInited = true;
 
   // Tab switching
   document.querySelectorAll('.tour-tab-btn').forEach(btn => {

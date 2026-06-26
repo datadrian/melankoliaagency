@@ -114,6 +114,10 @@
             <div class="stat-num" id="statBookings">—</div>
             <div class="stat-label">Booking Requests</div>
           </div>
+          <div class="stat-card" style="cursor:pointer;" onclick="showView('library')">
+            <div class="stat-num" id="statTours">—</div>
+            <div class="stat-label">Saved Tours</div>
+          </div>
         </div>
         <div class="dash-section">
           <h2 class="dash-h2">Quick Actions</h2>
@@ -122,6 +126,8 @@
             <button class="qa-btn" onclick="showView('epk')">+ Build EPK</button>
             <button class="qa-btn" onclick="showView('videos')">+ Add Video</button>
             <button class="qa-btn" onclick="showView('bookings')">View Requests</button>
+            <button class="qa-btn" onclick="showView('tour')">+ New Tour</button>
+            <button class="qa-btn" onclick="showView('outreach')">✉ Email Outreach</button>
             <button class="qa-btn" onclick="resetAndReseed()" style="color:#666">↺ Re-sync Data</button>
           </div>
         </div>
