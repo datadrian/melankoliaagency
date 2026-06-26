@@ -27,21 +27,25 @@
   from = "/band-app"
   to = "/band-app/index.html"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/band-app/*"
   to = "/band-app/index.html"
   status = 200
-
-[[redirects]]
-  from = "/advancing/*"
-  to = "/advancing/index.html"
-  status = 200
+  force = true
 
 [[redirects]]
   from = "/advancing"
   to = "/advancing/index.html"
   status = 200
+  force = true
+
+[[redirects]]
+  from = "/advancing/*"
+  to = "/advancing/index.html"
+  status = 200
+  force = true
 
 [[headers]]
   for = "/*"
