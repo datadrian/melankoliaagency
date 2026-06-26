@@ -13,7 +13,7 @@ const MODELS = {
   FLASH: 'gemini-3.5-flash'          // Fast — quick suggestions, venue tips, chat
 };
 
-async function callGemini(model, prompt, thinkingLevel = 'medium') {
+async function callGemini(model, prompt) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
@@ -22,11 +22,6 @@ async function callGemini(model, prompt, thinkingLevel = 'medium') {
       maxOutputTokens: 8192
     }
   };
-
-  // Gemini 3 supports thinking_level
-  if (model.startsWith('gemini-3')) {
-    body.generationConfig.thinking_level = thinkingLevel;
-  }
 
   const res = await fetch(url, {
     method: 'POST',
@@ -93,7 +88,6 @@ exports.handler = async (event) => {
 
     switch (action) {
 
-      // Full AI tour plan — uses Pro model with high thinking
       case 'generate_tour': {
         const { artist, region, startCity, endCity, startDate, endDate, budget, numShows, preferences } = data;
 
@@ -109,27 +103,27 @@ Generate a detailed touring route plan with the following parameters:
 - Target number of shows: ${numShows || 'as many as makes geographic sense'}
 - Special preferences: ${preferences || 'none'}
 
-Return a JSON object (and ONLY the JSON object, no markdown) with this exact structure:
+Return a JSON object (and ONLY the JSON object, no markdown, no code fences) with this exact structure:
 {
   "tour_name": "string",
   "summary": "2-3 sentence overview of the routing strategy",
   "total_days": number,
   "total_shows": number,
   "estimated_total_km": number,
-  "routing_model": "linear|hub_spoke|regional_loop",
+  "routing_model": "linear or hub_spoke or regional_loop",
   "legs": [
     {
       "day": number,
       "date": "YYYY-MM-DD",
       "city": "string",
       "country": "string",
-      "venue_type": "club|festival|art_space|theatre|diy",
+      "venue_type": "club or festival or art_space or theatre or diy",
       "suggested_venue_search": "search query to find venues in this city",
       "drive_from_previous_km": number,
       "drive_hours": number,
       "notes": "string",
-      "is_anchor_show": boolean,
-      "day_off": boolean
+      "is_anchor_show": true or false,
+      "day_off": true or false
     }
   ],
   "gaps": ["list of cities worth adding if routing allows"],
@@ -137,16 +131,13 @@ Return a JSON object (and ONLY the JSON object, no markdown) with this exact str
   "ai_tips": ["3-5 specific tips for this artist on this route"]
 }`;
 
-        const text = await callGemini(MODELS.PRO, prompt, 'high');
-
-        // Extract JSON from response
+        const text = await callGemini(MODELS.PRO, prompt);
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error('AI did not return valid JSON');
         result = JSON.parse(jsonMatch[0]);
         break;
       }
 
-      // Quick venue suggestions for a city — uses Flash
       case 'suggest_venues': {
         const { city, country, genre, capacity } = data;
 
@@ -154,13 +145,13 @@ Return a JSON object (and ONLY the JSON object, no markdown) with this exact str
 
 List the best underground/alternative music venues in ${city}, ${country || ''} for ${genre || 'darkwave/EBM/post-punk'} acts with ${capacity || '200-800'} capacity.
 
-Return ONLY a JSON array (no markdown) with this structure:
+Return ONLY a JSON array (no markdown, no code fences) with this structure:
 [
   {
     "name": "venue name",
     "address": "approximate address or neighborhood",
     "capacity": number or null,
-    "type": "club|bar|art_space|theatre|festival",
+    "type": "club or bar or art_space or theatre or festival",
     "notes": "why this venue suits the genre",
     "booking_tip": "practical tip for reaching the booker"
   }
@@ -168,14 +159,13 @@ Return ONLY a JSON array (no markdown) with this structure:
 
 Return 5-8 venues maximum.`;
 
-        const text = await callGemini(MODELS.FLASH, prompt, 'low');
+        const text = await callGemini(MODELS.FLASH, prompt);
         const jsonMatch = text.match(/\[[\s\S]*\]/);
         if (!jsonMatch) throw new Error('AI did not return valid JSON array');
         result = JSON.parse(jsonMatch[0]);
         break;
       }
 
-      // Optimize a route the user has manually built — uses Pro
       case 'optimize_route': {
         const { cities, startDate, artist } = data;
 
@@ -185,9 +175,9 @@ The user has a list of confirmed or potential cities for ${artist || 'an artist 
 Starting date: ${startDate}.
 Cities (in no particular order): ${cities.join(', ')}
 
-Analyze this and return ONLY a JSON object (no markdown):
+Analyze this and return ONLY a JSON object (no markdown, no code fences):
 {
-  "optimized_order": ["city1", "city2", ...],
+  "optimized_order": ["city1", "city2"],
   "routing_strategy": "explanation of the strategy",
   "total_km_optimized": number,
   "total_km_naive": number,
@@ -199,14 +189,13 @@ Analyze this and return ONLY a JSON object (no markdown):
   ]
 }`;
 
-        const text = await callGemini(MODELS.PRO, prompt, 'high');
+        const text = await callGemini(MODELS.PRO, prompt);
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error('AI did not return valid JSON');
         result = JSON.parse(jsonMatch[0]);
         break;
       }
 
-      // Budget estimate for a tour leg — uses Flash
       case 'estimate_budget': {
         const { cities, numPeople, numDays, region, vanRental } = data;
 
@@ -219,7 +208,7 @@ Estimate the touring budget for:
 - Region: ${region}
 - Van rental included: ${vanRental ? 'yes' : 'no (band has own vehicle)'}
 
-Return ONLY a JSON object (no markdown):
+Return ONLY a JSON object (no markdown, no code fences):
 {
   "summary": "brief overview",
   "daily_breakdown": {
@@ -231,17 +220,16 @@ Return ONLY a JSON object (no markdown):
   "total_estimated_cost_usd": number,
   "minimum_guarantee_needed_per_show_usd": number,
   "break_even_shows": number,
-  "tips": ["2-3 cost saving tips specific to this region/genre circuit"]
+  "tips": ["2-3 cost saving tips specific to this region and genre circuit"]
 }`;
 
-        const text = await callGemini(MODELS.FLASH, prompt, 'low');
+        const text = await callGemini(MODELS.FLASH, prompt);
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error('AI did not return valid JSON');
         result = JSON.parse(jsonMatch[0]);
         break;
       }
 
-      // Freeform AI chat about the tour — uses Flash
       case 'chat': {
         const { message, context } = data;
 
@@ -251,9 +239,9 @@ Current tour context: ${context || 'none provided'}
 
 User question: ${message}
 
-Answer helpfully and concisely as the Melankolia Agency AI tour planner. Be specific and practical.`;
+Answer helpfully and concisely as the Melankolia Agency AI tour planner. Be specific and practical. Plain text only, no markdown.`;
 
-        result = { reply: await callGemini(MODELS.FLASH, prompt, 'low') };
+        result = { reply: await callGemini(MODELS.FLASH, prompt) };
         break;
       }
 
