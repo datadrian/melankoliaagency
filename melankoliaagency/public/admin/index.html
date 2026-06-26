@@ -68,6 +68,9 @@
         <a href="#" class="sidebar-link" data-view="bookings">
           <span class="icon">◈</span> Booking Requests
         </a>
+        <a href="#" class="sidebar-link" data-view="tour">
+          <span class="icon">◈</span> Tour Planner
+        </a>
         <a href="#" class="sidebar-link" data-view="settings">
           <span class="icon">◈</span> Site Settings
         </a>
@@ -441,10 +444,264 @@
         </div>
       </div>
 
+
+      <!-- TOUR PLANNER -->
+      <div class="view" id="view-tour" style="padding:0;overflow:hidden;height:100%;">
+        <div class="tour-layout">
+
+          <!-- LEFT: Controls -->
+          <div class="tour-sidebar">
+            <div class="tour-sidebar-header" style="display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div class="tour-sidebar-title">Tour Planner</div>
+              </div>
+              <button onclick="openTourWizard()" class="t-btn t-btn-secondary t-btn-sm" title="Open guide">? Guide</button>
+            </div>
+
+            <div class="tour-tab-bar">
+              <button class="tour-tab-btn active" data-tab="build">Build</button>
+              <button class="tour-tab-btn" data-tab="optimize">Optimize</button>
+              <button class="tour-tab-btn" data-tab="budget">Budget</button>
+              <button class="tour-tab-btn" data-tab="venues">Venues</button>
+              <button class="tour-tab-btn" data-tab="deal">Deal</button>
+            </div>
+
+            <!-- BUILD TAB -->
+            <div class="tour-tab-panel active" id="ttab-build">
+              <form id="tp-build-form" class="t-form">
+                <div class="t-group">
+                  <label>Artist</label>
+                  <select id="tp-artist" class="t-input" required>
+                    <option value="">Select artist...</option>
+                  </select>
+                </div>
+                <div class="t-group">
+                  <label>Region</label>
+                  <div class="t-radio-group">
+                    <label class="t-radio-opt"><input type="radio" name="tp-region" value="USA" checked> USA</label>
+                    <label class="t-radio-opt"><input type="radio" name="tp-region" value="Europe"> Europe</label>
+                    <label class="t-radio-opt"><input type="radio" name="tp-region" value="Both"> Both</label>
+                  </div>
+                </div>
+                <div class="t-row">
+                  <div class="t-group"><label>Start City</label><input type="text" id="tp-start-city" class="t-input" placeholder="e.g. New York" required></div>
+                  <div class="t-group"><label>End City</label><input type="text" id="tp-end-city" class="t-input" placeholder="or loop"></div>
+                </div>
+                <div class="t-row">
+                  <div class="t-group"><label>Start Date</label><input type="date" id="tp-start-date" class="t-input" required></div>
+                  <div class="t-group"><label>End Date</label><input type="date" id="tp-end-date" class="t-input" required></div>
+                </div>
+                <div class="t-row">
+                  <div class="t-group"><label>Target Shows</label><input type="number" id="tp-num-shows" class="t-input" placeholder="e.g. 8" min="2" max="30"></div>
+                  <div class="t-group">
+                    <label>Deal Type</label>
+                    <select id="tp-deal-type" class="t-input">
+                      <option value="guarantee">Guarantee</option>
+                      <option value="best_of">Best of</option>
+                      <option value="door">Door Deal</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="t-group"><label>Budget / Show</label><input type="text" id="tp-budget" class="t-input" placeholder="e.g. $1000"></div>
+                <div class="t-group">
+                  <label>Anchor Shows (optional)</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3rem;margin-bottom:0.3rem;">
+                    <input type="text" id="tp-anchor-city" class="t-input" placeholder="City">
+                    <input type="date" id="tp-anchor-date" class="t-input">
+                  </div>
+                  <div style="display:flex;gap:0.3rem;margin-bottom:0.4rem;">
+                    <input type="text" id="tp-anchor-venue" class="t-input" placeholder="Venue (optional)" style="flex:1;">
+                    <button type="button" id="tp-add-anchor" class="t-btn t-btn-secondary t-btn-sm">+ Add</button>
+                  </div>
+                  <div id="tp-anchor-list" style="font-size:0.68rem;color:#333;">No anchors added yet.</div>
+                </div>
+                <div class="t-group"><label>Notes / Preferences</label><textarea id="tp-prefs" class="t-input t-textarea" placeholder="e.g. avoid midwest, prefer art spaces, need 2 rest days..."></textarea></div>
+                <button type="submit" class="t-btn t-btn-primary" id="tp-generate-btn">◈ Generate Tour Plan</button>
+              </form>
+            </div>
+
+            <!-- OPTIMIZE TAB -->
+            <div class="tour-tab-panel" id="ttab-optimize">
+              <div class="t-form">
+                <div class="t-group"><label>Artist</label><select id="tp-opt-artist" class="t-input"><option value="">Select...</option></select></div>
+                <div class="t-group">
+                  <label>Region</label>
+                  <div class="t-radio-group">
+                    <label class="t-radio-opt"><input type="radio" name="tp-opt-region" value="USA" checked> USA</label>
+                    <label class="t-radio-opt"><input type="radio" name="tp-opt-region" value="Europe"> Europe</label>
+                  </div>
+                </div>
+                <div class="t-group"><label>Cities (one per line)</label><textarea id="tp-opt-cities" class="t-input t-textarea" rows="8" placeholder="New York&#10;Chicago&#10;Detroit&#10;Boston&#10;Philadelphia"></textarea></div>
+                <div class="t-group"><label>Start Date</label><input type="date" id="tp-opt-date" class="t-input"></div>
+                <button class="t-btn t-btn-primary" id="tp-opt-btn">◈ Optimize Route</button>
+              </div>
+            </div>
+
+            <!-- BUDGET TAB -->
+            <div class="tour-tab-panel" id="ttab-budget">
+              <div class="t-form">
+                <div class="t-group"><label>Region</label><select id="tp-bud-region" class="t-input"><option value="USA">USA</option><option value="Europe">Europe</option></select></div>
+                <div class="t-row">
+                  <div class="t-group"><label>People</label><input type="number" id="tp-bud-people" class="t-input" value="4" min="1" max="12"></div>
+                  <div class="t-group"><label>Days</label><input type="number" id="tp-bud-days" class="t-input" value="10" min="1" max="60"></div>
+                </div>
+                <div class="t-row">
+                  <div class="t-group"><label>Shows</label><input type="number" id="tp-bud-shows" class="t-input" value="7" min="1" max="50"></div>
+                  <div class="t-group"><label>Avg Guarantee $</label><input type="number" id="tp-bud-guarantee" class="t-input" value="800" min="0"></div>
+                </div>
+                <div class="t-group"><label>Tour Support $</label><input type="number" id="tp-bud-support" class="t-input" value="0" min="0"></div>
+                <div class="t-group"><label>Cities (one per line)</label><textarea id="tp-bud-cities" class="t-input t-textarea" rows="4" placeholder="New York&#10;Philadelphia..."></textarea></div>
+                <div class="t-group"><label class="t-check-opt"><input type="checkbox" id="tp-bud-van"> Include van rental estimate</label></div>
+                <button class="t-btn t-btn-primary" id="tp-budget-btn">◈ Estimate Budget</button>
+              </div>
+            </div>
+
+            <!-- VENUES TAB -->
+            <div class="tour-tab-panel" id="ttab-venues">
+              <div class="t-form">
+                <div class="t-row">
+                  <div class="t-group"><label>City</label><input type="text" id="tp-venue-city" class="t-input" placeholder="Berlin"></div>
+                  <div class="t-group"><label>Country</label><input type="text" id="tp-venue-country" class="t-input" placeholder="Germany"></div>
+                </div>
+                <div class="t-group"><label>Genre</label>
+                  <select id="tp-venue-genre" class="t-input">
+                    <option value="darkwave/EBM/post-punk">Darkwave / EBM</option>
+                    <option value="industrial/noise">Industrial</option>
+                    <option value="synthpop/coldwave">Synthpop / Coldwave</option>
+                    <option value="post-punk/goth">Post-Punk / Goth</option>
+                    <option value="underground electronic">Underground Electronic</option>
+                  </select>
+                </div>
+                <div class="t-group"><label>Capacity</label>
+                  <select id="tp-venue-cap" class="t-input">
+                    <option value="50-200">50–200 small</option>
+                    <option value="200-500" selected>200–500 medium</option>
+                    <option value="500-1000">500–1000 large</option>
+                  </select>
+                </div>
+                <button class="t-btn t-btn-primary" id="tp-venue-btn">◈ Find Venues</button>
+              </div>
+            </div>
+
+            <!-- DEAL TAB -->
+            <div class="tour-tab-panel" id="ttab-deal">
+              <div class="t-form">
+                <div class="t-group"><label>Artist</label><select id="tp-deal-artist" class="t-input"><option value="">Select...</option></select></div>
+                <div class="t-row">
+                  <div class="t-group"><label>City</label><input type="text" id="tp-deal-city" class="t-input" placeholder="Chicago"></div>
+                  <div class="t-group"><label>Venue</label><input type="text" id="tp-deal-venue" class="t-input" placeholder="Empty Bottle"></div>
+                </div>
+                <div class="t-row">
+                  <div class="t-group"><label>Venue Capacity</label><input type="text" id="tp-deal-cap" class="t-input" placeholder="350"></div>
+                  <div class="t-group"><label>Expected Draw</label><input type="text" id="tp-deal-draw" class="t-input" placeholder="80-120"></div>
+                </div>
+                <div class="t-row">
+                  <div class="t-group"><label>Offer Type</label>
+                    <select id="tp-deal-type-sel" class="t-input">
+                      <option value="guarantee">Guarantee</option>
+                      <option value="door">Door Deal</option>
+                      <option value="best_of">Best of</option>
+                    </select>
+                  </div>
+                  <div class="t-group"><label>Offer Amount $</label><input type="number" id="tp-deal-amount" class="t-input" placeholder="500"></div>
+                </div>
+                <button class="t-btn t-btn-primary" id="tp-deal-btn">◈ Evaluate Deal</button>
+              </div>
+            </div>
+
+          </div><!-- /tour-sidebar -->
+
+          <!-- CENTER: Map -->
+          <div class="tour-map-wrap">
+            <div id="tourMap"></div>
+            <div class="tour-map-overlay" id="tp-map-overlay">
+              <div class="tour-map-overlay-inner">
+                <div class="t-spinner"></div>
+                <div class="t-loading-text" id="tp-loading-text">Working...</div>
+              </div>
+            </div>
+            <div class="tour-map-controls">
+              <button class="tour-map-ctrl" id="tp-clear-map">✕ Clear</button>
+              <button class="tour-map-ctrl" id="tp-fit-map">⊞ Fit</button>
+            </div>
+            <div class="tour-map-legend">
+              <div class="t-legend-row"><span class="t-legend-dot anchor"></span> Anchor</div>
+              <div class="t-legend-row"><span class="t-legend-dot routing"></span> Show</div>
+              <div class="t-legend-row"><span class="t-legend-dot rest"></span> Rest</div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Results + Chat -->
+          <div class="tour-results">
+            <div class="t-chat">
+              <div class="t-chat-header"><span class="t-ai-chip">AI</span> Booking Intelligence</div>
+              <div class="t-chat-msgs" id="tp-chat-msgs"></div>
+              <div class="t-chat-row">
+                <input type="text" id="tp-chat-input" class="t-input" placeholder="Ask about routing, venues, deals...">
+                <button class="t-btn t-btn-icon" id="tp-chat-send">→</button>
+              </div>
+            </div>
+            <div class="t-results-area" id="tp-results-area">
+              <div class="t-results-empty"><div class="t-results-empty-icon">◈</div><div>Build a tour to see results, or ask the AI anything.</div></div>
+            </div>
+          </div>
+
+        </div><!-- /tour-layout -->
+      </div><!-- /view-tour -->
+
+      <!-- ONBOARDING WIZARD OVERLAY -->
+      <div id="tourWizardOverlay" class="tour-wizard-overlay" style="display:none;">
+        <div class="tour-wizard-box">
+          <div class="wizard-header">
+            <div>
+              <div class="wizard-logo">Melankolia Agency</div>
+              <div class="wizard-step-title" id="wizard-title"></div>
+              <div class="wizard-step-sub" id="wizard-sub"></div>
+            </div>
+            <button class="wizard-close" onclick="closeWizard()">✕</button>
+          </div>
+          <div class="wizard-progress" id="wizard-progress"></div>
+          <div class="wizard-body" id="wizard-body"></div>
+          <div class="wizard-footer">
+            <div class="wizard-step-count" id="wizard-count"></div>
+            <div style="display:flex;gap:0.6rem;">
+              <button id="wizard-prev" class="t-btn t-btn-secondary" onclick="wizardPrev()">← Back</button>
+              <button id="wizard-next" class="t-btn t-btn-primary" onclick="wizardNext()">Next →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
   <script src="/js/data.js"></script>
   <script src="/js/admin.js"></script>
+  <script src="/js/tour-planner.js"></script>
+  <script>
+    // Extend showView for tour tab
+    const _origShowView = showView;
+    showView = function(name) {
+      _origShowView(name);
+      if (name === 'tour') {
+        if (typeof initTourPlanner === 'function') initTourPlanner();
+        // Show wizard on first visit
+        if (!localStorage.getItem('mk_tour_wizard_seen')) {
+          setTimeout(openTourWizard, 400);
+        }
+      }
+    };
+    // Load Maps API securely via proxy
+    (async () => {
+      try {
+        const r = await fetch('/.netlify/functions/maps-config');
+        const { key } = await r.json();
+        const s = document.createElement('script');
+        s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places,geometry&callback=tourMapReady`;
+        s.async = true; s.defer = true;
+        document.head.appendChild(s);
+      } catch(e) { console.warn('Maps failed to load', e); }
+    })();
+  </script>
 </body>
 </html>
