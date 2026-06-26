@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tour Planner — Melankolia Agency</title>
+  <link rel="icon" type="image/png" href="/images/logo-full.png">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/tour-planner/css/planner.css">
+</head>
+<body class="planner-body">
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <a href="/" class="nav-logo">
+      <img src="/images/logo-full.png" alt="Melankolia Agency" class="nav-logo-img">
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/" class="nav-link">Artists</a></li>
+      <li><a href="/videos.html" class="nav-link">Videos</a></li>
+      <li><a href="/booking.html" class="nav-link">Booking</a></li>
+      <li><a href="/tour-planner/" class="nav-link active">Tour Planner</a></li>
+    </ul>
+  </nav>
+
+  <!-- MAIN LAYOUT -->
+  <div class="planner-layout">
+
+    <!-- LEFT PANEL: Controls -->
+    <aside class="planner-sidebar" id="plannerSidebar">
+
+      <div class="sidebar-header">
+        <div class="sidebar-title">Tour Planner</div>
+        <div class="sidebar-sub">AI-Powered Route Intelligence</div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="build">Build</button>
+        <button class="tab-btn" data-tab="optimize">Optimize</button>
+        <button class="tab-btn" data-tab="budget">Budget</button>
+        <button class="tab-btn" data-tab="venues">Venues</button>
+      </div>
+
+      <!-- TAB: BUILD -->
+      <div class="tab-panel active" id="tab-build">
+        <form id="tourForm" class="planner-form">
+
+          <div class="form-group">
+            <label>Artist</label>
+            <select id="artistSelect" class="plan-input" required>
+              <option value="">Select artist...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Region</label>
+            <div class="radio-group">
+              <label class="radio-opt">
+                <input type="radio" name="region" value="USA" checked> USA
+              </label>
+              <label class="radio-opt">
+                <input type="radio" name="region" value="Europe"> Europe
+              </label>
+              <label class="radio-opt">
+                <input type="radio" name="region" value="Both"> Both
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start City</label>
+              <input type="text" id="startCity" class="plan-input" placeholder="e.g. New York" required>
+            </div>
+            <div class="form-group">
+              <label>End City</label>
+              <input type="text" id="endCity" class="plan-input" placeholder="Leave blank to loop">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start Date</label>
+              <input type="date" id="startDate" class="plan-input" required>
+            </div>
+            <div class="form-group">
+              <label>End Date</label>
+              <input type="date" id="endDate" class="plan-input" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Target Shows</label>
+              <input type="number" id="numShows" class="plan-input" placeholder="e.g. 8" min="2" max="30">
+            </div>
+            <div class="form-group">
+              <label>Budget / Show</label>
+              <input type="text" id="budget" class="plan-input" placeholder="e.g. $1000">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Preferences / Notes</label>
+            <textarea id="preferences" class="plan-input plan-textarea" placeholder="e.g. avoid Midwest, prefer warehouse venues, need at least 2 days off..."></textarea>
+          </div>
+
+          <button type="submit" class="plan-btn plan-btn-primary" id="generateBtn">
+            <span class="btn-icon">◈</span> Generate Tour Plan
+          </button>
+
+        </form>
+      </div>
+
+      <!-- TAB: OPTIMIZE -->
+      <div class="tab-panel" id="tab-optimize">
+        <div class="planner-form">
+          <div class="form-group">
+            <label>Artist</label>
+            <select id="optimizeArtist" class="plan-input">
+              <option value="">Select artist...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cities (one per line)</label>
+            <textarea id="optimizeCities" class="plan-input plan-textarea" rows="8" placeholder="New York&#10;Chicago&#10;Detroit&#10;Toronto&#10;Boston&#10;Philadelphia"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="optimizeStartDate" class="plan-input">
+          </div>
+          <button class="plan-btn plan-btn-primary" id="optimizeBtn">
+            <span class="btn-icon">◈</span> Optimize Route
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB: BUDGET -->
+      <div class="tab-panel" id="tab-budget">
+        <div class="planner-form">
+          <div class="form-group">
+            <label>Region</label>
+            <select id="budgetRegion" class="plan-input">
+              <option value="USA">USA</option>
+              <option value="Europe">Europe</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Number of People</label>
+              <input type="number" id="budgetPeople" class="plan-input" value="4" min="1" max="12">
+            </div>
+            <div class="form-group">
+              <label>Number of Days</label>
+              <input type="number" id="budgetDays" class="plan-input" value="10" min="1" max="60">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Cities on Tour (one per line)</label>
+            <textarea id="budgetCities" class="plan-input plan-textarea" rows="5" placeholder="New York&#10;Philadelphia&#10;Washington DC..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-opt">
+              <input type="checkbox" id="vanRental"> Include van rental estimate
+            </label>
+          </div>
+          <button class="plan-btn plan-btn-primary" id="budgetBtn">
+            <span class="btn-icon">◈</span> Estimate Budget
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB: VENUES -->
+      <div class="tab-panel" id="tab-venues">
+        <div class="planner-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" id="venueCity" class="plan-input" placeholder="e.g. Berlin">
+            </div>
+            <div class="form-group">
+              <label>Country</label>
+              <input type="text" id="venueCountry" class="plan-input" placeholder="e.g. Germany">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Genre</label>
+              <select id="venueGenre" class="plan-input">
+                <option value="darkwave/EBM/post-punk">Darkwave / EBM</option>
+                <option value="industrial/noise">Industrial</option>
+                <option value="synthpop/coldwave">Synthpop / Coldwave</option>
+                <option value="underground electronic">Underground Electronic</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Capacity</label>
+              <select id="venueCapacity" class="plan-input">
+                <option value="50-200">50–200 (small)</option>
+                <option value="200-500" selected>200–500 (medium)</option>
+                <option value="500-1000">500–1000 (large)</option>
+              </select>
+            </div>
+          </div>
+          <button class="plan-btn plan-btn-primary" id="venueBtn">
+            <span class="btn-icon">◈</span> Find Venues
+          </button>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- CENTER: Map -->
+    <div class="planner-map-wrap">
+      <div id="map"></div>
+
+      <!-- Map overlay: loading state -->
+      <div class="map-loading" id="mapLoading">
+        <div class="map-loading-inner">
+          <div class="spinner"></div>
+          <div class="map-loading-text" id="mapLoadingText">Generating tour route...</div>
+        </div>
+      </div>
+
+      <!-- Map controls -->
+      <div class="map-controls">
+        <button class="map-ctrl-btn" id="clearMapBtn" title="Clear map">✕ Clear</button>
+        <button class="map-ctrl-btn" id="fitMapBtn" title="Fit all stops">⊞ Fit</button>
+      </div>
+
+      <!-- Legend -->
+      <div class="map-legend">
+        <div class="legend-item"><span class="legend-dot anchor"></span> Anchor show</div>
+        <div class="legend-item"><span class="legend-dot show"></span> Show</div>
+        <div class="legend-item"><span class="legend-dot dayoff"></span> Day off</div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Results -->
+    <div class="planner-results" id="plannerResults">
+
+      <!-- AI Chat bubble -->
+      <div class="ai-chat-box">
+        <div class="ai-chat-header">
+          <span class="ai-chip">AI</span> Tour Intelligence
+        </div>
+        <div class="ai-chat-messages" id="chatMessages">
+          <div class="ai-msg">Ready. Build a tour or ask me anything about routing, venues, or budgets for the underground circuit.</div>
+        </div>
+        <div class="ai-chat-input-row">
+          <input type="text" id="chatInput" class="plan-input" placeholder="Ask anything about this tour...">
+          <button class="plan-btn plan-btn-icon" id="chatSendBtn">→</button>
+        </div>
+      </div>
+
+      <!-- Results area -->
+      <div id="resultsArea">
+        <div class="results-empty">
+          <div class="results-empty-icon">◈</div>
+          <div>Build a tour to see the itinerary, route stats, and AI recommendations here.</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /planner-layout -->
+
+  <!-- Scripts -->
+  <script src="/js/data.js"></script>
+  <script src="/tour-planner/js/api.js"></script>
+  <script src="/tour-planner/js/map.js"></script>
+  <script src="/tour-planner/js/planner.js"></script>
+
+  <!-- Load Google Maps dynamically after fetching key -->
+  <script>
+    (async () => {
+      const res = await fetch('/.netlify/functions/maps-config');
+      const { key } = await res.json();
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places,geometry&callback=initMap`;
+      script.async = true;
+      document.head.appendChild(script);
+    })();
+  </script>
+
+</body>
+</html>
