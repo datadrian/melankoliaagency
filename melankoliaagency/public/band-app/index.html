@@ -182,7 +182,7 @@
   <div class="login-box">
     <div class="login-field">
       <label>Username</label>
-      <input type="text" id="login-user" autocapitalize="none" autocorrect="off" autocomplete="username" placeholder="">
+      <input type="text" id="login-user" autocapitalize="off" autocorrect="off" autocomplete="username" spellcheck="false" autocomplete="off" placeholder="" style="text-transform:none">
     </div>
     <div class="login-field">
       <label>Password</label>
@@ -263,11 +263,11 @@ async function doLogin() {
       localStorage.setItem(SESSION_KEY, JSON.stringify(session));
       enterApp();
     } else {
-      errEl.textContent = 'Invalid username or password.';
+      errEl.textContent = json.error || 'Invalid username or password.';
       btn.disabled = false; btn.textContent = 'Sign In';
     }
   } catch(e) {
-    errEl.textContent = 'Connection error. Try again.';
+    errEl.textContent = 'Connection error: ' + e.message;
     btn.disabled = false; btn.textContent = 'Sign In';
   }
 }
