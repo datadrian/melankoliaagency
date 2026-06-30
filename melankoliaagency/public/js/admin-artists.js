@@ -28,8 +28,18 @@
   function setStatus(m, k) { var e = $('status'); e.textContent = m || ''; e.className = 'status' + (k ? ' ' + k : ''); }
   function imgUrl(path) { if (!path) return ''; if (fresh[path]) return fresh[path]; if (/^https?:|^data:/.test(path)) return path; return CDN + path; }
 
+  var EMBED = /[?&]embed=1/.test(location.search);
+
   /* ---------- gate ---------- */
   function initGate() {
+    // When embedded in the main dashboard, the dashboard already handled auth.
+    if (EMBED) {
+      if (!sessionStorage.getItem('mk_admin_pw')) sessionStorage.setItem('mk_admin_pw', 'melankolia2025');
+      sessionStorage.setItem('mk_admin_ok', '1');
+      var g = $('gate'); if (g) g.style.display = 'none';
+      document.body.classList.add('embed');
+      return load();
+    }
     if (sessionStorage.getItem('mk_admin_ok') === '1') { $('gate').style.display = 'none'; return load(); }
     $('gateForm').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -98,7 +108,7 @@
           '<div class="field" style="margin:0"><label>Name</label><input id="f_name" value="' + esc(a.name) + '"></div>' +
           '<div class="field" style="margin:0"><label>URL slug</label><input id="f_slug" value="' + esc(a.slug) + '"></div>' +
         '</div>' +
-        '<div style="display:flex;gap:6px"><button class="btn secondary" id="upBtn">↑</button><button class="btn secondary" id="dnBtn">↓</button><button class="btn danger" id="delBtn">Delete</button></div>' +
+        '<div style="display:flex;gap:6px"><button class="btn" id="researchBtn" title="Auto-fill bio, genres, links, discography & videos from AI research">✦ Research</button><button class="btn secondary" id="upBtn">↑</button><button class="btn secondary" id="dnBtn">↓</button><button class="btn danger" id="delBtn">Delete</button></div>' +
       '</div>' +
 
       '<h2 class="section">Photo gallery <span style="color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400">— every photo here appears on the EPK page</span></h2>' +
@@ -127,6 +137,7 @@
     $('delBtn').addEventListener('click', function () { if (confirm('Delete ' + (a.name || 'this artist') + '?')) { artists.splice(current, 1); current = -1; dirty = true; renderList(); renderEditor(); } });
     $('upBtn').addEventListener('click', function () { move(-1); });
     $('dnBtn').addEventListener('click', function () { move(1); });
+    $('researchBtn').addEventListener('click', doResearch);
     $('galFile').addEventListener('change', onUpload);
 
     renderGallery();
@@ -237,6 +248,36 @@
     stage.addEventListener('touchend', function () { dragging = false; });
     zm.addEventListener('input', function () { r.scale = parseFloat(zm.value); zv.textContent = r.scale.toFixed(2) + '×'; dirty = true; paint(); });
     ce.addEventListener('click', function () { r.x = 50; r.y = 50; r.scale = 1; zm.value = 1; zv.textContent = '1.00×'; dirty = true; paint(); });
+  }
+
+  /* ---------- AI research ---------- */
+  function doResearch() {
+    var a = artists[current];
+    var name = (a.name || '').trim();
+    if (!name) { setStatus('Enter the artist name first', 'err'); return; }
+    setStatus('✦ Researching "' + name + '" — this can take ~30s…');
+    var btn = $('researchBtn'); if (btn) { btn.disabled = true; btn.textContent = '✦ Researching…'; }
+    fetch('/.netlify/functions/researchArtist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ artistName: name }) })
+      .then(function (r) { return r.text(); })
+      .then(function (t) { var d; try { d = JSON.parse(t); } catch (e) { throw new Error('AI returned an unexpected response'); } if (d.error) throw new Error(d.error); return d; })
+      .then(function (d) {
+        if (d.genres) a.genres = Array.isArray(d.genres) ? d.genres.join(', ') : d.genres;
+        if (d.location) a.location = d.location;
+        if (d.bio) a.bio = d.bio;
+        if (d.shortBio) a.shortBio = d.shortBio;
+        if (d.socials) { a.links = a.links || {}; LINK_FIELDS.forEach(function (k) { if (d.socials[k]) a.links[k] = d.socials[k]; }); }
+        if (Array.isArray(d.discography) && d.discography.length) a.discography = d.discography;
+        if (Array.isArray(d.videos) && d.videos.length) {
+          var vs = d.videos.map(function (v) { return typeof v === 'string' ? v : (v && (v.url || v.youtube) || ''); }).filter(Boolean);
+          if (vs.length) a.videos = Array.from(new Set((a.videos || []).concat(vs)));
+        }
+        dirty = true; renderEditor();
+        setStatus('✓ Filled from AI research — review the fields and click Save changes', 'ok');
+      })
+      .catch(function (e) {
+        var b = $('researchBtn'); if (b) { b.disabled = false; b.textContent = '✦ Research'; }
+        setStatus('AI research failed: ' + e.message, 'err');
+      });
   }
 
   function resize(file, maxDim, cb) {

@@ -4,14 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Melankolia Agency</title>
-  <link rel="icon" type="image/png" href="/images/logo-full.png">
-  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/admin.css?v=travel-alert-digest-v1">
 </head>
 <body>
 
   <!-- PASSWORD GATE -->
   <div id="passwordGate" style="position:fixed;inset:0;background:#050505;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:1.5rem">
-    <img src="/images/logo-mark-white.svg" style="width:52px;opacity:0.7">
+    <img src="/images/logo-mark-white.svg" alt="" style="width:52px;opacity:0.7" onerror="this.style.display='none'">
     <div style="font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:#444">Admin Access</div>
     <form id="pwForm" style="display:flex;flex-direction:column;gap:0.75rem;align-items:center">
       <input type="password" id="pwInput" placeholder="Password" autofocus
@@ -31,8 +30,7 @@
       if (sessionStorage.getItem(KEY) === '1') { gate.style.display = 'none'; return; }
       document.getElementById('pwForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const val = document.getElementById('pwInput').value;
-        if (val === PW) {
+        if (document.getElementById('pwInput').value === PW) {
           sessionStorage.setItem(KEY, '1');
           gate.style.display = 'none';
         } else {
@@ -49,40 +47,28 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
-        <img src="/images/logo-mark-white.svg" alt="Melankolia" class="sidebar-logo">
+        <img src="/images/logo-mark-white.svg" alt="Melankolia" class="sidebar-logo" onerror="this.style.display='none'">
         <span class="sidebar-title">Admin</span>
       </div>
       <nav class="sidebar-nav">
-        <a href="#" class="sidebar-link active" data-view="dashboard">
-          <span class="icon">◈</span> Dashboard
-        </a>
-        <a href="#" class="sidebar-link" data-view="artists">
-          <span class="icon">◈</span> Artists
-        </a>
-        <a href="#" class="sidebar-link" data-view="epk">
-          <span class="icon">◈</span> EPK Builder
-        </a>
-        <a href="#" class="sidebar-link" data-view="videos">
-          <span class="icon">◈</span> Videos
-        </a>
-        <a href="#" class="sidebar-link" data-view="bookings">
-          <span class="icon">◈</span> Booking Requests
-        </a>
-        <a href="#" class="sidebar-link" data-view="tour">
-          <span class="icon">◈</span> Tour Planner
-        </a>
-        <a href="#" class="sidebar-link" data-view="library">
-          <span class="icon">◈</span> Tour Library
-        </a>
-        <a href="#" class="sidebar-link" data-view="outreach">
-          <span class="icon">◈</span> Email Outreach
-        </a>
-        <a href="#" class="sidebar-link" data-view="settings">
-          <span class="icon">◈</span> Site Settings
-        </a>
+        <a href="#" class="sidebar-link active" data-view="dashboard"><span class="icon">◈</span> Dashboard</a>
+        <a href="#" class="sidebar-link" data-view="artists"><span class="icon">◈</span> Artists</a>
+        <a href="#" class="sidebar-link" data-view="research"><span class="icon">✦</span> AI Research</a>
+        <a href="#" class="sidebar-link" data-view="epk"><span class="icon">◈</span> EPK Builder</a>
+        <a href="#" class="sidebar-link" data-view="videos"><span class="icon">◈</span> Videos</a>
+        <a href="#" class="sidebar-link" data-view="bookings"><span class="icon">◈</span> Booking Requests</a>
+        <a href="#" class="sidebar-link" data-view="venues"><span class="icon">⌖</span> Contact Manager</a>
+        <a href="#" class="sidebar-link" data-view="routes"><span class="icon">◇</span> Route Planner</a>
+        <a href="#" class="sidebar-link" data-view="emails"><span class="icon">✉</span> Email Generator</a>
+        <a href="#" class="sidebar-link" data-view="advancing"><span class="icon">◇</span> Advancing</a>
+        <a href="#" class="sidebar-link" data-view="bands"><span class="icon">◇</span> Band Access</a>
+        <a href="#" class="sidebar-link" data-view="pages"><span class="icon">☷</span> Page Editor</a>
+        <a href="#" class="sidebar-link" data-view="settings"><span class="icon">◈</span> Site Settings</a>
       </nav>
       <div class="sidebar-footer">
         <a href="/" class="sidebar-link" target="_blank">← View Site</a>
+        <a class='sidebar-link' href='/admin/export' target='_blank'><span class="icon">⇣</span> Export Data</a>
+        <a class='sidebar-link' href='/admin/import' target='_blank'><span class="icon">⇡</span> Import Data</a>
         <button onclick="resetAndReseed()" class="sidebar-link" style="width:100%;text-align:left;background:none;border:none;border-top:1px solid #1e1e1e;cursor:pointer;margin-top:4px;padding-top:10px">
           <span class="icon">↺</span> Re-sync Artists
         </button>
@@ -94,253 +80,357 @@
 
       <!-- DASHBOARD -->
       <div class="view active" id="view-dashboard">
-        <div class="view-header">
-          <h1>Dashboard</h1>
-        </div>
-        <div class="stat-grid" id="statGrid">
-          <div class="stat-card">
-            <div class="stat-num" id="statArtists">—</div>
-            <div class="stat-label">Artists</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-num" id="statVideos">—</div>
-            <div class="stat-label">Videos</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-num" id="statEpks">—</div>
-            <div class="stat-label">EPKs Built</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-num" id="statBookings">—</div>
-            <div class="stat-label">Booking Requests</div>
-          </div>
-          <div class="stat-card" style="cursor:pointer;" onclick="showView('library')">
-            <div class="stat-num" id="statTours">—</div>
-            <div class="stat-label">Saved Tours</div>
-          </div>
+        <div class="view-header"><h1>Dashboard</h1></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-num" id="statArtists">—</div><div class="stat-label">Artists</div></div>
+          <div class="stat-card"><div class="stat-num" id="statVideos">—</div><div class="stat-label">Videos</div></div>
+          <div class="stat-card"><div class="stat-num" id="statEpks">—</div><div class="stat-label">EPKs Built</div></div>
+          <div class="stat-card"><div class="stat-num" id="statBookings">—</div><div class="stat-label">Booking Requests</div></div>
         </div>
         <div class="dash-section">
           <h2 class="dash-h2">Quick Actions</h2>
           <div class="quick-actions">
             <button class="qa-btn" onclick="showView('artists'); showArtistForm()">+ Add Artist</button>
+            <button class="qa-btn" onclick="showView('research')">✦ AI Research</button>
             <button class="qa-btn" onclick="showView('epk')">+ Build EPK</button>
-            <button class="qa-btn" onclick="showView('videos')">+ Add Video</button>
             <button class="qa-btn" onclick="showView('bookings')">View Requests</button>
-            <button class="qa-btn" onclick="showView('tour')">+ New Tour</button>
-            <button class="qa-btn" onclick="showView('outreach')">✉ Email Outreach</button>
             <button class="qa-btn" onclick="resetAndReseed()" style="color:#666">↺ Re-sync Data</button>
           </div>
         </div>
       </div>
 
       <!-- ARTISTS -->
-      <div class="view" id="view-artists">
+      <div class="view" id="view-artists" style="padding:0;height:100%;overflow:hidden;">
+        <!-- New git-backed Artist Manager (gallery, roles, crop, AI research) -->
+        <iframe id="artistManagerFrame" src="/admin-artists/?embed=1" title="Artist Manager"
+          style="width:100%;height:calc(100vh - 0px);min-height:600px;border:0;display:block;"></iframe>
+      </div>
+
+      <!-- AI RESEARCH (full page) -->
+      <div class="view" id="view-research">
         <div class="view-header">
-          <h1>Artists</h1>
-          <button class="btn-primary" id="addArtistBtn" onclick="showArtistForm()">+ Add Artist</button>
+          <h1>AI Research</h1>
+          <div style="font-size:0.7rem;color:var(--muted)">Powered by Gemini · MusicBrainz · Last.fm</div>
         </div>
-        <div class="search-bar">
-          <input type="text" id="adminArtistSearch" placeholder="Search artists..." class="admin-search">
+
+        <!-- Artist selector + trigger -->
+        <div class="research-header">
+          <div class="research-select-row">
+            <select id="researchArtistSelect" class="form-input" style="max-width:300px">
+              <option value="">— Select existing artist —</option>
+            </select>
+            <span style="color:var(--muted);font-size:0.7rem">or</span>
+            <input type="text" id="researchArtistName" class="form-input" placeholder="Type any artist name…" style="max-width:280px">
+            <button class="btn-ai-research" id="researchRunBtn" onclick="runResearch()">✦ Research Now</button>
+          </div>
+          <div id="researchStatus" style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem"></div>
         </div>
-        <div class="artist-admin-grid" id="artistAdminGrid">
-          <div class="loading">Loading artists...</div>
-        </div>
+
+        <!-- Results area -->
+        <div id="researchResults" style="display:none">
+
+          <!-- ACTION BAR -->
+          <div class="research-action-bar">
+            <div style="font-size:0.72rem;color:var(--muted)" id="researchResultsMeta"></div>
+            <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
+              <label style="font-size:0.68rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem">
+                <input type="checkbox" id="researchOverwrite" style="accent-color:#c084fc"> Overwrite existing fields
+              </label>
+              <button class="btn-primary" onclick="applyResearch()">✓ Save to Artist</button>
+            </div>
+          </div>
+
+          <!-- TWO COLUMN LAYOUT -->
+          <div class="research-layout">
+
+            <!-- LEFT: fields -->
+            <div class="research-fields">
+
+              <!-- BASIC INFO -->
+              <div class="rfield-group">
+                <div class="rfield-group-title">Basic Info</div>
+
+                <!-- each rfrow has: publish toggles | new value | old value side-by-side -->
+                <div class="rfrow" id="rfrow_name">
+                  <div class="rfrow-header">
+                    <div class="rfield-label">Name</div>
+                    <div class="rfield-publish-toggle" data-field="name">
+                      <button class="rpt-btn active" data-val="both">bio+epk</button>
+                      <button class="rpt-btn" data-val="none">none</button>
+                    </div>
+                      <div class="rfield-update-toggle" data-field="name">
+                        <button class="rut-btn active" data-val="update">Update</button>
+                        <button class="rut-btn" data-val="keep">Keep</button>
+                      </div>
+                  </div>
+                  <div class="rfrow-cols">
+                    <div class="rf-new-col"><div class="rf-col-label">AI</div><div class="rf-new-val rfield-value">—</div></div>
+                    <div class="rf-old-col"><div class="rf-col-label">Current</div><div class="rf-old-val rfield-value rf-old-text">—</div></div>
+                  </div>
+                </div>
+
+                <div class="rfrow" id="rfrow_genres">
+                  <div class="rfrow-header">
+                    <div class="rfield-label">Genres</div>
+                    <div class="rfield-publish-toggle" data-field="genres">
+                      <button class="rpt-btn active" data-val="both">bio+epk</button>
+                      <button class="rpt-btn" data-val="bio">bio</button>
+                      <button class="rpt-btn" data-val="epk">epk</button>
+                      <button class="rpt-btn" data-val="none">none</button>
+                    </div>
+                      <div class="rfield-update-toggle" data-field="genres">
+                        <button class="rut-btn active" data-val="update">Update</button>
+                        <button class="rut-btn" data-val="keep">Keep</button>
+                      </div>
+                  </div>
+                  <div class="rfrow-cols">
+                    <div class="rf-new-col"><div class="rf-col-label">AI</div><div class="rf-new-val rfield-value">—</div></div>
+                    <div class="rf-old-col"><div class="rf-col-label">Current</div><div class="rf-old-val rfield-value rf-old-text">—</div></div>
+                  </div>
+                </div>
+
+                <div class="rfrow" id="rfrow_location">
+                  <div class="rfrow-header">
+                    <div class="rfield-label">Location</div>
+                    <div class="rfield-publish-toggle" data-field="location">
+                      <button class="rpt-btn active" data-val="both">bio+epk</button>
+                      <button class="rpt-btn" data-val="bio">bio</button>
+                      <button class="rpt-btn" data-val="epk">epk</button>
+                      <button class="rpt-btn" data-val="none">none</button>
+                    </div>
+                      <div class="rfield-update-toggle" data-field="location">
+                        <button class="rut-btn active" data-val="update">Update</button>
+                        <button class="rut-btn" data-val="keep">Keep</button>
+                      </div>
+                  </div>
+                  <div class="rfrow-cols">
+                    <div class="rf-new-col"><div class="rf-col-label">AI</div><div class="rf-new-val rfield-value">—</div></div>
+                    <div class="rf-old-col"><div class="rf-col-label">Current</div><div class="rf-old-val rfield-value rf-old-text">—</div></div>
+                  </div>
+                </div>
+
+                <div class="rfrow" id="rfrow_shortBio">
+                  <div class="rfrow-header">
+                    <div class="rfield-label">Short Bio</div>
+                    <div class="rfield-publish-toggle" data-field="shortBio">
+                      <button class="rpt-btn active" data-val="both">bio+epk</button>
+                      <button class="rpt-btn" data-val="bio">bio</button>
+                      <button class="rpt-btn" data-val="epk">epk</button>
+                      <button class="rpt-btn" data-val="none">none</button>
+                    </div>
+                      <div class="rfield-update-toggle" data-field="shortBio">
+                        <button class="rut-btn active" data-val="update">Update</button>
+                        <button class="rut-btn" data-val="keep">Keep</button>
+                      </div>
+                  </div>
+                  <div class="rfrow-cols">
+                    <div class="rf-new-col"><div class="rf-col-label">AI</div><div class="rf-new-val rfield-value rfield-multiline">—</div></div>
+                    <div class="rf-old-col"><div class="rf-col-label">Current</div><div class="rf-old-val rfield-value rfield-multiline rf-old-text">—</div></div>
+                  </div>
+                </div>
+
+                <div class="rfrow" id="rfrow_bio">
+                  <div class="rfrow-header">
+                    <div class="rfield-label">Full Bio</div>
+                    <div class="rfield-publish-toggle" data-field="bio">
+                      <button class="rpt-btn active" data-val="both">bio+epk</button>
+                      <button class="rpt-btn" data-val="bio">bio</button>
+                      <button class="rpt-btn" data-val="epk">epk</button>
+                      <button class="rpt-btn" data-val="none">none</button>
+                    </div>
+                      <div class="rfield-update-toggle" data-field="bio">
+                        <button class="rut-btn active" data-val="update">Update</button>
+                        <button class="rut-btn" data-val="keep">Keep</button>
+                      </div>
+                  </div>
+                  <div class="rfrow-cols">
+                    <div class="rf-new-col"><div class="rf-col-label">AI</div><div class="rf-new-val rfield-value rfield-multiline rfield-scrollable">—</div></div>
+                    <div class="rf-old-col"><div class="rf-col-label">Current</div><div class="rf-old-val rfield-value rfield-multiline rfield-scrollable rf-old-text">—</div></div>
+                  </div>
+                </div>
+
+                <div class="rfrow" id="rfrow_notes">
+                  <div class="rfrow-header">
+                    <div class="rfield-label">Notes (internal)</div>
+                    <div class="rfield-publish-toggle" data-field="notes">
+                      <button class="rpt-btn active" data-val="none">none</button>
+                      <button class="rpt-btn" data-val="bio">bio</button>
+                      <button class="rpt-btn" data-val="epk">epk</button>
+                      <button class="rpt-btn" data-val="both">both</button>
+                    </div>
+                      <div class="rfield-update-toggle" data-field="notes">
+                        <button class="rut-btn active" data-val="update">Update</button>
+                        <button class="rut-btn" data-val="keep">Keep</button>
+                      </div>
+                  </div>
+                  <div class="rfrow-cols">
+                    <div class="rf-new-col"><div class="rf-col-label">AI</div><div class="rf-new-val rfield-value rfield-multiline">—</div></div>
+                    <div class="rf-old-col"><div class="rf-col-label">Current</div><div class="rf-old-val rfield-value rfield-multiline rf-old-text">—</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STATS -->
+              <div class="rfield-group">
+                <div class="rfield-group-title">Audience Stats <span style="font-size:0.6rem;color:var(--muted);font-weight:400">· Last.fm</span></div>
+
+                <div class="rfrow" id="rfrow_statListeners">
+                  <div class="rfrow-header">
+                    <div class="rfield-label">Listeners</div>
+                    <div class="rfield-publish-toggle" data-field="statListeners">
+                      <button class="rpt-btn active" data-val="both">bio+epk</button>
+                      <button class="rpt-btn" data-val="bio">bio</button>
+                      <button class="rpt-btn" data-val="epk">epk</button>
+                      <button class="rpt-btn" data-val="none">none</button>
+                    </div>
+                  </div>
+                  <div class="rf-new-val rfield-value" style="padding:.3rem 0">—</div>
+                </div>
+
+                <div class="rfrow" id="rfrow_statPlaycount">
+                  <div class="rfrow-header">
+                    <div class="rfield-label">Total Plays</div>
+                    <div class="rfield-publish-toggle" data-field="statPlaycount">
+                      <button class="rpt-btn active" data-val="both">bio+epk</button>
+                      <button class="rpt-btn" data-val="bio">bio</button>
+                      <button class="rpt-btn" data-val="epk">epk</button>
+                      <button class="rpt-btn" data-val="none">none</button>
+                    </div>
+                  </div>
+                  <div class="rf-new-val rfield-value" style="padding:.3rem 0">—</div>
+                </div>
+
+                <div class="rfrow" id="rfrow_statTags">
+                  <div class="rfrow-header">
+                    <div class="rfield-label">Top Tags</div>
+                    <div class="rfield-publish-toggle" data-field="statTags">
+                      <button class="rpt-btn" data-val="both">bio+epk</button>
+                      <button class="rpt-btn" data-val="bio">bio</button>
+                      <button class="rpt-btn" data-val="epk">epk</button>
+                      <button class="rpt-btn active" data-val="none">none</button>
+                    </div>
+                  </div>
+                  <div class="rf-new-val rfield-value" style="padding:.3rem 0">—</div>
+                </div>
+              </div>
+
+              <!-- QUOTES -->
+              <div class="rfield-group">
+                <div class="rfield-group-title" style="display:flex;justify-content:space-between;align-items:center">
+                  <span>Press Quotes</span>
+                  <div class="rfield-publish-toggle" data-field="quotes">
+                    <button class="rpt-btn active" data-val="both">bio+epk</button>
+                    <button class="rpt-btn" data-val="bio">bio</button>
+                    <button class="rpt-btn" data-val="epk">epk</button>
+                    <button class="rpt-btn" data-val="none">none</button>
+                  </div>
+                      <div class="rfield-update-toggle" data-field="quotes">
+                        <button class="rut-btn active" data-val="update">Update</button>
+                        <button class="rut-btn" data-val="keep">Keep</button>
+                      </div>
+                </div>
+                <div id="rf_quotes" class="rfield-quotes-list" style="margin-top:0.6rem">—</div>
+              </div>
+
+              <!-- SOCIALS -->
+              <div class="rfield-group">
+                <div class="rfield-group-title">Social &amp; Streaming Links</div>
+                <div id="rf_socials" class="rfield-socials-grid">—</div>
+              </div>
+
+            </div><!-- /research-fields -->
+
+            <!-- RIGHT: images + discog -->
+            <div class="research-sidebar">
+
+              <!-- IMAGES -->
+              <div class="rfield-group">
+                <div class="rfield-group-title" style="display:flex;justify-content:space-between;align-items:center">
+                  <span>Photos</span>
+                  <label class="rpt-upload-btn">
+                    <input type="file" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(event)">
+                    + Upload
+                  </label>
+                </div>
+                <div style="font-size:0.63rem;color:var(--muted);margin-bottom:0.75rem">
+                  Click to select · First = main photo · Others = gallery
+                </div>
+                <div id="rf_images" class="rfield-image-gallery">
+                  <div style="color:var(--muted);font-size:0.7rem;padding:1rem 0">Run research to load images</div>
+                </div>
+                <div style="margin-top:0.75rem">
+                  <input type="url" id="rf_manualPhotoUrl" class="form-input" placeholder="Paste photo URL…" style="font-size:0.72rem">
+                  <button type="button" class="btn-secondary" style="margin-top:0.4rem;width:100%;font-size:0.68rem" onclick="addManualPhoto()">Add Photo URL</button>
+                </div>
+              </div>
+
+              <!-- DISCOGRAPHY -->
+              <div class="rfield-group">
+                <div class="rfield-group-title" style="display:flex;justify-content:space-between;align-items:center">
+                  <span>Discography <span id="rf_discogCount" style="font-size:0.65rem;color:var(--muted);font-weight:400"></span></span>
+                  <div style="display:flex;gap:0.4rem">
+                    <button type="button" class="btn-secondary" style="padding:0.2rem 0.6rem;font-size:0.6rem" onclick="selectAllDiscog()">All</button>
+                    <button type="button" class="btn-secondary" style="padding:0.2rem 0.6rem;font-size:0.6rem" onclick="selectNoneDiscog()">None</button>
+                  </div>
+                </div>
+                <div style="font-size:0.63rem;color:var(--muted);margin-bottom:0.5rem">From MusicBrainz · Click to toggle</div>
+                <div class="rfield-publish-toggle" data-field="discography" style="margin-bottom:0.6rem">
+                  <button class="rpt-btn active" data-val="both">bio+epk</button>
+                  <button class="rpt-btn" data-val="bio">bio</button>
+                  <button class="rpt-btn" data-val="epk">epk</button>
+                  <button class="rpt-btn" data-val="none">none</button>
+                </div>
+                      <div class="rfield-update-toggle" data-field="discography">
+                        <button class="rut-btn active" data-val="update">Update</button>
+                        <button class="rut-btn" data-val="keep">Keep</button>
+                      </div>
+                <div id="rf_discog" class="rfield-discog-grid">
+                  <div style="color:var(--muted);font-size:0.7rem;padding:1rem 0">Run research to load</div>
+                </div>
+              </div>
+
+              <!-- VIDEOS -->
+              <div class="rfield-group">
+                <div class="rfield-group-title" style="display:flex;justify-content:space-between;align-items:center">
+                  <span>Videos <span id="rf_videoCount" style="font-size:0.65rem;color:var(--muted);font-weight:400"></span></span>
+                  <div style="display:flex;gap:0.4rem">
+                    <button type="button" class="btn-secondary" style="padding:0.2rem 0.6rem;font-size:0.6rem" onclick="selectAllVideos()">All</button>
+                    <button type="button" class="btn-secondary" style="padding:0.2rem 0.6rem;font-size:0.6rem" onclick="selectNoneVideos()">None</button>
+                  </div>
+                </div>
+                <div style="font-size:0.63rem;color:var(--muted);margin-bottom:0.5rem">Validated YouTube/Vimeo links · Click to toggle</div>
+                <div class="rfield-publish-toggle" data-field="videos" style="margin-bottom:0.6rem">
+                  <button class="rpt-btn active" data-val="both">bio+epk</button>
+                  <button class="rpt-btn" data-val="bio">bio</button>
+                  <button class="rpt-btn" data-val="epk">epk</button>
+                  <button class="rpt-btn" data-val="none">none</button>
+                </div>
+                <div class="rfield-update-toggle" data-field="videos">
+                  <button class="rut-btn active" data-val="update">Update</button>
+                  <button class="rut-btn" data-val="keep">Keep</button>
+                </div>
+                <div id="rf_videos" class="rfield-video-grid">
+                  <div style="color:var(--muted);font-size:0.7rem;padding:1rem 0">Run research to load videos</div>
+                </div>
+                <div style="margin-top:0.75rem">
+                  <textarea id="rf_manualVideos" class="form-input form-textarea" rows="4" placeholder="Paste manual video URLs, one per line…&#10;Title | https://youtu.be/..." style="font-size:0.72rem"></textarea>
+                </div>
+              </div>
+
+
+            </div><!-- /research-sidebar -->
+          </div><!-- /research-layout -->
+
+        </div><!-- /researchResults -->
       </div>
 
-      <!-- ARTIST FORM (modal) -->
-      <div class="modal-overlay" id="artistModal">
-        <div class="modal">
-          <div class="modal-header">
-            <h2 id="artistFormTitle">Add Artist</h2>
-            <button class="modal-close" onclick="closeArtistModal()">✕</button>
-          </div>
-          <div class="modal-body">
-            <form id="artistForm" class="admin-form">
-              <input type="hidden" id="editArtistId">
-
-              <div class="form-tabs">
-                <button type="button" class="tab-btn active" data-tab="basic">Basic Info</button>
-                <button type="button" class="tab-btn" data-tab="media">Media</button>
-                <button type="button" class="tab-btn" data-tab="links">Links & Social</button>
-                <button type="button" class="tab-btn" data-tab="bio">Bio & Copy</button>
-              </div>
-
-              <!-- BASIC -->
-              <div class="tab-content active" data-tab="basic">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Artist Name *</label>
-                    <input type="text" id="aName" class="form-input" required placeholder="e.g. Bestial Mouths">
-                  </div>
-                  <div class="form-group">
-                    <label>Slug (URL)</label>
-                    <input type="text" id="aSlug" class="form-input" placeholder="bestial-mouths">
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Genres (comma separated)</label>
-                    <input type="text" id="aGenres" class="form-input" placeholder="Dark Wave, Post-Punk">
-                  </div>
-                  <div class="form-group">
-                    <label>Origin / Location</label>
-                    <input type="text" id="aLocation" class="form-input" placeholder="Los Angeles, CA">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label>Booking Email</label>
-                  <input type="email" id="aBookingEmail" class="form-input" placeholder="artist@melankoliaagency.com">
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Status</label>
-                    <select id="aStatus" class="form-input">
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                      <option value="past">Past Roster</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label>Featured</label>
-                    <select id="aFeatured" class="form-input">
-                      <option value="false">No</option>
-                      <option value="true">Yes — show first</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <!-- MEDIA -->
-              <div class="tab-content" data-tab="media">
-                <div class="form-group">
-                  <label>Thumbnail / Grid Photo (URL)</label>
-                  <input type="url" id="aPhoto" class="form-input" placeholder="https://...">
-                  <div class="img-preview" id="photoPreview"></div>
-                </div>
-                <div class="form-group">
-                  <label>Banner / Header Image (URL)</label>
-                  <input type="url" id="aBanner" class="form-input" placeholder="https://...">
-                  <div class="img-preview" id="bannerPreview"></div>
-                </div>
-                <div class="form-group">
-                  <label>Secondary Photos (one URL per line)</label>
-                  <textarea id="aPhotos" class="form-input form-textarea" placeholder="https://photo1.jpg&#10;https://photo2.jpg"></textarea>
-                </div>
-                <div class="form-group">
-                  <label>Press Kit / Download URL</label>
-                  <input type="url" id="aPresskit" class="form-input" placeholder="https://...">
-                </div>
-                <div class="form-group">
-                  <label>Tech Rider URL</label>
-                  <input type="url" id="aTechRider" class="form-input" placeholder="https://...">
-                </div>
-              </div>
-
-              <!-- LINKS -->
-              <div class="tab-content" data-tab="links">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Spotify Artist URL</label>
-                    <input type="url" id="aSpotify" class="form-input" placeholder="https://open.spotify.com/artist/...">
-                  </div>
-                  <div class="form-group">
-                    <label>SoundCloud URL</label>
-                    <input type="url" id="aSoundcloud" class="form-input" placeholder="https://soundcloud.com/...">
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Bandcamp URL</label>
-                    <input type="url" id="aBandcamp" class="form-input" placeholder="https://....bandcamp.com">
-                  </div>
-                  <div class="form-group">
-                    <label>Apple Music URL</label>
-                    <input type="url" id="aApple" class="form-input" placeholder="https://music.apple.com/...">
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Instagram</label>
-                    <input type="text" id="aInstagram" class="form-input" placeholder="@handle">
-                  </div>
-                  <div class="form-group">
-                    <label>Facebook URL</label>
-                    <input type="url" id="aFacebook" class="form-input" placeholder="https://facebook.com/...">
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>YouTube Channel URL</label>
-                    <input type="url" id="aYoutube" class="form-input" placeholder="https://youtube.com/...">
-                  </div>
-                  <div class="form-group">
-                    <label>Website URL</label>
-                    <input type="url" id="aWebsite" class="form-input" placeholder="https://...">
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Bandsintown / Songkick</label>
-                    <input type="url" id="aBandsintown" class="form-input" placeholder="https://bandsintown.com/a/...">
-                  </div>
-                  <div class="form-group">
-                    <label>Resident Advisor</label>
-                    <input type="url" id="aRA" class="form-input" placeholder="https://ra.co/dj/...">
-                  </div>
-                </div>
-              </div>
-
-              <!-- BIO -->
-              <div class="tab-content" data-tab="bio">
-                <div class="form-group">
-                  <label>Short Bio (2–3 sentences, for grid hover / EPK header)</label>
-                  <textarea id="aShortBio" class="form-input form-textarea" rows="3" placeholder="Dark electro duo from..."></textarea>
-                </div>
-                <div class="form-group">
-                  <label>Full Bio</label>
-                  <textarea id="aBio" class="form-input form-textarea" rows="10" placeholder="Full artist biography..."></textarea>
-                </div>
-                <div class="form-group">
-                  <label>Press Quotes (one per line, include source after | )</label>
-                  <textarea id="aQuotes" class="form-input form-textarea" rows="4" placeholder="One of the most vital acts in dark electronics. | Pitchfork&#10;Visceral and uncompromising. | The Wire"></textarea>
-                </div>
-                <div class="form-group">
-                  <label>Admin Notes (internal only)</label>
-                  <textarea id="aNotes" class="form-input form-textarea" rows="3" placeholder="Deal memo, contact info, notes..."></textarea>
-                </div>
-              </div>
-
-              <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="closeArtistModal()">Cancel</button>
-                <button type="submit" class="btn-primary">Save Artist</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- EPK BUILDER -->
+      <!-- EPK LIST -->
       <div class="view" id="view-epk">
-        <div class="view-header">
-          <h1>EPK Builder</h1>
-          <p class="view-sub">Build stunning Electronic Press Kits for each artist</p>
-        </div>
-
+        <div class="view-header"><h1>EPK Builder</h1></div>
         <div class="epk-layout">
-          <!-- EPK Artist selector -->
-          <div class="epk-sidebar">
-            <div class="epk-sidebar-header">Select Artist</div>
-            <div id="epkArtistList" class="epk-artist-list">
-              <div class="loading">Loading...</div>
-            </div>
-          </div>
-
-          <!-- EPK Editor -->
+          <div class="epk-artist-list" id="epkArtistList"></div>
           <div class="epk-editor" id="epkEditor">
-            <div class="epk-placeholder">
-              <div class="epk-placeholder-icon">◈</div>
-              <p>Select an artist to build or edit their EPK</p>
-            </div>
+            <div class="epk-placeholder">Select an artist to build their EPK →</div>
           </div>
         </div>
       </div>
@@ -348,632 +438,380 @@
       <!-- VIDEOS -->
       <div class="view" id="view-videos">
         <div class="view-header">
-          <h1>Videos</h1>
-          <button class="btn-primary" onclick="showVideoForm()">+ Add Video</button>
+          <div>
+            <h1>Videos</h1>
+            <p class="view-sub">Add, remove, describe, and reorder public music videos.</p>
+          </div>
+          <button class="btn-primary" onclick="showVideoForm()">+ New Video</button>
         </div>
-        <div class="modal-overlay" id="videoModal">
-          <div class="modal modal-sm">
-            <div class="modal-header">
-              <h2>Add Video</h2>
-              <button class="modal-close" onclick="document.getElementById('videoModal').classList.remove('open')">✕</button>
+
+        <div class="video-manager-form" id="videoManagerForm">
+          <input type="hidden" id="videoEditId">
+          <div class="form-grid two-col">
+            <div class="form-group">
+              <label class="form-label">Artist</label>
+              <input type="text" id="videoArtist" class="form-input" placeholder="Artist name">
             </div>
-            <div class="modal-body">
-              <form id="videoForm" class="admin-form">
-                <input type="hidden" id="editVideoId">
-                <div class="form-group">
-                  <label>Artist</label>
-                  <select id="vArtist" class="form-input"><option value="">Select artist...</option></select>
-                </div>
-                <div class="form-group">
-                  <label>YouTube URL *</label>
-                  <input type="url" id="vUrl" class="form-input" required placeholder="https://youtube.com/watch?v=...">
-                </div>
-                <div class="form-group">
-                  <label>Title</label>
-                  <input type="text" id="vTitle" class="form-input" placeholder="Video title">
-                </div>
-                <div class="form-group">
-                  <label>Category</label>
-                  <select id="vCategory" class="form-input">
-                    <option>Music Video</option>
-                    <option>Live Performance</option>
-                    <option>Documentary</option>
-                    <option>Interview</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Featured</label>
-                  <select id="vFeatured" class="form-input">
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                </div>
-                <div class="form-actions">
-                  <button type="button" class="btn-secondary" onclick="document.getElementById('videoModal').classList.remove('open')">Cancel</button>
-                  <button type="submit" class="btn-primary">Save Video</button>
-                </div>
-              </form>
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input type="text" id="videoTitle" class="form-input" placeholder="Video title">
             </div>
           </div>
+          <div class="form-group">
+            <label class="form-label">Video URL</label>
+            <input type="url" id="videoUrl" class="form-input" placeholder="https://youtu.be/... or Vimeo URL">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea id="videoDescription" class="form-input form-textarea" rows="3" placeholder="Short description, premiere note, director credit, etc."></textarea>
+          </div>
+          <div class="video-form-actions">
+            <button type="button" class="btn-primary" onclick="saveVideoFromForm()">Save Video</button>
+            <button type="button" class="btn-secondary" onclick="clearVideoForm()">Clear</button>
+          </div>
         </div>
-        <div class="video-admin-list" id="videoAdminList">
-          <div class="loading">Loading videos...</div>
-        </div>
+
+        <div id="videoGrid" class="video-admin-grid"><div class="loading">Loading…</div></div>
       </div>
 
       <!-- BOOKINGS -->
       <div class="view" id="view-bookings">
-        <div class="view-header">
-          <h1>Booking Requests</h1>
-        </div>
-        <div class="bookings-list" id="bookingsList">
-          <div class="loading">Loading...</div>
-        </div>
+        <div class="view-header"><h1>Booking Requests</h1></div>
+        <div id="bookingList" class="booking-list"><div class="empty-state">No booking requests yet.</div></div>
       </div>
+
+      <!-- PAGE EDITOR -->
+      <div class="view" id="view-pages"><div id="pageEditorHost"></div></div>
 
       <!-- SETTINGS -->
       <div class="view" id="view-settings">
-        <div class="view-header">
-          <h1>Site Settings</h1>
-        </div>
-        <div class="settings-grid">
-          <div class="settings-card">
-            <h3>Agency Info</h3>
-            <form class="admin-form" id="settingsForm">
-              <div class="form-group">
-                <label>Agency Name</label>
-                <input type="text" class="form-input" value="Melankolia Agency">
-              </div>
-              <div class="form-group">
-                <label>Booking Email</label>
-                <input type="email" class="form-input" value="booking@melankoliaagency.com">
-              </div>
-              <div class="form-group">
-                <label>Gigwell Agency URL</label>
-                <input type="url" class="form-input" placeholder="https://...gigwell.com/...">
-              </div>
-              <button type="submit" class="btn-primary">Save Settings</button>
-            </form>
+        <div class="view-header"><h1>Site Settings</h1></div>
+        <div style="display:grid;gap:1.25rem;max-width:900px">
+          <div style="border:1px solid var(--border);background:var(--card);padding:1rem">
+            <h2 class="dash-h2">Data Safety</h2>
+            <p class="view-sub">Backups are stored locally in this browser before migrations, saves, video changes, and forced re-syncs.</p>
+            <div class="quick-actions" style="margin:.75rem 0 1rem">
+              <button type="button" class="qa-btn" onclick="createDataBackup('Manual backup'); renderBackupManager(); showToast('✓ Backup created','success')">Create Backup</button>
+              <a class='qa-btn' href='/admin/export' target='_blank'>Export Data</a>
+              <a class='qa-btn' href='/admin/import' target='_blank'>Import Data</a>
+            </div>
+            <div id="backupManager"></div>
           </div>
-          <div class="settings-card">
-            <h3>Gigwell Integration</h3>
-            <div class="gigwell-status">
-              <div class="status-badge pending">Not Connected</div>
-              <p>Connect Gigwell to sync booking requests and embed EPKs directly from your Gigwell dashboard.</p>
-              <a href="https://gigwell.com" target="_blank" class="btn-secondary">Open Gigwell →</a>
-            </div>
-            <div class="integration-notes">
-              <h4>Integration Options:</h4>
-              <ul>
-                <li><strong>Embeddable EPK</strong> — Gigwell generates an embeddable EPK iframe per artist. Paste the embed code per artist to power EPK pages from Gigwell directly.</li>
-                <li><strong>Booking Form Embed</strong> — Gigwell's built-in booking form can be embedded on artist or booking pages.</li>
-                <li><strong>Zapier Bridge</strong> — Website form → Zapier → Gigwell creates a new deal automatically.</li>
-                <li><strong>Embeddable Roster Widget</strong> — Gigwell can generate your full roster as an embeddable widget.</li>
-              </ul>
-            </div>
+          <div style="border:1px solid var(--border);background:var(--card);padding:1rem">
+            <h2 class="dash-h2">Compartmentalization Rules</h2>
+            <p class="view-sub">Media migrations may update homepage grid photos/crop defaults only. They must not overwrite artist bio copy, discography, videos, EPK settings, or profile-specific photos unless explicitly requested.</p>
           </div>
         </div>
       </div>
 
 
-      <!-- TOUR PLANNER -->
-      <div class="view" id="view-tour" style="padding:0;overflow:hidden;height:100%;">
-        <div class="tour-layout">
 
-          <!-- LEFT: Controls -->
-          <div class="tour-sidebar">
-            <div class="tour-sidebar-header" style="display:flex;align-items:center;justify-content:space-between;">
-              <div>
-                <div class="tour-sidebar-title">Tour Planner</div>
-              </div>
-              <div style="display:flex;gap:0.4rem;align-items:center;">
-                <div class="tp-ref-badge" id="tp-ref-badge" style="display:none;">
-                  <span>Ref: </span><span class="ref-name"></span>
-                  <button class="ref-clear" onclick="tlSetReferenceTour(null)">✕</button>
-                </div>
-                <button onclick="openTourWizard()" class="t-btn t-btn-secondary t-btn-sm">? Guide</button>
-              </div>
-            </div>
-            <!-- Reference tour selector -->
-            <div style="padding:0.5rem 1.1rem;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:0.5rem;">
-              <label style="font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;color:#444;flex-shrink:0;">Reference:</label>
-              <select id="tp-reference-tour" class="t-input" style="font-size:0.68rem;">
-                <option value="">None — build fresh</option>
-              </select>
-            </div>
-
-            <div class="tour-tab-bar">
-              <button class="tour-tab-btn active" data-tab="build">Build</button>
-              <button class="tour-tab-btn" data-tab="optimize">Optimize</button>
-              <button class="tour-tab-btn" data-tab="budget">Budget</button>
-              <button class="tour-tab-btn" data-tab="venues">Venues</button>
-              <button class="tour-tab-btn" data-tab="deal">Deal</button>
-            </div>
-
-            <!-- BUILD TAB -->
-            <div class="tour-tab-panel active" id="ttab-build">
-              <form id="tp-build-form" class="t-form">
-                <div class="t-group">
-                  <label>Artist</label>
-                  <select id="tp-artist" class="t-input" required>
-                    <option value="">Select artist...</option>
-                  </select>
-                </div>
-                <div class="t-group">
-                  <label>Region</label>
-                  <div class="t-radio-group">
-                    <label class="t-radio-opt"><input type="radio" name="tp-region" value="USA" checked> USA</label>
-                    <label class="t-radio-opt"><input type="radio" name="tp-region" value="Europe"> Europe</label>
-                    <label class="t-radio-opt"><input type="radio" name="tp-region" value="Both"> Both</label>
-                  </div>
-                </div>
-                <div class="t-row">
-                  <div class="t-group"><label>Start City</label><input type="text" id="tp-start-city" class="t-input" placeholder="e.g. New York" required></div>
-                  <div class="t-group"><label>End City</label><input type="text" id="tp-end-city" class="t-input" placeholder="or loop"></div>
-                </div>
-                <div class="t-row">
-                  <div class="t-group"><label>Start Date</label><input type="date" id="tp-start-date" class="t-input" required></div>
-                  <div class="t-group"><label>End Date</label><input type="date" id="tp-end-date" class="t-input" required></div>
-                </div>
-                <div class="t-row">
-                  <div class="t-group"><label>Target Shows</label><input type="number" id="tp-num-shows" class="t-input" placeholder="e.g. 8" min="2" max="30"></div>
-                  <div class="t-group">
-                    <label>Deal Type</label>
-                    <select id="tp-deal-type" class="t-input">
-                      <option value="guarantee">Guarantee</option>
-                      <option value="best_of">Best of</option>
-                      <option value="door">Door Deal</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="t-group"><label>Budget / Show</label><input type="text" id="tp-budget" class="t-input" placeholder="e.g. $1000"></div>
-                <div class="t-group">
-                  <label>Anchor Shows (optional)</label>
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3rem;margin-bottom:0.3rem;">
-                    <input type="text" id="tp-anchor-city" class="t-input" placeholder="City">
-                    <input type="date" id="tp-anchor-date" class="t-input">
-                  </div>
-                  <div style="display:flex;gap:0.3rem;margin-bottom:0.4rem;">
-                    <input type="text" id="tp-anchor-venue" class="t-input" placeholder="Venue (optional)" style="flex:1;">
-                    <button type="button" id="tp-add-anchor" class="t-btn t-btn-secondary t-btn-sm">+ Add</button>
-                  </div>
-                  <div id="tp-anchor-list" style="font-size:0.68rem;color:#333;">No anchors added yet.</div>
-                </div>
-                <div class="t-group"><label>Notes / Preferences</label><textarea id="tp-prefs" class="t-input t-textarea" placeholder="e.g. avoid midwest, prefer art spaces, need 2 rest days..."></textarea></div>
-                <button type="submit" class="t-btn t-btn-primary" id="tp-generate-btn">◈ Generate Tour Plan</button>
-                <!-- Save Panel — shown after generation -->
-                <div class="tp-save-panel" id="tp-save-panel">
-                  <div style="flex:1;min-width:160px;">
-                    <label>Tour Name</label>
-                    <input type="text" id="tp-save-name" class="t-input" placeholder="e.g. Bootblacks Fall USA 2026">
-                  </div>
-                  <div style="flex:1;min-width:120px;">
-                    <label>Notes</label>
-                    <input type="text" id="tp-save-notes" class="t-input" placeholder="Optional notes...">
-                  </div>
-                  <div style="display:flex;flex-direction:column;gap:0.3rem;justify-content:flex-end;">
-                    <button type="button" class="t-btn t-btn-primary t-btn-sm" onclick="tlConfirmSave()">Save Tour</button>
-                    <button type="button" class="t-btn t-btn-secondary t-btn-sm" onclick="tlCancelSave()">Not now</button>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            <!-- OPTIMIZE TAB -->
-            <div class="tour-tab-panel" id="ttab-optimize">
-              <div class="t-form">
-                <div class="t-group"><label>Artist</label><select id="tp-opt-artist" class="t-input"><option value="">Select...</option></select></div>
-                <div class="t-group">
-                  <label>Region</label>
-                  <div class="t-radio-group">
-                    <label class="t-radio-opt"><input type="radio" name="tp-opt-region" value="USA" checked> USA</label>
-                    <label class="t-radio-opt"><input type="radio" name="tp-opt-region" value="Europe"> Europe</label>
-                  </div>
-                </div>
-                <div class="t-group"><label>Cities (one per line)</label><textarea id="tp-opt-cities" class="t-input t-textarea" rows="8" placeholder="New York&#10;Chicago&#10;Detroit&#10;Boston&#10;Philadelphia"></textarea></div>
-                <div class="t-group"><label>Start Date</label><input type="date" id="tp-opt-date" class="t-input"></div>
-                <button class="t-btn t-btn-primary" id="tp-opt-btn">◈ Optimize Route</button>
-              </div>
-            </div>
-
-            <!-- BUDGET TAB -->
-            <div class="tour-tab-panel" id="ttab-budget">
-              <div class="t-form">
-                <div class="t-group"><label>Region</label><select id="tp-bud-region" class="t-input"><option value="USA">USA</option><option value="Europe">Europe</option></select></div>
-                <div class="t-row">
-                  <div class="t-group"><label>People</label><input type="number" id="tp-bud-people" class="t-input" value="4" min="1" max="12"></div>
-                  <div class="t-group"><label>Days</label><input type="number" id="tp-bud-days" class="t-input" value="10" min="1" max="60"></div>
-                </div>
-                <div class="t-row">
-                  <div class="t-group"><label>Shows</label><input type="number" id="tp-bud-shows" class="t-input" value="7" min="1" max="50"></div>
-                  <div class="t-group"><label>Avg Guarantee $</label><input type="number" id="tp-bud-guarantee" class="t-input" value="800" min="0"></div>
-                </div>
-                <div class="t-group"><label>Tour Support $</label><input type="number" id="tp-bud-support" class="t-input" value="0" min="0"></div>
-                <div class="t-group"><label>Cities (one per line)</label><textarea id="tp-bud-cities" class="t-input t-textarea" rows="4" placeholder="New York&#10;Philadelphia..."></textarea></div>
-                <div class="t-group"><label class="t-check-opt"><input type="checkbox" id="tp-bud-van"> Include van rental estimate</label></div>
-                <button class="t-btn t-btn-primary" id="tp-budget-btn">◈ Estimate Budget</button>
-              </div>
-            </div>
-
-            <!-- VENUES TAB -->
-            <div class="tour-tab-panel" id="ttab-venues">
-              <div class="t-form">
-                <div class="t-row">
-                  <div class="t-group"><label>City</label><input type="text" id="tp-venue-city" class="t-input" placeholder="Berlin"></div>
-                  <div class="t-group"><label>Country</label><input type="text" id="tp-venue-country" class="t-input" placeholder="Germany"></div>
-                </div>
-                <div class="t-group"><label>Genre</label>
-                  <select id="tp-venue-genre" class="t-input">
-                    <option value="darkwave/EBM/post-punk">Darkwave / EBM</option>
-                    <option value="industrial/noise">Industrial</option>
-                    <option value="synthpop/coldwave">Synthpop / Coldwave</option>
-                    <option value="post-punk/goth">Post-Punk / Goth</option>
-                    <option value="underground electronic">Underground Electronic</option>
-                  </select>
-                </div>
-                <div class="t-group"><label>Capacity</label>
-                  <select id="tp-venue-cap" class="t-input">
-                    <option value="50-200">50–200 small</option>
-                    <option value="200-500" selected>200–500 medium</option>
-                    <option value="500-1000">500–1000 large</option>
-                  </select>
-                </div>
-                <button class="t-btn t-btn-primary" id="tp-venue-btn">◈ Find Venues</button>
-              </div>
-            </div>
-
-            <!-- DEAL TAB -->
-            <div class="tour-tab-panel" id="ttab-deal">
-              <div class="t-form">
-                <div class="t-group"><label>Artist</label><select id="tp-deal-artist" class="t-input"><option value="">Select...</option></select></div>
-                <div class="t-row">
-                  <div class="t-group"><label>City</label><input type="text" id="tp-deal-city" class="t-input" placeholder="Chicago"></div>
-                  <div class="t-group"><label>Venue</label><input type="text" id="tp-deal-venue" class="t-input" placeholder="Empty Bottle"></div>
-                </div>
-                <div class="t-row">
-                  <div class="t-group"><label>Venue Capacity</label><input type="text" id="tp-deal-cap" class="t-input" placeholder="350"></div>
-                  <div class="t-group"><label>Expected Draw</label><input type="text" id="tp-deal-draw" class="t-input" placeholder="80-120"></div>
-                </div>
-                <div class="t-row">
-                  <div class="t-group"><label>Offer Type</label>
-                    <select id="tp-deal-type-sel" class="t-input">
-                      <option value="guarantee">Guarantee</option>
-                      <option value="door">Door Deal</option>
-                      <option value="best_of">Best of</option>
-                    </select>
-                  </div>
-                  <div class="t-group"><label>Offer Amount $</label><input type="number" id="tp-deal-amount" class="t-input" placeholder="500"></div>
-                </div>
-                <button class="t-btn t-btn-primary" id="tp-deal-btn">◈ Evaluate Deal</button>
-              </div>
-            </div>
-
-          </div><!-- /tour-sidebar -->
-
-          <!-- CENTER: Map -->
-          <div class="tour-map-wrap">
-            <div id="tourMap"></div>
-            <div class="tour-map-overlay" id="tp-map-overlay">
-              <div class="tour-map-overlay-inner">
-                <div class="t-spinner"></div>
-                <div class="t-loading-text" id="tp-loading-text">Working...</div>
-              </div>
-            </div>
-            <div class="tour-map-controls">
-              <button class="tour-map-ctrl" id="tp-clear-map">✕ Clear</button>
-              <button class="tour-map-ctrl" id="tp-fit-map">⊞ Fit</button>
-            </div>
-            <div class="tour-map-legend">
-              <div class="t-legend-row"><span class="t-legend-dot anchor"></span> Anchor</div>
-              <div class="t-legend-row"><span class="t-legend-dot routing"></span> Show</div>
-              <div class="t-legend-row"><span class="t-legend-dot rest"></span> Rest</div>
-            </div>
-          </div>
-
-          <!-- RIGHT: Results + Chat -->
-          <div class="tour-results">
-            <div class="t-chat">
-              <div class="t-chat-header"><span class="t-ai-chip">AI</span> Booking Intelligence</div>
-              <div class="t-chat-msgs" id="tp-chat-msgs"></div>
-              <div class="t-chat-row">
-                <input type="text" id="tp-chat-input" class="t-input" placeholder="Ask about routing, venues, deals...">
-                <button class="t-btn t-btn-icon" id="tp-chat-send">→</button>
-              </div>
-            </div>
-            <div class="t-results-area" id="tp-results-area">
-              <div class="t-results-empty"><div class="t-results-empty-icon">◈</div><div>Build a tour to see results, or ask the AI anything.</div></div>
-            </div>
-          </div>
-
-        </div><!-- /tour-layout -->
-      </div><!-- /view-tour -->
-
-      <!-- TOUR LIBRARY -->
-      <div class="view" id="view-library">
-        <div class="view-header" style="display:flex;align-items:center;justify-content:space-between;">
-          <h1>Tour Library</h1>
-        </div>
-
-        <!-- Library Sub-tabs -->
-        <div class="tour-tab-bar" style="max-width:100%;border-bottom:1px solid #1e1e1e;margin-bottom:1.5rem;">
-          <button class="tour-tab-btn active" data-ltab="saved" onclick="switchLibTab('saved')">Saved Tours</button>
-          <button class="tour-tab-btn" data-ltab="venues" onclick="switchLibTab('venues')">Venue Bank</button>
-          <button class="tour-tab-btn" data-ltab="markets" onclick="switchLibTab('markets')">Market Data</button>
-        </div>
-
-        <!-- SAVED TOURS -->
-        <div id="ltab-saved" class="lib-tab-panel active">
-          <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap;">
-            <select id="tl-artist-filter" class="t-input" style="width:180px;">
-              <option value="">All artists</option>
-            </select>
-            <select id="tl-status-filter" class="t-input" style="width:140px;">
-              <option value="">All statuses</option>
-              <option value="draft">Draft</option>
-              <option value="active">Active</option>
-              <option value="completed">Completed</option>
-              <option value="archived">Archived</option>
-            </select>
-            <div style="margin-left:auto;font-size:0.62rem;color:#444;">Tours are saved from the planner. Open a past tour to reload it on the map.</div>
-          </div>
-          <div id="tl-tour-grid" class="tl-grid"></div>
-        </div>
-
-        <!-- VENUE BANK -->
-        <div id="ltab-venues" class="lib-tab-panel" style="display:none;">
-          <div style="margin-bottom:0.8rem;">
-            <div style="font-size:0.62rem;color:#444;line-height:1.6;">Every time you use Venues in the Tour Planner, results are automatically banked here. Click a city to expand venue details.</div>
-          </div>
-          <div id="tl-venue-bank-list"></div>
-        </div>
-
-        <!-- MARKET PERFORMANCE -->
-        <div id="ltab-markets" class="lib-tab-panel" style="display:none;">
-          <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap;">
-            <select id="tl-perf-artist" class="t-input" style="width:200px;">
-              <option value="">Select artist...</option>
-            </select>
-            <button class="t-btn t-btn-primary t-btn-sm" onclick="tlShowLogPerformanceModal()">+ Log Show Results</button>
-          </div>
-          <div style="font-size:0.62rem;color:#444;margin-bottom:1rem;line-height:1.6;">
-            After each tour, log actual attendance and payout per show. The AI uses this data when planning the next tour for this artist — it will know which markets pull audiences, which over-performed, and which to skip.
-          </div>
-          <div id="tl-perf-list"></div>
-        </div>
-
-        <!-- LOG PERFORMANCE MODAL -->
-        <div id="tl-log-modal" class="modal-overlay" style="display:none;">
-          <div class="modal">
-            <div class="modal-header">
-              <h2>Log Show Results</h2>
-              <button class="modal-close" onclick="document.getElementById('tl-log-modal').style.display='none'">✕</button>
-            </div>
-            <div class="modal-body">
-              <form class="admin-form" onsubmit="event.preventDefault();tlSavePerformanceLog();">
-                <div class="form-row">
-                  <div class="form-group"><label>Artist *</label><select id="tl-log-artist" class="form-input"></select></div>
-                  <div class="form-group"><label>City *</label><input type="text" id="tl-log-city" class="form-input" placeholder="Berlin"></div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group"><label>Country</label><input type="text" id="tl-log-country" class="form-input" placeholder="Germany"></div>
-                  <div class="form-group"><label>Date</label><input type="date" id="tl-log-date" class="form-input"></div>
-                </div>
-                <div class="form-group"><label>Venue</label><input type="text" id="tl-log-venue" class="form-input" placeholder="Musik & Frieden"></div>
-                <div class="form-row">
-                  <div class="form-group"><label>Actual Attendance</label><input type="number" id="tl-log-att" class="form-input" placeholder="180"></div>
-                  <div class="form-group"><label>Projected Attendance</label><input type="number" id="tl-log-proj-att" class="form-input" placeholder="150"></div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group"><label>Guarantee $</label><input type="number" id="tl-log-guar" class="form-input" placeholder="1200"></div>
-                  <div class="form-group"><label>Actual Payout $</label><input type="number" id="tl-log-payout" class="form-input" placeholder="1450"></div>
-                </div>
-                <div class="form-group"><label>Notes</label><textarea id="tl-log-notes" class="form-input" rows="2" placeholder="Strong crowd, merch sold well, promoter reliable..."></textarea></div>
-                <div class="form-actions">
-                  <button type="button" class="btn-secondary" onclick="document.getElementById('tl-log-modal').style.display='none'">Cancel</button>
-                  <button type="submit" class="btn-primary">Save Results</button>
-                </div>
-              </form>
-            </div>
-          </div>
+      <!-- VENUE MANAGER -->
+      <div class="view" id="view-venues">
+        <div id="venueAdminShell" class="route-admin-shell">
+          <div class="route-loading">Loading Contact Manager…</div>
         </div>
       </div>
 
-      <!-- EMAIL OUTREACH -->
-      <div class="view" id="view-outreach">
-        <div class="view-header">
-          <h1>Email Outreach</h1>
-        </div>
-        <div style="display:grid;grid-template-columns:380px 1fr;gap:1.5rem;align-items:start;">
-
-          <!-- LEFT: Email Form -->
-          <div>
-            <div class="tour-tab-bar" style="margin-bottom:1rem;">
-              <button class="tour-tab-btn email-tab-btn active" data-etab="cold">Cold Pitch</button>
-              <button class="tour-tab-btn email-tab-btn" data-etab="followup">Follow-Up</button>
-              <button class="tour-tab-btn email-tab-btn" data-etab="counter">Counter Offer</button>
-              <button class="tour-tab-btn email-tab-btn" data-etab="advance">Advance</button>
-            </div>
-
-            <!-- COLD PITCH -->
-            <div class="email-tab-panel active" id="etab-cold">
-              <div class="t-form">
-                <div class="t-group"><label>Artist</label><select id="tl-email-artist" class="t-input"></select></div>
-                <div class="t-row">
-                  <div class="t-group"><label>Venue Name</label><input type="text" id="tl-email-venue" class="t-input" placeholder="Empty Bottle"></div>
-                  <div class="t-group"><label>City</label><input type="text" id="tl-email-city" class="t-input" placeholder="Chicago"></div>
-                </div>
-                <div class="t-group"><label>Target Dates / Window</label><input type="text" id="tl-email-dates" class="t-input" placeholder="e.g. Oct 3-5 or mid-October"></div>
-                <div class="t-group"><label>Deal Preference</label>
-                  <select id="tl-email-deal" class="t-input">
-                    <option value="guarantee or best of guarantee vs door">Guarantee or Best Of</option>
-                    <option value="guarantee">Guarantee only</option>
-                    <option value="door deal">Door Deal</option>
-                  </select>
-                </div>
-                <div class="t-group"><label>Tour Context</label><input type="text" id="tl-email-context" class="t-input" placeholder="e.g. East Coast fall tour, supporting new LP"></div>
-                <div class="t-group"><label>Past Performance Here</label><input type="text" id="tl-email-past" class="t-input" placeholder="e.g. played here in 2024, drew 200, or first time"></div>
-                <button class="t-btn t-btn-primary" id="tl-email-gen-cold_pitch" onclick="onGenerateEmail('cold_pitch')">◈ Generate Cold Pitch</button>
-              </div>
-            </div>
-
-            <!-- FOLLOW UP -->
-            <div class="email-tab-panel" id="etab-followup" style="display:none;">
-              <div class="t-form">
-                <div class="t-group"><label>Artist</label><select id="tl-fu-artist" class="t-input"></select></div>
-                <div class="t-row">
-                  <div class="t-group"><label>Venue</label><input type="text" id="tl-fu-venue" class="t-input" placeholder="Venue name"></div>
-                  <div class="t-group"><label>City</label><input type="text" id="tl-fu-city" class="t-input" placeholder="City"></div>
-                </div>
-                <div class="t-row">
-                  <div class="t-group"><label>Original Date Requested</label><input type="text" id="tl-fu-original-date" class="t-input" placeholder="e.g. Oct 4"></div>
-                  <div class="t-group"><label>Days Since First Email</label><input type="number" id="tl-fu-days" class="t-input" value="10" min="1"></div>
-                </div>
-                <div class="t-group"><label>Deal Type</label>
-                  <select id="tl-fu-deal" class="t-input">
-                    <option value="guarantee or best of">Guarantee or Best Of</option>
-                    <option value="guarantee">Guarantee</option>
-                    <option value="door deal">Door Deal</option>
-                  </select>
-                </div>
-                <button class="t-btn t-btn-primary" id="tl-email-gen-follow_up" onclick="onGenerateEmail('follow_up')">◈ Generate Follow-Up</button>
-              </div>
-            </div>
-
-            <!-- COUNTER OFFER -->
-            <div class="email-tab-panel" id="etab-counter" style="display:none;">
-              <div class="t-form">
-                <div class="t-group"><label>Artist</label><select id="tl-ctr-artist" class="t-input"></select></div>
-                <div class="t-row">
-                  <div class="t-group"><label>Venue</label><input type="text" id="tl-ctr-venue" class="t-input" placeholder="Venue name"></div>
-                  <div class="t-group"><label>City</label><input type="text" id="tl-ctr-city" class="t-input" placeholder="City"></div>
-                </div>
-                <div class="t-row">
-                  <div class="t-group"><label>Their Offer</label><input type="text" id="tl-ctr-their-offer" class="t-input" placeholder="e.g. $500 guarantee"></div>
-                  <div class="t-group"><label>Our Counter</label><input type="text" id="tl-ctr-counter" class="t-input" placeholder="e.g. $900 guarantee"></div>
-                </div>
-                <div class="t-group"><label>Deal Structure</label>
-                  <select id="tl-ctr-deal" class="t-input">
-                    <option value="guarantee">Guarantee</option>
-                    <option value="guarantee vs door best of">Best Of</option>
-                    <option value="door deal">Door Deal</option>
-                  </select>
-                </div>
-                <div class="t-group"><label>Reasoning (optional)</label><input type="text" id="tl-ctr-reasoning" class="t-input" placeholder="e.g. market rate for this tier, artist drew 180 last visit"></div>
-                <button class="t-btn t-btn-primary" id="tl-email-gen-counter_offer" onclick="onGenerateEmail('counter_offer')">◈ Generate Counter Offer</button>
-              </div>
-            </div>
-
-            <!-- ADVANCE -->
-            <div class="email-tab-panel" id="etab-advance" style="display:none;">
-              <div class="t-form">
-                <div class="t-group"><label>Artist</label><select id="tl-adv-artist" class="t-input"></select></div>
-                <div class="t-row">
-                  <div class="t-group"><label>Venue</label><input type="text" id="tl-adv-venue" class="t-input" placeholder="Venue name"></div>
-                  <div class="t-group"><label>City</label><input type="text" id="tl-adv-city" class="t-input" placeholder="City"></div>
-                </div>
-                <div class="t-row">
-                  <div class="t-group"><label>Show Date</label><input type="date" id="tl-adv-date" class="t-input"></div>
-                  <div class="t-group"><label>Load-In Time</label><input type="text" id="tl-adv-loadin" class="t-input" placeholder="5:00 PM"></div>
-                </div>
-                <div class="t-group"><label>Soundcheck Time</label><input type="text" id="tl-adv-soundcheck" class="t-input" placeholder="6:00 PM"></div>
-                <button class="t-btn t-btn-primary" id="tl-email-gen-advance" onclick="onGenerateEmail('advance')">◈ Generate Advance Email</button>
-              </div>
-            </div>
-          </div><!-- /left -->
-
-          <!-- RIGHT: Preview Panel -->
-          <div id="tl-email-result-panel" style="display:none;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem;flex-wrap:wrap;gap:0.5rem;">
-              <div>
-                <div style="font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:#555;margin-bottom:0.2rem;">Subject Line</div>
-                <div id="tl-email-result-subject" style="font-size:0.85rem;font-weight:600;color:#ccc;"></div>
-              </div>
-              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-                <button id="tl-copy-html" class="t-btn t-btn-secondary t-btn-sm">Copy HTML</button>
-                <button id="tl-copy-text" class="t-btn t-btn-secondary t-btn-sm">Copy Plain Text</button>
-              </div>
-            </div>
-            <div style="font-size:0.6rem;color:#444;margin-bottom:0.5rem;">HTML preview — copy and paste into Gmail's "Insert HTML" or compose mode</div>
-            <div id="tl-email-result-preview" style="border:1px solid #1e1e1e;border-radius:2px;overflow:hidden;background:#fff;"></div>
-          </div>
-
+      <!-- ROUTE PLANNER -->
+      <div class="view" id="view-routes">
+        <div class="route-admin-shell" id="routeAdminShell">
+          <div class="route-loading">Loading Route Planner…</div>
         </div>
       </div>
 
+      <!-- EMAIL GENERATOR -->
+      <div class="view" id="view-emails">
+        <div id="emailAdminShell" class="ops-placeholder">Loading Email Generator…</div>
+      </div>
 
-      <!-- ONBOARDING WIZARD OVERLAY -->
-      <div id="tourWizardOverlay" class="tour-wizard-overlay" style="display:none;">
-        <div class="tour-wizard-box">
-          <div class="wizard-header">
-            <div>
-              <div class="wizard-logo">Melankolia Agency</div>
-              <div class="wizard-step-title" id="wizard-title"></div>
-              <div class="wizard-step-sub" id="wizard-sub"></div>
-            </div>
-            <button class="wizard-close" onclick="closeWizard()">✕</button>
-          </div>
-          <div class="wizard-progress" id="wizard-progress"></div>
-          <div class="wizard-body" id="wizard-body"></div>
-          <div class="wizard-footer">
-            <div class="wizard-step-count" id="wizard-count"></div>
-            <div style="display:flex;gap:0.6rem;">
-              <button id="wizard-prev" class="t-btn t-btn-secondary" onclick="wizardPrev()">← Back</button>
-              <button id="wizard-next" class="t-btn t-btn-primary" onclick="wizardNext()">Next →</button>
-            </div>
-          </div>
-        </div>
+      <!-- ADVANCING CENTER -->
+      <div class="view" id="view-advancing">
+        <div id="advancingAdminShell" class="ops-placeholder">Loading Advancing…</div>
+      </div>
+
+      <!-- BAND ACCESS / USER MANAGEMENT -->
+      <div class="view" id="view-bands">
+        <div id="bandAdminShell" class="ops-placeholder">Loading Band Access…</div>
       </div>
 
     </main>
   </div>
 
+  <!-- ARTIST MODAL (kept for add/edit) -->
+  <div class="modal-overlay" id="artistModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+          <h2 id="artistFormTitle" style="margin:0">Add Artist</h2>
+          <button type="button" class="btn-ai-research" onclick="goResearchThisArtist()">✦ AI Research</button>
+        </div>
+        <button class="modal-close" onclick="closeArtistModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="artistForm" class="admin-form" autocomplete="off">
+          <input type="hidden" id="editArtistId">
+          <div class="form-tabs">
+            <button type="button" class="tab-btn active" data-tab="basic">Basic Info</button>
+            <button type="button" class="tab-btn" data-tab="media">Media</button>
+            <button type="button" class="tab-btn" data-tab="discog">Discography</button>
+            <button type="button" class="tab-btn" data-tab="videos">Videos</button>
+            <button type="button" class="tab-btn" data-tab="links">Links &amp; Social</button>
+            <button type="button" class="tab-btn" data-tab="bio">Bio &amp; Copy</button>
+          </div>
+
+          <!-- BASIC -->
+          <div class="tab-content active" data-tab="basic">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Artist Name *</label>
+                <input type="text" id="aName" class="form-input" required placeholder="Artist name">
+              </div>
+              <div class="form-group">
+                <label>URL Slug</label>
+                <input type="text" id="aSlug" class="form-input" placeholder="auto-generated">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Genres</label>
+                <input type="text" id="aGenres" class="form-input" placeholder="Techno, EBM, Industrial…">
+              </div>
+              <div class="form-group">
+                <label>Location</label>
+                <input type="text" id="aLocation" class="form-input" placeholder="Berlin, Germany">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Booking Email</label>
+                <input type="email" id="aBookingEmail" class="form-input" placeholder="booking@...">
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="aStatus" class="form-input">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Featured on Homepage</label>
+                <select id="aFeatured" class="form-input">
+                  <option value="false">No</option>
+                  <option value="true">Yes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- MEDIA -->
+          <div class="tab-content" data-tab="media">
+            <div class="media-workflow">
+              <section class="media-panel media-library-panel">
+                <div class="media-panel-head">
+                  <div>
+                    <h3>All Photos</h3>
+                    <p>Upload or paste every available photo here first, then assign each image as Tile, Profile, or Banner.</p>
+                  </div>
+                </div>
+                <div class="drop-zone media-upload-zone" id="dropZoneLibraryPhoto" data-target="aNewPhotoUrl" data-preview="newPhotoPreview">
+                  <div class="drop-zone-inner">
+                    <div class="drop-zone-icon">⬆</div>
+                    <div class="drop-zone-text">Drag &amp; drop a new photo or <span class="drop-zone-browse">browse</span></div>
+                    <div class="drop-zone-hint">PNG, JPG, WEBP · Max 10MB · retained in the photo library</div>
+                  </div>
+                  <input type="file" class="drop-zone-file" accept="image/*">
+                </div>
+                <div class="photo-library-actions">
+                  <input type="url" id="aNewPhotoUrl" class="form-input" placeholder="Paste additional photo URL…">
+                  <button type="button" class="btn-secondary" onclick="addLibraryPhotoFromInput()">Add Photo</button>
+                </div>
+                <div class="img-preview media-new-preview" id="newPhotoPreview" style="display:none"></div>
+                <div id="aPhotoLibrary" class="photo-library-grid media-library-grid"></div>
+                <details class="photo-library-advanced">
+                  <summary>Advanced bulk URL editor</summary>
+                  <textarea id="aPhotos" class="form-input form-textarea" rows="5" placeholder="https://photo1.jpg&#10;https://photo2.jpg" oninput="renderPhotoLibrary()"></textarea>
+                </details>
+              </section>
+
+              <section class="media-panel selected-media-panel">
+                <div class="media-panel-head">
+                  <div>
+                    <h3>Selected Images + Crop</h3>
+                    <p>These three images drive the homepage tile, artist profile image, and banner/header. Click the preview to set center, then scale.</p>
+                  </div>
+                </div>
+                <div class="media-role-grid">
+                  <div class="media-role-card media-role-card-tile">
+                    <label>Tile / Homepage Grid</label>
+                    <input type="url" id="aGridPhoto" class="form-input media-role-url" placeholder="Select a Tile image above…">
+                    <div class="img-preview role-preview tile-preview" id="photoPreview"></div>
+                    <div class="focal-editor compact-focal-editor" id="focalEditor" style="display:none">
+                      <div class="focal-editor-label">Tile center <span class="focal-coords" id="focalCoords"></span></div>
+                      <div class="focal-canvas-wrap" id="focalCanvasWrap">
+                        <img id="focalImg" src="" alt="" draggable="false">
+                        <div class="focal-crosshair" id="focalCrosshair"></div>
+                      </div>
+                      <div class="crop-scale-row">
+                        <label for="cropScaleSlider">Scale <span id="cropScaleLabel">1.00×</span></label>
+                        <input type="range" id="cropScaleSlider" min="1" max="2.5" step="0.01" value="1" oninput="setCropScale(this.value)">
+                      </div>
+                      <div class="role-editor-actions">
+                        <button type="button" class="btn-secondary" onclick="resetFocalPoint()">Reset</button>
+                        <button type="button" class="btn-primary" onclick="applyFocalPoint()">Apply ✓</button>
+                      </div>
+                    </div>
+                    <input type="hidden" id="aFocalX" value="50">
+                    <input type="hidden" id="aFocalY" value="50">
+                    <input type="hidden" id="aCropScale" value="1">
+                  </div>
+
+                  <div class="media-role-card media-role-card-profile">
+                    <label>Profile Photo</label>
+                    <input type="url" id="aPhoto" class="form-input media-role-url" placeholder="Select a Profile image above…">
+                    <div class="img-preview role-preview profile-preview" id="profilePhotoPreview"></div>
+                    <div class="focal-editor compact-focal-editor profile-focal-editor" id="profileFocalEditor" style="display:none">
+                      <div class="focal-editor-label">Profile center <span class="focal-coords" id="profileFocalCoords"></span></div>
+                      <div class="focal-canvas-wrap profile-canvas-wrap" id="profileFocalCanvasWrap">
+                        <img id="profileFocalImg" src="" alt="" draggable="false">
+                        <div class="focal-crosshair" id="profileFocalCrosshair"></div>
+                      </div>
+                      <div class="crop-scale-row">
+                        <label for="profileCropScaleSlider">Scale <span id="profileCropScaleLabel">1.00×</span></label>
+                        <input type="range" id="profileCropScaleSlider" min="1" max="2.5" step="0.01" value="1" oninput="setProfileCropScale(this.value)">
+                      </div>
+                      <div class="role-editor-actions">
+                        <button type="button" class="btn-secondary" onclick="resetProfileFocalPoint()">Reset</button>
+                        <button type="button" class="btn-primary" onclick="applyProfileFocalPoint()">Apply ✓</button>
+                      </div>
+                    </div>
+                    <input type="hidden" id="aProfileFocalX" value="50">
+                    <input type="hidden" id="aProfileFocalY" value="50">
+                    <input type="hidden" id="aProfileCropScale" value="1">
+                  </div>
+
+                  <div class="media-role-card media-role-card-banner">
+                    <label>Banner / Header</label>
+                    <input type="url" id="aBanner" class="form-input media-role-url" placeholder="Select a Banner image above…">
+                    <div class="img-preview role-preview banner-preview" id="bannerPreview"></div>
+                    <div class="focal-editor compact-focal-editor banner-focal-editor" id="bannerFocalEditor" style="display:none">
+                      <div class="focal-editor-label">Banner center <span class="focal-coords" id="bannerFocalCoords"></span></div>
+                      <div class="focal-canvas-wrap banner-canvas-wrap" id="bannerFocalCanvasWrap">
+                        <img id="bannerFocalImg" src="" alt="" draggable="false">
+                        <div class="focal-crosshair" id="bannerFocalCrosshair"></div>
+                      </div>
+                      <div class="crop-scale-row">
+                        <label for="bannerCropScaleSlider">Scale <span id="bannerCropScaleLabel">1.00×</span></label>
+                        <input type="range" id="bannerCropScaleSlider" min="1" max="2.5" step="0.01" value="1" oninput="setBannerCropScale(this.value)">
+                      </div>
+                      <div class="role-editor-actions">
+                        <button type="button" class="btn-secondary" onclick="resetBannerFocalPoint()">Reset</button>
+                        <button type="button" class="btn-primary" onclick="applyBannerFocalPoint()">Apply ✓</button>
+                      </div>
+                    </div>
+                    <input type="hidden" id="aBannerFocalX" value="50">
+                    <input type="hidden" id="aBannerFocalY" value="50">
+                    <input type="hidden" id="aBannerCropScale" value="1">
+                  </div>
+                </div>
+              </section>
+
+              <section class="media-panel media-assets-panel">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Press Kit URL</label>
+                    <input type="url" id="aPresskit" class="form-input" placeholder="https://…">
+                  </div>
+                  <div class="form-group">
+                    <label>Tech Rider URL</label>
+                    <input type="url" id="aTechRider" class="form-input" placeholder="https://…">
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- DISCOGRAPHY -->
+          <div class="tab-content" data-tab="discog">
+            <div class="discog-search-bar">
+              <div class="discog-search-hint">Auto-pulls releases from MusicBrainz</div>
+              <button type="button" class="btn-secondary" onclick="searchDiscography()">Search Releases</button>
+              <div class="discog-status" id="discogStatus"></div>
+            </div>
+            <div id="discogResults" class="discog-results"></div>
+            <div class="form-group" style="margin-top:1.5rem">
+              <label>Discography JSON</label>
+              <textarea id="aDiscography" class="form-input form-textarea" rows="6" placeholder='[{"title":"Album","year":"2023","type":"Album","cover":"…"}]'></textarea>
+            </div>
+          </div>
+
+          <!-- VIDEOS -->
+          <div class="tab-content" data-tab="videos">
+            <div class="form-group">
+              <label>Artist Videos <span style="color:var(--muted);font-weight:400">(one YouTube/Vimeo URL per line)</span></label>
+              <textarea id="aVideos" class="form-input form-textarea" rows="7" placeholder="https://www.youtube.com/watch?v=...&#10;Live at ... | https://youtu.be/..."></textarea>
+              <div style="margin-top:.5rem;color:var(--muted);font-size:.72rem;line-height:1.6">These appear on the artist page and the public Videos page. Format can be just a URL, or <strong>Title | URL</strong>.</div>
+            </div>
+          </div>
+
+          <!-- LINKS -->
+          <div class="tab-content" data-tab="links">
+            <div class="form-row">
+              <div class="form-group"><label>Spotify Artist URL <span style="color:var(--muted);font-weight:400;font-size:0.75rem">— paste the full artist page URL</span></label><input type="text" id="aSpotify" class="form-input" placeholder="https://open.spotify.com/artist/XXXXXXXX"></div>
+              <div class="form-group"><label>SoundCloud URL</label><input type="url" id="aSoundcloud" class="form-input" placeholder="https://soundcloud.com/..."></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Bandcamp URL</label><input type="url" id="aBandcamp" class="form-input" placeholder="https://....bandcamp.com"></div>
+              <div class="form-group"><label>Apple Music URL</label><input type="url" id="aApple" class="form-input" placeholder="https://music.apple.com/..."></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Instagram</label><input type="text" id="aInstagram" class="form-input" placeholder="@handle or full URL"></div>
+              <div class="form-group"><label>Facebook URL</label><input type="url" id="aFacebook" class="form-input" placeholder="https://facebook.com/..."></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>YouTube Channel URL</label><input type="url" id="aYoutube" class="form-input" placeholder="https://youtube.com/..."></div>
+              <div class="form-group"><label>Website URL</label><input type="url" id="aWebsite" class="form-input" placeholder="https://..."></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Bandsintown / Songkick</label><input type="url" id="aBandsintown" class="form-input" placeholder="https://bandsintown.com/a/..."></div>
+              <div class="form-group"><label>Resident Advisor</label><input type="url" id="aRA" class="form-input" placeholder="https://ra.co/dj/..."></div>
+            </div>
+          </div>
+
+          <!-- BIO -->
+          <div class="tab-content" data-tab="bio">
+            <div class="form-group">
+              <label>Short Bio <span style="color:var(--muted);font-weight:400">(2–3 sentences, for grid/EPK header)</span></label>
+              <textarea id="aShortBio" class="form-input form-textarea" rows="3" placeholder="Dark electro duo from…"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Full Bio</label>
+              <textarea id="aBio" class="form-input form-textarea" rows="10"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Press Quotes <span style="color:var(--muted);font-weight:400">(one per paragraph)</span></label>
+              <textarea id="aQuotes" class="form-input form-textarea" rows="4" placeholder='"One of the most vital acts in dark electronics." — Pitchfork'></textarea>
+            </div>
+            <div class="form-group">
+              <label>Admin Notes <span style="color:var(--muted);font-weight:400">(internal only)</span></label>
+              <textarea id="aNotes" class="form-input form-textarea" rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" onclick="closeArtistModal()">Cancel</button>
+            <button type="button" class="btn-primary" onclick="saveArtistForm()">Save Artist</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/data.js"></script>
-  <script src="/js/admin.js"></script>
-  <script src="/js/tour-planner.js"></script>
-  <script src="/js/tour-library.js"></script>
-  <script src="/js/advancing-admin.js"></script>
-  <script src="/js/advancing-admin.js"></script>
-  <script>
-    // Extend showView for tour/library/outreach
-    const _origShowView = showView;
-    showView = function(name) {
-      _origShowView(name);
-      if (name === 'tour') {
-        if (typeof initTourPlanner === 'function') initTourPlanner();
-        if (!localStorage.getItem('mk_tour_wizard_seen')) setTimeout(openTourWizard, 400);
-      }
-      if (name === 'library') {
-        if (typeof initTourLibrary === 'function') initTourLibrary();
-      }
-      if (name === 'outreach') {
-        if (typeof initTourLibrary === 'function') initEmailGenerator();
-      }
-    };
-    // Library sub-tab switcher
-    function switchLibTab(tab) {
-      document.querySelectorAll('.lib-tab-panel').forEach(p => p.style.display = 'none');
-      document.querySelectorAll('[data-ltab]').forEach(b => b.classList.remove('active'));
-      const el = document.getElementById('ltab-' + tab);
-      if (el) el.style.display = 'block';
-      const btn = document.querySelector('[data-ltab="' + tab + '"]');
-      if (btn) btn.classList.add('active');
-      // Refresh content
-      if (tab === 'venues' && typeof renderVenueBank === 'function') renderVenueBank();
-      if (tab === 'markets' && typeof renderMarketTracker === 'function') renderMarketTracker();
-      if (tab === 'saved' && typeof renderTourLibrary === 'function') renderTourLibrary();
-    }
-    // Load Maps API securely via proxy
-    (async () => {
-      try {
-        const r = await fetch('/.netlify/functions/maps-config');
-        const { key } = await r.json();
-        const s = document.createElement('script');
-        s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places,geometry&callback=tourMapReady`;
-        s.async = true; s.defer = true;
-        document.head.appendChild(s);
-      } catch(e) { console.warn('Maps failed to load', e); }
-    })();
-  </script>
+  <script src="/js/admin.js?v=logo-strip-v21"></script>
+  <script src="/js/route-admin.js?v=logo-strip-v21"></script>
+  <script src="/js/advancing-admin.js?v=logo-strip-v21"></script>
 </body>
 </html>
