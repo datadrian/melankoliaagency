@@ -15,6 +15,7 @@
  *   GITHUB_TOKEN            fine-grained PAT with Contents: read/write on the repo
  *   MELANKOLIA_ADMIN_PASSWORD (optional; defaults to melankolia2025)
  */
+// build: rev2
 const OWNER = 'datadrian';
 const REPO = 'melankoliaagency';
 const BRANCH = 'main';
