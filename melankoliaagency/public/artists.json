@@ -336,7 +336,7 @@
       "slug": "blood-rave",
       "name": "Blood Rave",
       "bio": "Blood Rave is the darkwave/EBM project of San Francisco Bay Area musician and producer James Rogers, known for his work with Fearing and Creative Adult. Drawing from goth, techno, EBM, and dark electronic influences, Blood Rave explores a heavier, more dancefloor-focused sound while maintaining the atmospheric and melancholic qualities found throughout Rogers’ previous work. Combining driving basslines, pulsing rhythms, and textured synths with an unmistakably dark edge, Blood Rave creates immersive music equally suited for late-night clubs and underground venues. Their latest release, Exponential Decay (2025), showcases an energetic approach to dark dance music, blending infectious grooves, harsh electronic textures, and a modern take on classic darkwave and EBM influences.",
-      "shortBio": "Blood Rave is the darkwave/EBM project of San Francisco Bay Area musician and producer James Rogers, known for his work with Fearing and Creative Adult. Drawing from goth, techno, EBM, and dark electronic influences, Blood Rave explores a heavier, more dancefl…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -391,8 +391,8 @@
         },
         "banner": {
           "src": "/images/artists/blood-rave.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 46,
+          "y": 23,
           "scale": 1
         }
       }
