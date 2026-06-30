@@ -3088,25 +3088,26 @@
         }
       ],
       "gallery": [
-        "/images/artists/xtr-human.jpg"
+        "/images/artists/xtr-human.jpg",
+        "/images/artists/xtr-human/mr0pjnmprhn9.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/xtr-human.jpg",
+          "src": "/images/artists/xtr-human/mr0pjnmprhn9.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/xtr-human.jpg",
+          "src": "/images/artists/xtr-human/mr0pjnmprhn9.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "banner": {
           "src": "/images/artists/xtr-human.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 49,
+          "y": 49,
           "scale": 1
         }
       }
