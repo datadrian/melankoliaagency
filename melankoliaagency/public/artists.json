@@ -2457,7 +2457,7 @@
       "slug": "sleek-teeth",
       "name": "Sleek Teeth",
       "bio": "LA based duo Sleek Teeth crafts moody, melodic electronic music that feels right at home on the dancefloor of a shadowy underground nightclub. Blending darkwave, electro-pop, and EBM, their sound navigates themes of isolation, dissociation, and the struggle to make sense of the senseless—without ever sacrificing a strong hook. Haunting, slightly melodramatic vocals glide over pulse-driven beats, creating a dynamic and cathartic live experience. Their acclaimed self-titled debut EP arrived in 2024, followed by the 2025 \"Gone Remixes\" featuring standout reworks by Kris Baha, XTR Human, and SIIE. Recent singles \"Same\" and \"The River\" have been met with an enthusiastic response, building momentum toward their highly anticipated new album, set for release in 2026. Sleek Teeth's music videos for \"Gone\", \"Endless\", \"Operating\" and \"Same\" which can be found below were produced, directed and filmed by Melankolia Agency's Director of Photography Adrian Stucker. Photo by Holy Smoke Photography",
-      "shortBio": "LA based duo Sleek Teeth crafts moody, melodic electronic music that feels right at home on the dancefloor of a shadowy underground nightclub. Blending darkwave, electro-pop, and EBM, their sound navigates themes of isolation, dissociation, and the struggle to…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -2532,7 +2532,8 @@
         }
       ],
       "gallery": [
-        "/images/artists/sleek-teeth.jpg"
+        "/images/artists/sleek-teeth.jpg",
+        "/images/artists/sleek-teeth/mr0pgib13hpa.jpg"
       ],
       "roles": {
         "tile": {
@@ -2548,9 +2549,9 @@
           "scale": 1
         },
         "banner": {
-          "src": "/images/artists/sleek-teeth.jpg",
-          "x": 46.59,
-          "y": 10.32,
+          "src": "/images/artists/sleek-teeth/mr0pgib13hpa.jpg",
+          "x": 54,
+          "y": 0,
           "scale": 1
         }
       }
