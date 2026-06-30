@@ -716,6 +716,14 @@ select.form-input option { background: #111; }
 .discog-cover img {
   width: 100%; height: 100%; object-fit: cover; display: block;
 }
+.discog-cover.no-art, .discog-cover:has(.discog-fallback) {
+  display: flex; align-items: center; justify-content: center;
+}
+.discog-fallback {
+  font-size: 1.6rem; font-weight: 600; color: rgba(255,255,255,0.22);
+  letter-spacing: 0.04em;
+}
+.discog-card { text-decoration: none; }
 .discog-title {
   font-size: 0.7rem; font-weight: 500; color: rgba(255,255,255,0.85);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;

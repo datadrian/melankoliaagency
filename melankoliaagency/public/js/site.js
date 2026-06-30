@@ -143,9 +143,20 @@
 
       var disc = document.getElementById('artistDiscography');
       if (disc && Array.isArray(a.discography) && a.discography.length) {
-        disc.innerHTML = '<h3>Discography</h3><ul class="discography-list">' + a.discography.map(function (r) {
-          return '<li>' + esc(r.title || '') + (r.year ? ' <span class="disc-year">(' + esc(r.year) + ')</span>' : '') + '</li>';
-        }).join('') + '</ul>';
+        disc.innerHTML = '<h3>Discography</h3><div class="discog-grid">' + a.discography.map(function (r) {
+          var title = esc(r.title || '');
+          var meta = [r.year ? esc(r.year) : '', r.type ? esc(r.type) : ''].filter(Boolean).join(' · ');
+          var initial = esc((r.title || '?').charAt(0).toUpperCase());
+          var coverInner = r.cover
+            ? '<img src="' + esc(r.cover) + '" alt="' + title + '" loading="lazy" onerror="this.parentNode.classList.add(\'no-art\');this.parentNode.innerHTML=\'<span class=&quot;discog-fallback&quot;>' + initial + '</span>\';">'
+            : '<span class="discog-fallback">' + initial + '</span>';
+          var card = '<div class="discog-cover">' + coverInner + '</div>' +
+                     '<div class="discog-title" title="' + title + '">' + title + '</div>' +
+                     (meta ? '<div class="discog-meta">' + meta + '</div>' : '');
+          return r.url
+            ? '<a class="discog-card" href="' + esc(r.url) + '" target="_blank" rel="noopener noreferrer">' + card + '</a>'
+            : '<div class="discog-card">' + card + '</div>';
+        }).join('') + '</div>';
       }
       renderVideos(a);
 
