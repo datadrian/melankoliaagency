@@ -2811,7 +2811,7 @@
       "slug": "topographies",
       "name": "Topographies",
       "bio": "Topographies is a coldwave group based in San Francisco and Los Angeles. The group was founded by Justin Oronos, Jeremie Ruest and Gray Tolhurst. The band’s sound developed from ethereal shoegaze and dreampop to a more streamlined coldwave sound over the course of several early EPs and crystallized in their debut record \"Ideal Form\" (2020). This record outlined their unique aesthetic: the icy drums and lockstep bass of coldwave meeting the hazy textures of shoegaze guitars, united by Tolhurt’s introspective and impassioned vocal melodies and lyrics. After a series of US tours in 2022 and 2023, the band released their follow up \"Interior Spring\" in early 2024 to be followed by a series of dates in Europe including Wave-Gotik-Treffen festival in Germany. In 2025 the band released their new EP \"Brutality of Fact\" and continues to conquer more global stages.",
-      "shortBio": "Topographies is a coldwave group based in San Francisco and Los Angeles. The group was founded by Justin Oronos, Jeremie Ruest and Gray Tolhurst. The band’s sound developed from ethereal shoegaze and dreampop to a more streamlined coldwave sound over the cours…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -2895,17 +2895,18 @@
         }
       ],
       "gallery": [
-        "/images/artists/topographies.jpg"
+        "/images/artists/topographies.jpg",
+        "/images/artists/topographies/mr0piud1kfgn.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/topographies.jpg",
+          "src": "/images/artists/topographies/mr0piud1kfgn.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/topographies.jpg",
+          "src": "/images/artists/topographies/mr0piud1kfgn.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
@@ -2913,7 +2914,7 @@
         "banner": {
           "src": "/images/artists/topographies.jpg",
           "x": 50,
-          "y": 50,
+          "y": 43,
           "scale": 1
         }
       }
