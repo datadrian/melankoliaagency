@@ -3,25 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Artist — Melankolia Agency</title>
-  <meta name="description" content="Artist bio and booking information — Melankolia Agency">
+  <title>Artist Booking | Melankolia Agency</title>
+  <meta name="description" content="Artist bio, media, videos and booking information for Melankolia Agency roster artists.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:site_name" content="Melankolia Agency">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://www.melankoliaagency.com/images/logo-full.png">
   <link rel="icon" type="image/png" href="/images/logo-full.png">
-  <link rel="stylesheet" href="/css/main.css">
+  <link rel="apple-touch-icon" href="/images/logo-full.png">
+  <link rel="stylesheet" href="/css/main.css?v=simple-v1">
 </head>
 <body>
   <!-- NAV -->
   <nav class="nav" id="nav">
     <a href="/" class="nav-logo">
-      <img src="/images/logo-full.png" alt="Melankolia Agency" class="nav-logo-img">
+      <img src="/images/logo-mark-white.svg" alt="Melankolia Agency" class="nav-logo-img">
     </a>
     <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="navLinks">
       <li><a href="/" class="nav-link">Artists</a></li>
-      <li><a href="/videos.html" class="nav-link">Videos</a></li>
-      <li><a href="/booking.html" class="nav-link">Booking</a></li>
-      <li><a href="/submission.html" class="nav-link">Submit</a></li>
+      <li><a href="/about/" class="nav-link">About</a></li>
+      <li><a class="nav-link" href="/videos">Videos</a></li>
+      <li><a class="nav-link" href="/booking">Booking</a></li>
+      <li><a class="nav-link" href="/submission">Submit</a></li>
     </ul>
   </nav>
 
@@ -32,6 +38,7 @@
     <div class="artist-hero-content">
       <a href="/" class="back-link">← All Artists</a>
       <h1 class="artist-hero-name" id="artistName">Loading...</h1>
+      <div class="artist-meta" id="artistMeta"></div>
     </div>
   </div>
 
@@ -41,10 +48,12 @@
       <div class="artist-photo-col">
         <img class="artist-photo" id="artistPhoto" src="" alt="">
         <div class="artist-social" id="artistSocial"></div>
-        <a href="/booking.html" class="btn-book" id="bookBtn">Book This Artist</a>
+        <a class="btn-book" href="/booking" id="bookBtn">Book This Artist</a>
       </div>
       <div class="artist-bio-col">
-        <p class="artist-bio" id="artistBio"></p>
+        <p class="artist-short-bio" id="artistShortBio"></p>
+        <div class="artist-bio" id="artistBio"></div>
+        <div class="artist-discography" id="artistDiscography"></div>
         <div class="artist-videos" id="artistVideos"></div>
       </div>
     </div>
@@ -53,7 +62,7 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-inner">
-      <img src="/images/logo-full.png" alt="Melankolia Agency" class="footer-logo">
+      <img src="/images/logo-mark-white.svg" alt="Melankolia Agency" class="footer-logo">
       <div class="footer-links">
         <a href="mailto:booking@melankoliaagency.com">booking@melankoliaagency.com</a>
       </div>
@@ -61,7 +70,6 @@
     </div>
   </footer>
 
-  <script src="/js/data.js"></script>
-  <script src="/js/artist.js"></script>
+  <script src="/js/site.js?v=simple-v1"></script>
 </body>
 </html>
