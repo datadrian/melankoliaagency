@@ -1306,25 +1306,26 @@
         }
       ],
       "gallery": [
-        "/images/artists/die-sexual.jpg"
+        "/images/artists/die-sexual.jpg",
+        "/images/artists/die-sexual/mr0p9qiodjkq.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/die-sexual.jpg",
+          "src": "/images/artists/die-sexual/mr0p9qiodjkq.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/die-sexual.jpg",
+          "src": "/images/artists/die-sexual/mr0p9qiodjkq.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "banner": {
           "src": "/images/artists/die-sexual.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 43,
+          "y": 44,
           "scale": 1
         }
       }
