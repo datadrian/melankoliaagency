@@ -237,7 +237,8 @@
         }
       ],
       "gallery": [
-        "/images/artists/bestial-mouths.jpg"
+        "/images/artists/bestial-mouths.jpg",
+        "/images/artists/bestial-mouths/mr0ouuqf1obi.jpg"
       ],
       "roles": {
         "tile": {
@@ -253,9 +254,9 @@
           "scale": 1
         },
         "banner": {
-          "src": "/images/artists/bestial-mouths.jpg",
+          "src": "/images/artists/bestial-mouths/mr0ouuqf1obi.jpg",
           "x": 50,
-          "y": 14,
+          "y": 50,
           "scale": 1
         }
       }
