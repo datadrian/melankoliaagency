@@ -1,47 +1,39 @@
 /* ================================================
    MELANKOLIA — ARTIST MANAGER (admin)
    Edits artists.json in git via the save-artists function.
+   Gallery (bucket) + tile/profile/banner roles, each with
+   center point + zoom and a real crop preview.
    ================================================ */
 (function () {
   'use strict';
 
   var API = '/.netlify/functions/save-artists';
-  var isProd = /(^|\.)melankoliaagency\.com$/.test(location.hostname);
-  // Production previews existing images from the GitHub CDN; on Netlify branch
-  // previews the data/images are served locally by the preview deploy.
-  var CDN = isProd ? 'https://cdn.jsdelivr.net/gh/datadrian/melankoliaagency@main/melankoliaagency/public' : '';
+  var CDN = 'https://cdn.jsdelivr.net/gh/datadrian/melankoliaagency@main/melankoliaagency/public';
   var LINK_FIELDS = ['website', 'instagram', 'facebook', 'bandcamp', 'spotify', 'soundcloud', 'youtube', 'tiktok', 'apple', 'bandsintown'];
+  var ROLES = [
+    { key: 'tile', label: 'Tile (homepage)', ratio: '1 / 1', sub: 'Square thumbnail in the artist grid' },
+    { key: 'profile', label: 'Profile (artist page)', ratio: '1 / 1', sub: 'Main photo on the artist page' },
+    { key: 'banner', label: 'Banner (page header)', ratio: '5 / 2', sub: 'Wide image behind the artist name' }
+  ];
 
   var artists = [];
   var current = -1;
-  var fresh = {}; // slug+kind -> dataURL just-uploaded (for instant preview)
+  var fresh = {};   // path -> dataURL just uploaded (instant preview)
   var dirty = false;
 
   function pw() { return sessionStorage.getItem('mk_admin_pw') || ''; }
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function slugify(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
-
-  function setStatus(msg, kind) {
-    var el = $('status'); el.textContent = msg || ''; el.className = 'status' + (kind ? ' ' + kind : '');
-  }
-
-  function imgFor(art, kind) {
-    var key = art.slug + '|' + kind;
-    if (fresh[key]) return fresh[key];
-    var p = kind === 'banner' ? art.banner : art.photo;
-    if (!p) return '';
-    return /^https?:|^data:/.test(p) ? p : CDN + p;
-  }
+  function setStatus(m, k) { var e = $('status'); e.textContent = m || ''; e.className = 'status' + (k ? ' ' + k : ''); }
+  function imgUrl(path) { if (!path) return ''; if (fresh[path]) return fresh[path]; if (/^https?:|^data:/.test(path)) return path; return CDN + path; }
 
   /* ---------- gate ---------- */
   function initGate() {
-    if (sessionStorage.getItem('mk_admin_ok') === '1') { $('gate').style.display = 'none'; load(); return; }
+    if (sessionStorage.getItem('mk_admin_ok') === '1') { $('gate').style.display = 'none'; return load(); }
     $('gateForm').addEventListener('submit', function (e) {
       e.preventDefault();
-      var v = $('gatePw').value;
-      // Validate by attempting a no-op authenticated check via save of nothing? Simpler: store and verify on first save.
-      sessionStorage.setItem('mk_admin_pw', v);
+      sessionStorage.setItem('mk_admin_pw', $('gatePw').value);
       sessionStorage.setItem('mk_admin_ok', '1');
       $('gate').style.display = 'none';
       load();
@@ -54,146 +46,188 @@
     fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get' }) })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (d && d.success && (d.artists || []).length) {
-          artists = d.artists;
-          setStatus(artists.length + ' artists loaded', 'ok');
-          renderList();
-        } else {
-          loadLocal();
-        }
+        if (d && d.success && (d.artists || []).length) { artists = d.artists; ready(); }
+        else loadLocal();
       })
-      .catch(function () { loadLocal(); });
+      .catch(loadLocal);
   }
-
-  // Fallback for branch previews (before content is on main): read the
-  // locally-deployed artists.json so the manager can be tested end to end.
   function loadLocal() {
-    fetch('/artists.json', { cache: 'no-cache' })
-      .then(function (r) { return r.json(); })
-      .then(function (d) { artists = (d && d.artists) || []; setStatus(artists.length + ' artists loaded', 'ok'); renderList(); })
+    fetch('/artists.json', { cache: 'no-cache' }).then(function (r) { return r.json(); })
+      .then(function (d) { artists = (d && d.artists) || []; ready(); })
       .catch(function (e) { setStatus('Load failed: ' + e.message, 'err'); });
+  }
+  function ready() {
+    artists.forEach(normalize);
+    setStatus(artists.length + ' artists loaded', 'ok');
+    renderList();
+  }
+  function normalize(a) {
+    a.links = a.links || {}; a.gallery = a.gallery || []; a.roles = a.roles || {};
+    a.videos = a.videos || []; a.discography = a.discography || [];
   }
 
   /* ---------- list ---------- */
   function renderList() {
     var html = artists.map(function (a, i) {
-      var t = imgFor(a, 'photo');
+      var r = (a.roles && (a.roles.tile || a.roles.profile)) || (a.gallery[0] ? { src: a.gallery[0] } : null);
+      var t = r ? imgUrl(r.src) : '';
       var thumb = t ? '<img class="list-thumb" src="' + esc(t) + '" alt="" onerror="this.style.visibility=\'hidden\'">' : '<div class="list-thumb"></div>';
-      return '<div class="list-item ' + (i === current ? 'active' : '') + '" data-i="' + i + '">' + thumb +
-        '<span class="list-name">' + esc(a.name || '(unnamed)') + '</span></div>';
+      return '<div class="list-item ' + (i === current ? 'active' : '') + '" data-i="' + i + '">' + thumb + '<span class="list-name">' + esc(a.name || '(unnamed)') + '</span></div>';
     }).join('');
     html += '<div class="list-add"><button class="btn secondary" id="addBtn" style="width:100%">+ Add artist</button></div>';
     $('list').innerHTML = html;
-    $('list').querySelectorAll('.list-item').forEach(function (el) {
-      el.addEventListener('click', function () { select(parseInt(el.getAttribute('data-i'), 10)); });
-    });
+    $('list').querySelectorAll('.list-item').forEach(function (el) { el.addEventListener('click', function () { current = parseInt(el.getAttribute('data-i'), 10); renderList(); renderEditor(); }); });
     $('addBtn').addEventListener('click', addArtist);
   }
-
   function addArtist() {
-    artists.push({ slug: 'new-artist-' + Date.now(), name: 'New Artist', bio: '', shortBio: '', genres: '', location: '', photo: '', focalX: 50, focalY: 50, banner: '', bannerFocalX: 50, bannerFocalY: 50, links: {}, videos: [], discography: [], status: 'active', featured: false });
-    current = artists.length - 1; dirty = true;
-    renderList(); renderEditor();
+    artists.push({ slug: 'new-artist-' + Date.now().toString(36), name: 'New Artist', bio: '', shortBio: '', genres: '', location: '', status: 'active', featured: false, links: {}, videos: [], discography: [], gallery: [], roles: {} });
+    current = artists.length - 1; dirty = true; renderList(); renderEditor();
   }
-
-  function select(i) { current = i; renderList(); renderEditor(); }
 
   /* ---------- editor ---------- */
   function renderEditor() {
     var a = artists[current];
     if (!a) { $('editor').className = 'editor empty'; $('editor').textContent = 'Select an artist to edit, or add a new one.'; return; }
+    normalize(a);
     $('editor').className = 'editor';
-    var linkRows = LINK_FIELDS.map(function (k) {
-      return '<div class="field"><label>' + k + '</label><input data-link="' + k + '" value="' + esc((a.links && a.links[k]) || '') + '" placeholder="https://…"></div>';
-    }).join('');
+    var linkRows = LINK_FIELDS.map(function (k) { return '<div class="field"><label>' + k + '</label><input data-link="' + k + '" value="' + esc(a.links[k] || '') + '" placeholder="https://…"></div>'; }).join('');
+
     $('editor').innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px">' +
         '<div class="row" style="flex:1">' +
           '<div class="field" style="margin:0"><label>Name</label><input id="f_name" value="' + esc(a.name) + '"></div>' +
           '<div class="field" style="margin:0"><label>URL slug</label><input id="f_slug" value="' + esc(a.slug) + '"></div>' +
         '</div>' +
-        '<div style="display:flex;gap:6px;align-items:flex-end">' +
-          '<button class="btn secondary" id="upBtn" title="Move up">↑</button>' +
-          '<button class="btn secondary" id="dnBtn" title="Move down">↓</button>' +
-          '<button class="btn danger" id="delBtn">Delete</button>' +
-        '</div>' +
+        '<div style="display:flex;gap:6px"><button class="btn secondary" id="upBtn">↑</button><button class="btn secondary" id="dnBtn">↓</button><button class="btn danger" id="delBtn">Delete</button></div>' +
       '</div>' +
 
-      '<h2 class="section">Photos &amp; centering</h2>' +
-      '<div class="media-grid">' +
-        mediaBlock('photo', 'Main photo (grid + page)', a) +
-        mediaBlock('banner', 'Banner (optional page header)', a) +
-      '</div>' +
+      '<h2 class="section">Photo gallery <span style="color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400">— every photo here appears on the EPK page</span></h2>' +
+      '<div class="media-actions" style="margin-bottom:14px"><label class="upbtn">⬆ Upload photo(s)<input type="file" accept="image/*" multiple id="galFile" style="display:none"></label></div>' +
+      '<div class="gallery" id="gallery"></div>' +
+
+      '<h2 class="section">Roles, crop &amp; centering</h2>' +
+      '<div class="roles" id="roles"></div>' +
 
       '<h2 class="section">Bio</h2>' +
-      '<div class="row"><div class="field"><label>Genres</label><input id="f_genres" value="' + esc(a.genres) + '"></div>' +
-      '<div class="field"><label>Location</label><input id="f_location" value="' + esc(a.location) + '"></div></div>' +
+      '<div class="row"><div class="field"><label>Genres</label><input id="f_genres" value="' + esc(a.genres) + '"></div><div class="field"><label>Location</label><input id="f_location" value="' + esc(a.location) + '"></div></div>' +
       '<div class="field"><label>Short bio (one line)</label><input id="f_shortBio" value="' + esc(a.shortBio) + '"></div>' +
       '<div class="field"><label>Full bio</label><textarea id="f_bio" rows="9">' + esc(a.bio) + '</textarea></div>' +
 
       '<h2 class="section">Links</h2>' + linkRows +
+      '<h2 class="section">Videos (one YouTube URL per line)</h2><div class="field"><textarea id="f_videos" rows="5">' + esc((a.videos || []).join('\n')) + '</textarea></div>';
 
-      '<h2 class="section">Videos (one YouTube URL per line)</h2>' +
-      '<div class="field"><textarea id="f_videos" rows="5">' + esc((a.videos || []).join('\n')) + '</textarea></div>';
-
-    // wire text fields
-    bind('f_name', function (v) { a.name = v; renderListNameOnly(); });
+    bind('f_name', function (v) { a.name = v; renderList(); });
     bind('f_slug', function (v) { a.slug = slugify(v); });
     bind('f_genres', function (v) { a.genres = v; });
     bind('f_location', function (v) { a.location = v; });
     bind('f_shortBio', function (v) { a.shortBio = v; });
     bind('f_bio', function (v) { a.bio = v; });
     bind('f_videos', function (v) { a.videos = v.split('\n').map(function (s) { return s.trim(); }).filter(Boolean); });
-    $('editor').querySelectorAll('[data-link]').forEach(function (el) {
-      el.addEventListener('input', function () { a.links = a.links || {}; a.links[el.getAttribute('data-link')] = el.value.trim(); dirty = true; });
-    });
-    $('delBtn').addEventListener('click', function () {
-      if (!confirm('Delete ' + (a.name || 'this artist') + '?')) return;
-      artists.splice(current, 1); current = -1; dirty = true; renderList(); renderEditor();
-    });
+    $('editor').querySelectorAll('[data-link]').forEach(function (el) { el.addEventListener('input', function () { a.links[el.getAttribute('data-link')] = el.value.trim(); dirty = true; }); });
+    $('delBtn').addEventListener('click', function () { if (confirm('Delete ' + (a.name || 'this artist') + '?')) { artists.splice(current, 1); current = -1; dirty = true; renderList(); renderEditor(); } });
     $('upBtn').addEventListener('click', function () { move(-1); });
     $('dnBtn').addEventListener('click', function () { move(1); });
+    $('galFile').addEventListener('change', onUpload);
 
-    initCrop('photo'); initCrop('banner');
+    renderGallery();
+    renderRoles();
   }
 
-  function mediaBlock(kind, label, a) {
-    var src = imgFor(a, kind);
-    var fx = (kind === 'banner' ? a.bannerFocalX : a.focalX); if (fx == null) fx = 50;
-    var fy = (kind === 'banner' ? a.bannerFocalY : a.focalY); if (fy == null) fy = 50;
-    return '<div><div class="field" style="margin-bottom:8px"><label>' + label + '</label></div>' +
-      '<div class="crop-stage ' + (kind === 'banner' ? 'banner' : '') + '" id="stage_' + kind + '">' +
-        '<img id="img_' + kind + '" ' + (src ? 'src="' + esc(src) + '"' : '') + ' style="object-position:' + fx + '% ' + fy + '%">' +
-        '<div class="crop-empty" id="empty_' + kind + '" style="' + (src ? 'display:none' : '') + '">No image</div>' +
-        '<div class="crop-dot" id="dot_' + kind + '" style="left:' + fx + '%;top:' + fy + '%;' + (src ? 'display:block' : '') + '"></div>' +
-      '</div>' +
-      '<div class="media-actions">' +
-        '<label class="upbtn">⬆ Upload<input type="file" accept="image/*" id="file_' + kind + '" style="display:none"></label>' +
-        '<button class="btn secondary" id="reset_' + kind + '">Center</button>' +
-        (kind === 'banner' ? '<button class="btn secondary" id="clear_' + kind + '">Remove</button>' : '') +
-      '</div>' +
-      '<p class="hint">Drag the dot to choose what stays in view when the image is cropped.</p></div>';
+  /* ---------- gallery ---------- */
+  function roleUsing(a, src) { return ROLES.filter(function (R) { return a.roles[R.key] && sameSrc(a.roles[R.key].src, src); }).map(function (R) { return R.key; }); }
+  function sameSrc(x, y) { return x && y && x === y; }
+
+  function renderGallery() {
+    var a = artists[current], g = $('gallery');
+    if (!a.gallery.length) { g.innerHTML = '<div style="color:var(--muted);font-size:12px">No photos yet — upload one or more to get started.</div>'; return; }
+    g.innerHTML = a.gallery.map(function (src, i) {
+      var used = roleUsing(a, src);
+      var badges = used.map(function (k) { return '<span class="badge">' + k + '</span>'; }).join('');
+      var btns = ROLES.map(function (R) { return '<button data-role="' + R.key + '" data-src="' + esc(src) + '" class="' + (used.indexOf(R.key) > -1 ? 'on' : '') + '">' + R.key.charAt(0).toUpperCase() + R.key.slice(1) + '</button>'; }).join('');
+      return '<div class="gallery-item"><img class="gallery-thumb" src="' + esc(imgUrl(src)) + '" alt="" onerror="this.style.opacity=.2"><div class="gallery-body"><div class="gallery-badges">' + badges + '</div><div class="gallery-btns">' + btns + '<button class="rm" data-rm="' + esc(src) + '">✕</button></div></div></div>';
+    }).join('');
+    g.querySelectorAll('button[data-role]').forEach(function (b) { b.addEventListener('click', function () { assignRole(b.getAttribute('data-role'), b.getAttribute('data-src')); }); });
+    g.querySelectorAll('button[data-rm]').forEach(function (b) { b.addEventListener('click', function () { removeFromGallery(b.getAttribute('data-rm')); }); });
   }
 
-  function initCrop(kind) {
+  function assignRole(role, src) {
     var a = artists[current];
-    var stage = $('stage_' + kind), img = $('img_' + kind), dot = $('dot_' + kind), empty = $('empty_' + kind);
-    var fxKey = kind === 'banner' ? 'bannerFocalX' : 'focalX';
-    var fyKey = kind === 'banner' ? 'bannerFocalY' : 'focalY';
-    var dragging = false;
+    if (a.roles[role] && sameSrc(a.roles[role].src, src)) { delete a.roles[role]; } // toggle off
+    else { a.roles[role] = { src: src, x: 50, y: 50, scale: 1 }; }
+    dirty = true; renderGallery(); renderRoles(); renderList();
+  }
+  function removeFromGallery(src) {
+    var a = artists[current];
+    a.gallery = a.gallery.filter(function (s) { return s !== src; });
+    ROLES.forEach(function (R) { if (a.roles[R.key] && sameSrc(a.roles[R.key].src, src)) delete a.roles[R.key]; });
+    dirty = true; renderGallery(); renderRoles(); renderList();
+  }
 
-    function apply(x, y) {
-      x = Math.max(0, Math.min(100, Math.round(x)));
-      y = Math.max(0, Math.min(100, Math.round(y)));
-      a[fxKey] = x; a[fyKey] = y; dirty = true;
-      img.style.objectPosition = x + '% ' + y + '%';
-      dot.style.left = x + '%'; dot.style.top = y + '%';
+  function onUpload(e) {
+    var files = Array.prototype.slice.call(e.target.files || []);
+    e.target.value = '';
+    var a = artists[current];
+    (function next() {
+      if (!files.length) return;
+      var file = files.shift();
+      setStatus('Uploading ' + file.name + '…');
+      resize(file, 1800, function (dataUrl) {
+        if (!dataUrl) { setStatus('Could not read ' + file.name, 'err'); return next(); }
+        fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upload', password: pw(), slug: a.slug, filename: file.name, dataUrl: dataUrl }) })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (!d.success) throw new Error(d.error || 'upload failed');
+            fresh[d.path] = dataUrl;
+            a.gallery.push(d.path);
+            // auto-assign to any empty role so a first photo shows immediately
+            ROLES.forEach(function (R) { if (!a.roles[R.key]) a.roles[R.key] = { src: d.path, x: 50, y: 50, scale: 1 }; });
+            dirty = true; renderGallery(); renderRoles(); renderList();
+            setStatus('Uploaded — click Save changes to publish', 'ok');
+            next();
+          })
+          .catch(function (err) { setStatus('Upload failed: ' + err.message, 'err'); });
+      });
+    })();
+  }
+
+  /* ---------- role crop editors ---------- */
+  function renderRoles() {
+    var a = artists[current];
+    $('roles').innerHTML = ROLES.map(function (R) {
+      var r = a.roles[R.key];
+      var has = r && r.src;
+      var style = has ? 'object-position:' + (r.x) + '% ' + (r.y) + '%;transform:scale(' + (r.scale || 1) + ');transform-origin:' + (r.x) + '% ' + (r.y) + '%' : '';
+      return '<div class="role-card"><h3>' + R.label + '</h3><div class="sub">' + R.sub + '</div>' +
+        '<div class="role-stage" id="st_' + R.key + '" style="aspect-ratio:' + R.ratio + '">' +
+          (has ? '<img id="im_' + R.key + '" src="' + esc(imgUrl(r.src)) + '" style="' + style + '">' : '') +
+          '<div class="role-empty" id="em_' + R.key + '" style="' + (has ? 'display:none' : '') + '">Assign a gallery photo to this role using the buttons above.</div>' +
+          '<div class="role-dot" id="dt_' + R.key + '" style="' + (has ? 'left:' + r.x + '%;top:' + r.y + '%;display:block' : '') + '"></div>' +
+        '</div>' +
+        '<div class="role-ctl"><label>Zoom</label><input type="range" min="1" max="3" step="0.05" value="' + (has ? (r.scale || 1) : 1) + '" id="zm_' + R.key + '" ' + (has ? '' : 'disabled') + '><span class="zoomval" id="zv_' + R.key + '">' + (has ? (r.scale || 1).toFixed(2) : '1.00') + '×</span><button class="btn secondary" id="ce_' + R.key + '" style="padding:5px 9px" ' + (has ? '' : 'disabled') + '>Center</button></div>' +
+        '</div>';
+    }).join('');
+    ROLES.forEach(initRoleEditor);
+  }
+
+  function initRoleEditor(R) {
+    var a = artists[current];
+    var stage = $('st_' + R.key), img = $('im_' + R.key), dot = $('dt_' + R.key);
+    var zm = $('zm_' + R.key), zv = $('zv_' + R.key), ce = $('ce_' + R.key);
+    var r = a.roles[R.key];
+    if (!r || !r.src) return;
+    var dragging = false;
+    function paint() {
+      var s = r.scale || 1;
+      img.style.objectPosition = r.x + '% ' + r.y + '%';
+      img.style.transform = 'scale(' + s + ')';
+      img.style.transformOrigin = r.x + '% ' + r.y + '%';
+      dot.style.left = r.x + '%'; dot.style.top = r.y + '%';
     }
     function fromEvent(e) {
-      if (!(a.photo || a.banner || fresh[a.slug + '|' + kind])) return;
-      var r = stage.getBoundingClientRect();
-      var p = e.touches ? e.touches[0] : e;
-      apply(((p.clientX - r.left) / r.width) * 100, ((p.clientY - r.top) / r.height) * 100);
+      var rect = stage.getBoundingClientRect(); var p = e.touches ? e.touches[0] : e;
+      r.x = Math.max(0, Math.min(100, Math.round(((p.clientX - rect.left) / rect.width) * 100)));
+      r.y = Math.max(0, Math.min(100, Math.round(((p.clientY - rect.top) / rect.height) * 100)));
+      dirty = true; paint();
     }
     stage.addEventListener('mousedown', function (e) { dragging = true; fromEvent(e); e.preventDefault(); });
     window.addEventListener('mousemove', function (e) { if (dragging) fromEvent(e); });
@@ -201,38 +235,8 @@
     stage.addEventListener('touchstart', function (e) { dragging = true; fromEvent(e); }, { passive: true });
     stage.addEventListener('touchmove', function (e) { if (dragging) fromEvent(e); }, { passive: true });
     stage.addEventListener('touchend', function () { dragging = false; });
-
-    $('reset_' + kind).addEventListener('click', function () { apply(50, 50); });
-    var clearBtn = $('clear_' + kind);
-    if (clearBtn) clearBtn.addEventListener('click', function () {
-      a.banner = ''; delete fresh[a.slug + '|banner']; dirty = true; renderEditor();
-    });
-
-    $('file_' + kind).addEventListener('change', function (e) {
-      var file = e.target.files[0]; if (!file) return;
-      setStatus('Uploading image…');
-      resize(file, kind === 'banner' ? 1800 : 1400, function (dataUrl) {
-        if (!dataUrl) { setStatus('Could not read image', 'err'); return; }
-        fresh[a.slug + '|' + kind] = dataUrl;
-        if (img) { img.src = dataUrl; img.style.objectPosition = '50% 50%'; }
-        if (empty) empty.style.display = 'none';
-        if (dot) { dot.style.display = 'block'; dot.style.left = '50%'; dot.style.top = '50%'; }
-        a[fxKey] = 50; a[fyKey] = 50;
-        // upload to git
-        fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'upload', password: pw(), slug: a.slug, kind: kind, filename: file.name, dataUrl: dataUrl }) })
-          .then(function (r) { return r.json(); })
-          .then(function (d) {
-            if (!d.success) throw new Error(d.error || 'upload failed');
-            if (kind === 'banner') a.banner = d.path; else a.photo = d.path;
-            dirty = true;
-            setStatus('Image uploaded — click Save changes to publish', 'ok');
-            renderListNameOnly();
-          })
-          .catch(function (err) { setStatus('Upload failed: ' + err.message, 'err'); });
-      });
-      e.target.value = '';
-    });
+    zm.addEventListener('input', function () { r.scale = parseFloat(zm.value); zv.textContent = r.scale.toFixed(2) + '×'; dirty = true; paint(); });
+    ce.addEventListener('click', function () { r.x = 50; r.y = 50; r.scale = 1; zm.value = 1; zv.textContent = '1.00×'; dirty = true; paint(); });
   }
 
   function resize(file, maxDim, cb) {
@@ -242,8 +246,7 @@
       im.onload = function () {
         var w = im.width, h = im.height;
         if (w > maxDim || h > maxDim) { var s = Math.min(maxDim / w, maxDim / h); w = Math.round(w * s); h = Math.round(h * s); }
-        var c = document.createElement('canvas'); c.width = w; c.height = h;
-        c.getContext('2d').drawImage(im, 0, 0, w, h);
+        var c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(im, 0, 0, w, h);
         try { cb(c.toDataURL('image/jpeg', 0.85)); } catch (e) { cb(null); }
       };
       im.onerror = function () { cb(null); };
@@ -253,27 +256,13 @@
     reader.readAsDataURL(file);
   }
 
-  function move(dir) {
-    var j = current + dir;
-    if (j < 0 || j >= artists.length) return;
-    var t = artists[current]; artists[current] = artists[j]; artists[j] = t;
-    current = j; dirty = true; renderList(); renderEditor();
-  }
-
-  function bind(id, fn) {
-    var el = $(id); if (!el) return;
-    el.addEventListener('input', function () { fn(el.value); dirty = true; });
-  }
-  function renderListNameOnly() { renderList(); }
+  function move(dir) { var j = current + dir; if (j < 0 || j >= artists.length) return; var t = artists[current]; artists[current] = artists[j]; artists[j] = t; current = j; dirty = true; renderList(); renderEditor(); }
+  function bind(id, fn) { var el = $(id); if (el) el.addEventListener('input', function () { fn(el.value); dirty = true; }); }
 
   /* ---------- save ---------- */
   function save() {
-    setStatus('Saving…');
-    $('saveBtn').disabled = true;
-    // normalize empty link objects
-    artists.forEach(function (a) {
-      if (a.links) Object.keys(a.links).forEach(function (k) { if (!a.links[k]) delete a.links[k]; });
-    });
+    setStatus('Saving…'); $('saveBtn').disabled = true;
+    artists.forEach(function (a) { if (a.links) Object.keys(a.links).forEach(function (k) { if (!a.links[k]) delete a.links[k]; }); });
     fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save', password: pw(), artists: artists }) })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
@@ -282,14 +271,13 @@
           if (res.d && /password/i.test(res.d.error || '')) { sessionStorage.removeItem('mk_admin_ok'); location.reload(); return; }
           throw new Error((res.d && res.d.error) || 'save failed');
         }
-        dirty = false; fresh = {};
+        dirty = false;
         setStatus('✓ Saved & published (' + res.d.count + ' artists). Live in ~1 min.', 'ok');
       })
       .catch(function (e) { $('saveBtn').disabled = false; setStatus('Save failed: ' + e.message, 'err'); });
   }
 
   window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
-
   $('saveBtn').addEventListener('click', save);
   initGate();
 })();

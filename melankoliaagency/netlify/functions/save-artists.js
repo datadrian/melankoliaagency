@@ -95,13 +95,12 @@ exports.handler = async (event) => {
       if (!m) return resp(400, { success: false, error: 'Expected an image dataUrl' });
       const ext = m[2].toLowerCase().replace('jpeg', 'jpg');
       const slug = String(body.slug || 'artist').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'artist';
-      const kind = body.kind === 'banner' ? '-banner' : '';
-      const path = `${BASE}/images/artists/${slug}${kind}.${ext}`;
-      const existing = await getFile(path);
-      await putFile(path, m[3], `media: ${slug}${kind} via admin`, existing && existing.sha);
-      const webPath = `/images/artists/${slug}${kind}.${ext}`;
-      purge(`${BASE}/images/artists/${slug}${kind}.${ext}`);
-      return resp(200, { success: true, path: webPath });
+      // Each upload lands in the artist's gallery folder with a unique name.
+      const uniq = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const rel = `images/artists/${slug}/${uniq}.${ext}`;
+      await putFile(`${BASE}/${rel}`, m[3], `media: gallery photo for ${slug}`);
+      purge(`${BASE}/${rel}`);
+      return resp(200, { success: true, path: '/' + rel });
     }
 
     if (action === 'save') {

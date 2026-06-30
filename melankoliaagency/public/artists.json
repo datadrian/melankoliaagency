@@ -7,12 +7,8 @@
       "shortBio": "Formed in 2006, Automelodi is a constantly evolving project based around the solo work of songwriter/producer Xavier Paradis. With a career that spans over two decades, Paradis is a well-established figure in Montreal’s dense electronic music culture, releasin…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/automelodi.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "/images/artists/automelodi-banner.jpg",
-      "bannerFocalX": 50.65,
-      "bannerFocalY": 12.05,
+      "status": "active",
+      "featured": false,
       "links": {
         "website": "https://automelodi.com",
         "instagram": "https://www.instagram.com/automelodi/",
@@ -63,8 +59,30 @@
           "url": "https://musicbrainz.org/release-group/a4be6a8e-f745-45df-8a12-4e94aaa15234"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/automelodi.jpg",
+        "/images/artists/automelodi-banner.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/automelodi.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/automelodi.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/automelodi-banner.jpg",
+          "x": 50.65,
+          "y": 12.05,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "bestial-mouths",
@@ -73,12 +91,8 @@
       "shortBio": "As the voice and spirit of Bestial Mouths , Lynette Cerezo is a majestic and haunting figure. Across international stages, her spellbinding performances take audiences through deeply emotional voidic visions. From their inception in 2009, the core root of Best…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/bestial-mouths.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/bestialmouths/",
         "facebook": "https://www.facebook.com/BESTIALMOUTHS/",
@@ -222,8 +236,29 @@
           "url": "https://musicbrainz.org/release-group/77eddfd0-6f8b-49f8-942e-73609d207dc3"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/bestial-mouths.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/bestial-mouths.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/bestial-mouths.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/bestial-mouths.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "blood-handsome",
@@ -232,12 +267,8 @@
       "shortBio": "Blood Handsome is the Los Angeles based darkwave project of Gerren Reach. Since debuting, he has continued to forge a path of his own, having extensively toured the US and shared stages with acts such as Kontravoid, Buzz Kull, The Soft Moon, Twin Tribes, Actor…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/blood-handsome.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/bloodhandsome/",
         "facebook": "https://www.facebook.com/bloodhandsomeXO/",
@@ -275,8 +306,29 @@
           "url": "https://musicbrainz.org/release-group/d46fe1c5-54dc-40ef-9682-ad3e001f5d73"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/blood-handsome.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/blood-handsome.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/blood-handsome.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/blood-handsome.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "blood-rave",
@@ -285,12 +337,8 @@
       "shortBio": "Blood Rave is the darkwave/EBM project of San Francisco Bay Area musician and producer James Rogers, known for his work with Fearing and Creative Adult. Drawing from goth, techno, EBM, and dark electronic influences, Blood Rave explores a heavier, more dancefl…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/blood-rave.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/bloodrave.exe/?hl=en",
         "facebook": "https://www.facebook.com/bloodxrave/",
@@ -323,8 +371,29 @@
           "url": "https://musicbrainz.org/release-group/b684a9d2-c87c-4d0c-b7d5-f8d3388930c4"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/blood-rave.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/blood-rave.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/blood-rave.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/blood-rave.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "bootblacks",
@@ -333,12 +402,8 @@
       "shortBio": "Bootblacks is a Brooklyn-based darkwave/post-punk band that was formed in 2010. The current lineup of the band consists of Panther Almqvist on vocals, Barrett Hiatt on synth, and Kalle Fagerberg on guitar. Bootblacks' sound is characterized by its brooding and…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/bootblacks.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "website": "https://www.bootblacks.net/",
         "instagram": "https://www.instagram.com/bootblacks/?hl=en"
@@ -487,8 +552,29 @@
           "url": "https://musicbrainz.org/release-group/5308b378-03bb-4699-9ca0-e17e60ab2e60"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/bootblacks.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/bootblacks.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/bootblacks.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/bootblacks.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "cd-ghost",
@@ -497,12 +583,8 @@
       "shortBio": "Cody Han and Blake Dimas produce surreal yet danceable synthpop under the name CD Ghost They began in 2020 by releasing three EPs in quick succession, with tracks such as “Roll the Dice” and “Undercurrent” garnering attention online. In 2022, the pair joined B…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/cd-ghost.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "website": "https://cdghost.xyz/"
       },
@@ -565,8 +647,29 @@
           "url": "https://musicbrainz.org/release-group/33bf086a-aba2-44c6-afc8-c9445a686110"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/cd-ghost.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/cd-ghost.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/cd-ghost.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/cd-ghost.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "corbeau-hangs",
@@ -575,12 +678,8 @@
       "shortBio": "orbeau Hangs is the search into the anomalies of the nature of 80s darkness fusing darkwave, industrial and post punk influences to create a soundtrack of tragic hope. Blending post-punk grittiness, driven industrial tones and the atmospheric dilemma of darkwa…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/corbeau-hangs.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "website": "https://www.corbeauhangs.com/",
         "instagram": "https://www.instagram.com/corbeauhangs",
@@ -628,8 +727,29 @@
           "url": "https://musicbrainz.org/release-group/6cf1684a-bac9-4371-9083-8e316c8ad774"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/corbeau-hangs.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/corbeau-hangs.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/corbeau-hangs.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/corbeau-hangs.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "creux-lies",
@@ -638,12 +758,8 @@
       "shortBio": "Revered for use of reverb-laden guitar work, creative synth structures, and dynamic vocals akin to the style of many shades of 80’s and early 90’s pop-darkness, Creux Lies hails from Sacramento, California. The lineup includes - Ean Clevenger (vox/programming)…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/creux-lies.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "website": "https://www.creuxlies.com/",
         "instagram": "https://www.instagram.com/creuxlies/",
@@ -737,8 +853,29 @@
           "url": "https://musicbrainz.org/release-group/c52f0553-32fa-4fe4-b463-0dcc9c137706"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/creux-lies.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/creux-lies.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/creux-lies.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/creux-lies.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "dame-area",
@@ -747,12 +884,8 @@
       "shortBio": "Hailing from Barcelona, Dame Area has forged a sound that is both hypnotic and relentless—where primal polyrhythms, industrial intensity, and hypnotic synths collide. This Catalan-Italian duo is one of the most explosive live acts of the moment. Their latest L…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/dame-area.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/dame_area_/?hl=en",
         "facebook": "https://www.facebook.com/dameareaofficial/",
@@ -855,8 +988,29 @@
           "url": "https://musicbrainz.org/release-group/11fe0d54-981f-474a-850a-8c015ee602a0"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/dame-area.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/dame-area.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/dame-area.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/dame-area.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "daniel-myer",
@@ -865,12 +1019,8 @@
       "shortBio": "Daniel Myer , a visionary composer and producer who has left an indelible mark on the techno and house scene. From his early beginnings to his influential contributions, Daniel Myer's musical prowess has illuminated dance floors and inspired countless artists …",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/daniel-myer.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/daniel_myer/?hl=en",
         "facebook": "https://www.facebook.com/danielmyermusic/"
@@ -979,8 +1129,29 @@
           "url": "https://musicbrainz.org/release-group/b312ded1-2088-4e8d-8496-d07de500dedd"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/daniel-myer.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/daniel-myer.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/daniel-myer.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/daniel-myer.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "die-sexual",
@@ -989,12 +1160,8 @@
       "shortBio": "Die Sexual is the Los Angeles–based dark electronic duo of Rosselinni and Anton Floriano. Conjuring influences of EBM, techno, and electropop, their sound is an intoxicating mix of analog synthetics and seductive vocals — pure dancefloor decadence forged by pu…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/die-sexual.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/diesexualofficial/",
         "bandcamp": "https://diesexual.bandcamp.com/",
@@ -1129,8 +1296,29 @@
           "url": "https://musicbrainz.org/release-group/8b349129-7ba9-46ab-9ca4-3b32a777abbd"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/die-sexual.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/die-sexual.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/die-sexual.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/die-sexual.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "donzii",
@@ -1139,12 +1327,8 @@
       "shortBio": "Los Angeles by way of Miami, Donzii is a time-bending, post-punk vision. A unity of go-hard industrial bangers, darkly ambient balladry, and new takes on the funk traditions of No Wave that make people dance! Their Live performances have developed a cult follo…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/donzii.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/_donzii/?hl=en",
         "facebook": "https://www.facebook.com/underunderground/",
@@ -1207,8 +1391,56 @@
           "url": "https://musicbrainz.org/release-group/9c2e1ab8-a3ee-415a-bf51-cbff36eaa992"
         }
       ],
+      "gallery": [
+        "/images/artists/donzii.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/donzii.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/donzii.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/donzii.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
+    },
+    {
+      "slug": "healng",
+      "name": "Healng",
+      "bio": "Emerging from the vibrant underground electronic circuit in the United States, Healng has carved out a distinct niche within the industrial and darkwave landscape. Based in Cincinnati, the project is the creative output of Avery Stanken, who has meticulously crafted a sonic identity that feels both nostalgic and forward-thinking. By blending the mechanical precision of classic EBM with the moody, introspective atmosphere of modern darkwave, Healng delivers music that is as suitable for the dance floor as it is for solitary, late-night listening. The project’s discography and live presence reflect a deep commitment to the \"DIY\" ethos of the industrial scene. Healng is frequently associated with the broader dark electronic community, often sharing stages with established acts and contributing to compilations that highlight the raw volatility of the genre. Tracks from the project often feature sharp, percussive elements, distorted basslines, and a sense of urgency that mirrors the anxieties of modern life. Whether through self-released EPs or collaborations with other artists like Brood Faye, Healng maintains a consistent focus on high-intensity sound design. Beyond the studio, Healng is recognized for a compelling live presence that has seen the project tour and perform at various goth and industrial nights across the country. As the project continues to evolve, it remains a vital voice for those seeking music that balances aggressive, machine-driven rhythms with a profound, shadow-cloaked emotional depth.",
+      "shortBio": "Created by Avery D. Stanken in the Cincinnati and Northern Kentucky area, Healng has quickly established itself as a rising force within the modern dark electronic underground. Drawing inspiration from early 90s techno and Wax Trax! era industrial music, the project delivers a powerful fusion of driving rhythms, raw energy, and dark club aesthetics. Since emerging in 2022, Healng has toured extensively throughout the United States and shared stages with artists including Spike Hellis, Pixel Grip, and Ultra Sunn. As Healng continues to expand its reach through new releases and live performances, we look forward to bringing the project to audiences worldwide. ",
+      "genres": "darkwave,industrial,EBM",
+      "location": "Cincinnati, Ohio",
+      "status": "active",
       "featured": false,
-      "status": "active"
+      "links": {
+        "instagram": "https://www.instagram.com/healng____/",
+        "bandcamp": "https://healng.bandcamp.com",
+        "spotify": "https://open.spotify.com/artist/5rOoUS9yptx6YPtMwKKt9r"
+      },
+      "videos": [],
+      "discography": [
+        {
+          "title": "Healng",
+          "year": "2023",
+          "type": "EP",
+          "mbid": "44e34ead-87ac-4e11-a91e-189481ad3c11",
+          "cover": "http://coverartarchive.org/release/73aebfac-2831-4d93-a3b8-542a5646016a/35880933990-500.jpg"
+        }
+      ],
+      "gallery": [],
+      "roles": {}
     },
     {
       "slug": "jorge-elbrecht",
@@ -1217,12 +1449,8 @@
       "shortBio": "Jorge Elbrecht is a songwriter, music producer, and visual artist who lives and works in Los Angeles. His multidisciplinary practice explores the connections between sound, performance, painting and video—creating immersive works that blur the boundaries betwe…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/jorge-elbrecht.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/jorge_elbrecht/?hl=en",
         "bandcamp": "https://jorgeelbrecht.bandcamp.com/",
@@ -1381,8 +1609,29 @@
           "url": "https://musicbrainz.org/release-group/4bdf4f4e-1056-462c-ba57-4fb10f1da461"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/jorge-elbrecht.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/jorge-elbrecht.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/jorge-elbrecht.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/jorge-elbrecht.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "light-asylum",
@@ -1391,12 +1640,8 @@
       "shortBio": "LIGHT ASYLUM is the internationally revered techno-punk music project of vocalist, producer Shannon Funchess founded in Brooklyn, New York in 2007. Captivating audiences with cathartic performances, LIGHT ASYLUM emerged in 2009 at the forefront of a movement t…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/light-asylum.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/light_asylum/?hl=en",
         "facebook": "https://www.facebook.com/LIGHTASYLUM/",
@@ -1460,8 +1705,29 @@
           "url": "https://musicbrainz.org/release-group/66745fd5-390e-4feb-b6e0-1549b70061ac"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/light-asylum.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/light-asylum.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/light-asylum.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/light-asylum.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "male-tears",
@@ -1470,12 +1736,8 @@
       "shortBio": "Male Tears , is a Los Angeles-based three-piece weirdo-pop and dark synth project led by singer-songwriter James Edward. Formed in the aftermath of the pandemic, the band has quickly become a standout name in the modern darkwave and synth-pop underground, know…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/male-tears.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/maletearsmusic/?hl=en",
         "facebook": "https://www.facebook.com/maletearsmusic/",
@@ -1596,8 +1858,29 @@
           "url": "https://musicbrainz.org/release-group/9f6783ec-e1f7-4363-9e13-845ae62c7e28"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/male-tears.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/male-tears.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/male-tears.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/male-tears.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "mellow-code",
@@ -1606,12 +1889,8 @@
       "shortBio": "Mellow Code is an avant-garde darkwave project, led by Josh McVety and Oliver Michael German, offering a unique blend of hypnotic mechanical rhythms and new wave vocals. Often getting inspiration and sound samples from their fabrication workshop, Mellow Code’s…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/mellow-code.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/mellowcodemusic/",
         "facebook": "https://www.facebook.com/MellowCode/",
@@ -1722,8 +2001,29 @@
           "url": "https://musicbrainz.org/release-group/132c15f9-e0e3-479b-895a-ef86a5b630aa"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/mellow-code.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/mellow-code.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/mellow-code.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/mellow-code.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "nox-novacula",
@@ -1732,12 +2032,8 @@
       "shortBio": "Since their formation in 2017, Nox Novacula has carved out a commanding presence in the deathrock scene with their icy, visceral sound. Emerging from Seattle, the band channels the raw spirit of goth and punk into a distinctively modern yet hauntingly timeless…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/nox-novacula.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/noxnovacula/",
         "facebook": "https://www.facebook.com/nox.novacula/",
@@ -1792,8 +2088,29 @@
           "url": "https://musicbrainz.org/release-group/0ceb3e2c-adb0-45dd-a3cb-e65f1a4aa06f"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/nox-novacula.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/nox-novacula.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/nox-novacula.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/nox-novacula.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "sacred-skin",
@@ -1802,12 +2119,8 @@
       "shortBio": "Los Angeles-based duo Brian DaMert and Brian Tarney explore the vastness of spellbinding, anthemic new wave synth-pop music under the name Sacred Skin . Their first single, Colder was released in March of 2021. The melancholic undertones and pitch perfect song…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/sacred-skin.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/_sacredskin_/?hl=en",
         "bandcamp": "https://sacredskin.bandcamp.com/album/bitter-heart",
@@ -1965,8 +2278,29 @@
           "url": "https://musicbrainz.org/release-group/034feeb6-2bb5-444a-933c-7dc86c9f8608"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/sacred-skin.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/sacred-skin.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/sacred-skin.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/sacred-skin.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "secret-attraction",
@@ -1975,12 +2309,8 @@
       "shortBio": "Secret Attraction is a Phoenix-based project of Derek Wise and Rachel Hutchins that weaves a dreamy tapestry of synth-pop and post-punk. Their fourth and most recent album \"Evening Blue”, released in 2025, encapsulates their ethereal sound with a beautiful ble…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/secret-attraction.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/secretattractionmusic/",
         "bandcamp": "https://secretattraction.bandcamp.com/music",
@@ -2059,8 +2389,29 @@
           "url": "https://musicbrainz.org/release-group/a42c1b5e-da4f-48c5-b97b-a0745bdc8874"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/secret-attraction.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/secret-attraction.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/secret-attraction.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/secret-attraction.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "sleek-teeth",
@@ -2069,12 +2420,8 @@
       "shortBio": "LA based duo Sleek Teeth crafts moody, melodic electronic music that feels right at home on the dancefloor of a shadowy underground nightclub. Blending darkwave, electro-pop, and EBM, their sound navigates themes of isolation, dissociation, and the struggle to…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/sleek-teeth.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 46.59,
-      "bannerFocalY": 10.32,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/sleek_teeth/",
         "bandcamp": "https://sleekteeth.bandcamp.com/",
@@ -2144,8 +2491,29 @@
           "url": "https://musicbrainz.org/release-group/da04ca03-ea50-447e-a1b2-ebd31f5bab02"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/sleek-teeth.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/sleek-teeth.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/sleek-teeth.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/sleek-teeth.jpg",
+          "x": 46.59,
+          "y": 10.32,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "some-ember",
@@ -2154,12 +2522,8 @@
       "shortBio": "Some Ember is the project of producer, vocalist and multi-instrumentalist Dylan Travis. Formed in 2011 in Oakland, California, Some Ember has been a fixture of the minimal synth and DIY communities in the Bay Area, Berlin, and now Los Angeles. Lately joined li…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/some-ember.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/some.ember/?hl=en",
         "facebook": "https://www.facebook.com/someember/",
@@ -2255,8 +2619,29 @@
           "url": "https://musicbrainz.org/release-group/73213d31-a978-4b0a-96e1-9633ced15443"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/some-ember.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/some-ember.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/some-ember.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/some-ember.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "street-fever",
@@ -2265,12 +2650,8 @@
       "shortBio": "Street Fever is a versatile, mixed-media performance-artist currently residing in Boise, Idaho. Whom, remains anonymous. Their music is a gritty symphony born from profound life experiences and sonic experimentation. From the shrines of Three 6 Mafia in their …",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/street-fever.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/streetfever/?hl=en",
         "facebook": "https://www.facebook.com/StreetFever/",
@@ -2359,8 +2740,29 @@
           "url": "https://musicbrainz.org/release-group/e32d1b1b-d7b0-4115-93e9-567b9177b61f"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/street-fever.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/street-fever.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/street-fever.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/street-fever.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "topographies",
@@ -2369,12 +2771,8 @@
       "shortBio": "Topographies is a coldwave group based in San Francisco and Los Angeles. The group was founded by Justin Oronos, Jeremie Ruest and Gray Tolhurst. The band’s sound developed from ethereal shoegaze and dreampop to a more streamlined coldwave sound over the cours…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/topographies.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "instagram": "https://www.instagram.com/_topographies_/?hl=en",
         "bandcamp": "https://topographies.bandcamp.com/",
@@ -2453,8 +2851,29 @@
           "url": "https://musicbrainz.org/release-group/bb29db50-51f3-44fc-af3d-d4a7f8373a85"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/topographies.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/topographies.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/topographies.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/topographies.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "xtr-human",
@@ -2463,12 +2882,8 @@
       "shortBio": "Born in fire and tempered in the batcaves and warehouse raves of Berlin, Johannes Stabel brings a leather-wrapped hammer to gothic nightlife. A Don amongst the burnt strobes, grime-soaked venues and endless nights of Berlin, Stabel is revered for his high-ener…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/xtr-human.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "website": "https://www.xtrhuman.de/",
         "instagram": "https://www.instagram.com/xtr_human/",
@@ -2628,8 +3043,29 @@
           "url": "https://musicbrainz.org/release-group/1ff55824-e235-4447-b3e6-ae5b41fc0a7e"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/xtr-human.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/xtr-human.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/xtr-human.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/xtr-human.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "yama-uba",
@@ -2638,12 +3074,8 @@
       "shortBio": "Yama Uba is a dark synth pop / post-punk duo that reaches into the depths of human experience and brings to light the range of emotion that makes us whole. The sonic palette of duo Akiko Sampson and Winter Zora expresses the complexity of the human spirit, fro…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/yama-uba.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "website": "https://yamaubamusic.com/",
         "instagram": "https://www.instagram.com/yama.uba.music/?hl=en",
@@ -2706,8 +3138,29 @@
           "url": "https://musicbrainz.org/release-group/541617a1-660b-428c-9259-da240721da33"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/yama-uba.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/yama-uba.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/yama-uba.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/yama-uba.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "zanias",
@@ -2716,12 +3169,8 @@
       "shortBio": "Zanias has been haunting underground clubs around the world with her instantly recognisable voice and uniquely ethereal electronic productions since 2011, with the spawning of her first project Linea Aspera in London. As a solo artist, based in Berlin since 20…",
       "genres": "",
       "location": "",
-      "photo": "/images/artists/zanias.jpg",
-      "focalX": 50,
-      "focalY": 50,
-      "banner": "",
-      "bannerFocalX": 50,
-      "bannerFocalY": 50,
+      "status": "active",
+      "featured": false,
       "links": {
         "website": "https://www.zanias-music.com/",
         "instagram": "https://www.instagram.com/zoe_zanias/",
@@ -2883,8 +3332,29 @@
           "url": "https://musicbrainz.org/release-group/a353c530-9901-4deb-bc66-4846e039ad57"
         }
       ],
-      "featured": false,
-      "status": "active"
+      "gallery": [
+        "/images/artists/zanias.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/zanias.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/zanias.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/zanias.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     }
   ]
 }

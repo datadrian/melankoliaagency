@@ -4,3 +4,5 @@
 /advancing/*  /advancing/index.html   200
 /tour-dashboard   /tour-dashboard/index.html   200
 /tour-dashboard/*  /tour-dashboard/index.html   200
+/artists/*  /artist.html  200
+/epk/*  /epk.html  200
