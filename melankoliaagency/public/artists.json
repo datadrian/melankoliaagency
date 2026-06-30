@@ -308,25 +308,26 @@
         }
       ],
       "gallery": [
-        "/images/artists/blood-handsome.jpg"
+        "/images/artists/blood-handsome.jpg",
+        "/images/artists/blood-handsome/mr0p08ej3knz.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/blood-handsome.jpg",
+          "src": "/images/artists/blood-handsome/mr0p08ej3knz.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/blood-handsome.jpg",
+          "src": "/images/artists/blood-handsome/mr0p08ej3knz.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "banner": {
           "src": "/images/artists/blood-handsome.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 51,
+          "y": 19,
           "scale": 1
         }
       }
