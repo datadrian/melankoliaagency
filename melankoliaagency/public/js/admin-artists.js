@@ -8,7 +8,8 @@
   'use strict';
 
   var API = '/.netlify/functions/save-artists';
-  var CDN = 'https://cdn.jsdelivr.net/gh/datadrian/melankoliaagency@main/melankoliaagency/public';
+  // Images are committed to git and deployed with the site — read same-origin.
+  var CDN = '';
   var LINK_FIELDS = ['website', 'instagram', 'facebook', 'bandcamp', 'spotify', 'soundcloud', 'youtube', 'tiktok', 'apple', 'bandsintown'];
   var ROLES = [
     { key: 'tile', label: 'Tile (homepage)', ratio: '1 / 1', sub: 'Square thumbnail in the artist grid' },

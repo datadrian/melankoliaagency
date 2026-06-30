@@ -7,11 +7,9 @@
 (function () {
   'use strict';
 
-  var REPO = 'datadrian/melankoliaagency';
-  var SUBDIR = 'melankoliaagency/public';
-  // Single source of truth: committed content on main, served via CDN.
-  // Same on the live site and on Netlify previews, so a preview is faithful.
-  var DATA_BASE = 'https://cdn.jsdelivr.net/gh/' + REPO + '@main/' + SUBDIR;
+  // Single source of truth: artists.json + images are committed to git and
+  // deployed with the site, so read them same-origin (no external CDN).
+  var DATA_BASE = '';
 
   function mediaUrl(path) {
     if (!path) return '';
