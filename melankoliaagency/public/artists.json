@@ -2345,7 +2345,7 @@
       "slug": "secret-attraction",
       "name": "Secret Attraction",
       "bio": "Secret Attraction is a Phoenix-based project of Derek Wise and Rachel Hutchins that weaves a dreamy tapestry of synth-pop and post-punk. Their fourth and most recent album \"Evening Blue”, released in 2025, encapsulates their ethereal sound with a beautiful blend of dreamy guitar tones and smooth vocals, creating an immersive soundscape that resonates with warmth and depth. With influences that span across alternative, dark wave, dream pop, and goth, Secret Attraction's music is a refreshing dive into melodic introspection and emotive storytelling.",
-      "shortBio": "Secret Attraction is a Phoenix-based project of Derek Wise and Rachel Hutchins that weaves a dreamy tapestry of synth-pop and post-punk. Their fourth and most recent album \"Evening Blue”, released in 2025, encapsulates their ethereal sound with a beautiful ble…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -2429,25 +2429,26 @@
         }
       ],
       "gallery": [
-        "/images/artists/secret-attraction.jpg"
+        "/images/artists/secret-attraction.jpg",
+        "/images/artists/secret-attraction/mr0pfrklb0qk.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/secret-attraction.jpg",
+          "src": "/images/artists/secret-attraction/mr0pfrklb0qk.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/secret-attraction.jpg",
+          "src": "/images/artists/secret-attraction/mr0pfrklb0qk.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "banner": {
           "src": "/images/artists/secret-attraction.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 36,
+          "y": 26,
           "scale": 1
         }
       }
