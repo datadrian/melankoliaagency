@@ -1,12 +1,12 @@
 // Melankolia Agency — Artist & Content Data
-// Auto-generated from scraped site
+// Durable static fallback rebuilt from recovered localStorage + MusicBrainz discography/videos.
 
 const MELANKOLIA_DATA = {
   "artists": [
     {
       "slug": "automelodi",
       "name": "Automelodi",
-      "bio": "Formed in 2006,\n\nAutomelodi\n\nis a constantly evolving project based around the solo work of songwriter/producer Xavier Paradis. With a career that spans over two decades, Paradis is a well-established figure in Montreal’s dense electronic music culture, releasing over time with various projects, performance line-ups, or under different monikers such as Arnaud Lazlaud. He also collaborates with artists like Liz Wendelbo (of Xeno & Oaklander) as the duo Liz and László, as well as Latvian Producer Dmitry Distant.\n\nAutomelodi’s music embraces and re-contextualizes a spectrum of influences that include the lesser-known European synthpop and post-punk of the latter Twentieth Century, combined with literary stylizations reminiscent of Gallic songwriters such as Serge Gainsbourg and Brigitte Fontaine—with nearly all vocals delivered in French. Following the self-released first EP, an eponymous album was released in 2010 by the now defunct Brooklyn label Wierd Records. The second LP, \"Surlendemains acides\", was released in digital format in 2013. A third LP, “Mirages au futur verre-brisé” was released in 2019 on Austin's Holodeck Records. On the heels of touring across the US, Europe and Latin America, Automelodi released the long-awaited EP Cavallo on Young & Cold Records in November 2025.\n\nIn parallel to his work as Automelodi, Paradis has also been very active over the past two decades as a music producer, focusing primarily on mixing and remixing for other projects and artists such as Bootblacks, Silent EM, The Harrow and Laura Krieg.\n\nWebsite\n\nInstagram\n\nFacebook\n\nBandcamp\n\nSpotify",
+      "bio": "Formed in 2006, Automelodi is a constantly evolving project based around the solo work of songwriter/producer Xavier Paradis. With a career that spans over two decades, Paradis is a well-established figure in Montreal’s dense electronic music culture, releasing over time with various projects, performance line-ups, or under different monikers such as Arnaud Lazlaud. He also collaborates with artists like Liz Wendelbo (of Xeno & Oaklander) as the duo Liz and László, as well as Latvian Producer Dmitry Distant. Automelodi’s music embraces and re-contextualizes a spectrum of influences that include the lesser-known European synthpop and post-punk of the latter Twentieth Century, combined with literary stylizations reminiscent of Gallic songwriters such as Serge Gainsbourg and Brigitte Fontaine—with nearly all vocals delivered in French. Following the self-released first EP, an eponymous album was released in 2010 by the now defunct Brooklyn label Wierd Records. The second LP, \"Surlendemains acides\", was released in digital format in 2013. A third LP, “Mirages au futur verre-brisé” was released in 2019 on Austin's Holodeck Records. On the heels of touring across the US, Europe and Latin America, Automelodi released the long-awaited EP Cavallo on Young & Cold Records in November 2025. In parallel to his work as Automelodi, Paradis has also been very active over the past two decades as a music producer, focusing primarily on mixing and remixing for other projects and artists such as Bootblacks, Silent EM, The Harrow and Laura Krieg.",
       "image": "automelodi_0.jpg",
       "social_links": {
         "website": "https://automelodi.com",
@@ -17,12 +17,71 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [],
+      "photos": [
+        "automelodi_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_02.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Formed in 2006, Automelodi is a constantly evolving project based around the solo work of songwriter/producer Xavier Paradis. With a career that spans over two decades, Paradis is a well-established figure in Montreal’s dense electronic music culture, releasin…",
+      "discography": [
+        {
+          "title": "Cavallo",
+          "year": "2025",
+          "type": "EP",
+          "mbid": "1d7f858f-ba6f-49b9-88ed-28c48c0c94ee",
+          "cover": "https://coverartarchive.org/release-group/1d7f858f-ba6f-49b9-88ed-28c48c0c94ee/front-250",
+          "url": "https://musicbrainz.org/release-group/1d7f858f-ba6f-49b9-88ed-28c48c0c94ee"
+        },
+        {
+          "title": "Mirages au futur verre-brisé",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "820ffca8-bd57-42dd-b629-e5e917e27910",
+          "cover": "https://coverartarchive.org/release-group/820ffca8-bd57-42dd-b629-e5e917e27910/front-250",
+          "url": "https://musicbrainz.org/release-group/820ffca8-bd57-42dd-b629-e5e917e27910"
+        },
+        {
+          "title": "Surlendemains acides",
+          "year": "2013",
+          "type": "Album",
+          "mbid": "e1c55ea9-2593-42bf-8eed-01d268a14da2",
+          "cover": "https://coverartarchive.org/release-group/e1c55ea9-2593-42bf-8eed-01d268a14da2/front-250",
+          "url": "https://musicbrainz.org/release-group/e1c55ea9-2593-42bf-8eed-01d268a14da2"
+        },
+        {
+          "title": "Automelodi",
+          "year": "2010",
+          "type": "Album",
+          "mbid": "ef337c8e-de21-4aae-b438-5fe2855949c5",
+          "cover": "https://coverartarchive.org/release-group/ef337c8e-de21-4aae-b438-5fe2855949c5/front-250",
+          "url": "https://musicbrainz.org/release-group/ef337c8e-de21-4aae-b438-5fe2855949c5"
+        },
+        {
+          "title": "Automelodi fait ses courses",
+          "year": "2009",
+          "type": "EP",
+          "mbid": "a4be6a8e-f745-45df-8a12-4e94aaa15234",
+          "cover": "https://coverartarchive.org/release-group/a4be6a8e-f745-45df-8a12-4e94aaa15234/front-250",
+          "url": "https://musicbrainz.org/release-group/a4be6a8e-f745-45df-8a12-4e94aaa15234"
+        }
+      ]
     },
     {
       "slug": "bestial-mouths",
       "name": "Bestial Mouths",
-      "bio": "As the voice and spirit of\n\nBestial Mouths\n\n, Lynette Cerezo is a majestic and haunting figure. Across international stages, her spellbinding performances take audiences through deeply emotional voidic visions. From their inception in 2009, the core root of Bestial Mouths has combined Cerezo’s voice with myriad genre influences across the spectrum of goth, industrial, post-punk, New Wave, noise, metal, and other underground sounds using live acoustic and electronic drums and analog synthesizers. With a history in fashion design and gender activism, Cerezo’s visual and social aesthetics are interwoven deeply into Bestial Mouth’s presentation, building outward into captivating theatrical live performances.\n\nSince 2018, Bestial Mouths has been the sole project of Cerezo, blossoming outward to incorporate new collaborators, new channels and aural pathways to explore deeply personal lyrics of self-stagnation and trauma. In their decade-plus existence, BESTIAL MOUTHS have worked with myriad acclaimed producers and artists. Zola Jesus, Mick Harvey, Rhys Fulber, Egyptrixx, Boy Harsher, Die Krupps, Mater Suspiria Vision, Zanias, The Horrorist, and Ludovico Technique are but a few collaborators, while they’ve shared the stage with the likes of Psychic TV, Austra, Chelsea Wolfe, DAF, 3 Teeth, OAKE, Front Line Assembly, White Ring, Suicide Commando, David J, King Dude, Youth Code, Cut Hands and Light Asylum.\n\nInstagram\n\nSpotify\n\nFacebook",
+      "bio": "As the voice and spirit of Bestial Mouths , Lynette Cerezo is a majestic and haunting figure. Across international stages, her spellbinding performances take audiences through deeply emotional voidic visions. From their inception in 2009, the core root of Bestial Mouths has combined Cerezo’s voice with myriad genre influences across the spectrum of goth, industrial, post-punk, New Wave, noise, metal, and other underground sounds using live acoustic and electronic drums and analog synthesizers. With a history in fashion design and gender activism, Cerezo’s visual and social aesthetics are interwoven deeply into Bestial Mouth’s presentation, building outward into captivating theatrical live performances. Since 2018, Bestial Mouths has been the sole project of Cerezo, blossoming outward to incorporate new collaborators, new channels and aural pathways to explore deeply personal lyrics of self-stagnation and trauma. In their decade-plus existence, BESTIAL MOUTHS have worked with myriad acclaimed producers and artists. Zola Jesus, Mick Harvey, Rhys Fulber, Egyptrixx, Boy Harsher, Die Krupps, Mater Suspiria Vision, Zanias, The Horrorist, and Ludovico Technique are but a few collaborators, while they’ve shared the stage with the likes of Psychic TV, Austra, Chelsea Wolfe, DAF, 3 Teeth, OAKE, Front Line Assembly, White Ring, Suicide Commando, David J, King Dude, Youth Code, Cut Hands and Light Asylum.",
       "image": "bestial_mouths_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/bestialmouths/",
@@ -31,12 +90,196 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=b6O0fw29ApY",
+          "title": "BESTIAL MOUTHS - \"Faceless\" (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/b6O0fw29ApY/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=raKGk2w2Wf8",
+          "title": "Bestial Mouths - UNSHIVERED (ADULT. Remix)  [OFFICIAL VIDEO]",
+          "thumb": "https://img.youtube.com/vi/raKGk2w2Wf8/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=3BaQGJFKdSQ",
+          "title": "Bestial Mouths - INSHROUDSS (Official Video)",
+          "thumb": "https://img.youtube.com/vi/3BaQGJFKdSQ/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=c5WXijMpJkk",
+          "title": "Bestial Mouths - INDUSTRIAL WASTE (Official Video)",
+          "thumb": "https://img.youtube.com/vi/c5WXijMpJkk/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=Ue1CYX7mRPE",
+          "title": "Bestial Mouths - LAIN TO RUST (Official Video)",
+          "thumb": "https://img.youtube.com/vi/Ue1CYX7mRPE/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=0ygPBaSodHk",
+          "title": "Bestial Mouths - Earth (Official Video)",
+          "thumb": "https://img.youtube.com/vi/0ygPBaSodHk/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "bestial_mouths_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_03.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "As the voice and spirit of Bestial Mouths , Lynette Cerezo is a majestic and haunting figure. Across international stages, her spellbinding performances take audiences through deeply emotional voidic visions. From their inception in 2009, the core root of Best…",
+      "discography": [
+        {
+          "title": "Backbone (Remixes)",
+          "year": "2024",
+          "type": "EP",
+          "mbid": "08ba0519-1749-4c01-82bb-238772ee7c58",
+          "cover": "https://coverartarchive.org/release-group/08ba0519-1749-4c01-82bb-238772ee7c58/front-250",
+          "url": "https://musicbrainz.org/release-group/08ba0519-1749-4c01-82bb-238772ee7c58"
+        },
+        {
+          "title": "Backbone",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "a8f59bdb-8bb9-4615-8da6-30b5ec92f58d",
+          "cover": "https://coverartarchive.org/release-group/a8f59bdb-8bb9-4615-8da6-30b5ec92f58d/front-250",
+          "url": "https://musicbrainz.org/release-group/a8f59bdb-8bb9-4615-8da6-30b5ec92f58d"
+        },
+        {
+          "title": "Slitskin",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "8bcc9215-436e-481e-b0eb-fdf7ce036f39",
+          "cover": "https://coverartarchive.org/release-group/8bcc9215-436e-481e-b0eb-fdf7ce036f39/front-250",
+          "url": "https://musicbrainz.org/release-group/8bcc9215-436e-481e-b0eb-fdf7ce036f39"
+        },
+        {
+          "title": "R.O.T.T. (inmyskin)",
+          "year": "2023",
+          "type": "Album",
+          "mbid": "4a856772-5b52-49d8-9aed-6e54fffaf30d",
+          "cover": "https://coverartarchive.org/release-group/4a856772-5b52-49d8-9aed-6e54fffaf30d/front-250",
+          "url": "https://musicbrainz.org/release-group/4a856772-5b52-49d8-9aed-6e54fffaf30d"
+        },
+        {
+          "title": "I Am the Spell (Full Metal Witch remix by Hexmaschine)",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "dc71b5d5-f15f-4e9a-86dc-b8ba2be5eb31",
+          "cover": "https://coverartarchive.org/release-group/dc71b5d5-f15f-4e9a-86dc-b8ba2be5eb31/front-250",
+          "url": "https://musicbrainz.org/release-group/dc71b5d5-f15f-4e9a-86dc-b8ba2be5eb31"
+        },
+        {
+          "title": "❤️ / 💔 / 🖤 MIXTAPE",
+          "year": "2022",
+          "type": "EP",
+          "mbid": "29d93bf9-ae29-4095-87bc-b55dfc2a9612",
+          "cover": "https://coverartarchive.org/release-group/29d93bf9-ae29-4095-87bc-b55dfc2a9612/front-250",
+          "url": "https://musicbrainz.org/release-group/29d93bf9-ae29-4095-87bc-b55dfc2a9612"
+        },
+        {
+          "title": "THOUSANDNEEDLES",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "b73e950a-4d54-4944-aa7c-e4ad6b7ac894",
+          "cover": "https://coverartarchive.org/release-group/b73e950a-4d54-4944-aa7c-e4ad6b7ac894/front-250",
+          "url": "https://musicbrainz.org/release-group/b73e950a-4d54-4944-aa7c-e4ad6b7ac894"
+        },
+        {
+          "title": "RESURRECTEDINBLACK",
+          "year": "2020",
+          "type": "Album",
+          "mbid": "7f8c6c41-87d7-4c0d-92db-1fdbce9f2e58",
+          "cover": "https://coverartarchive.org/release-group/7f8c6c41-87d7-4c0d-92db-1fdbce9f2e58/front-250",
+          "url": "https://musicbrainz.org/release-group/7f8c6c41-87d7-4c0d-92db-1fdbce9f2e58"
+        },
+        {
+          "title": "INSHROUDSS",
+          "year": "2019",
+          "type": "EP",
+          "mbid": "d8f0cab9-cc7e-4463-bfee-33087672cf1d",
+          "cover": "https://coverartarchive.org/release-group/d8f0cab9-cc7e-4463-bfee-33087672cf1d/front-250",
+          "url": "https://musicbrainz.org/release-group/d8f0cab9-cc7e-4463-bfee-33087672cf1d"
+        },
+        {
+          "title": "(STILL) Heartless",
+          "year": "2017",
+          "type": "Album",
+          "mbid": "f2ff9495-c36c-400f-bb5a-0f9ce511094c",
+          "cover": "https://coverartarchive.org/release-group/f2ff9495-c36c-400f-bb5a-0f9ce511094c/front-250",
+          "url": "https://musicbrainz.org/release-group/f2ff9495-c36c-400f-bb5a-0f9ce511094c"
+        },
+        {
+          "title": "Heartless",
+          "year": "2016",
+          "type": "Album",
+          "mbid": "34dcc3f2-53e1-418e-baed-0963d0989efb",
+          "cover": "https://coverartarchive.org/release-group/34dcc3f2-53e1-418e-baed-0963d0989efb/front-250",
+          "url": "https://musicbrainz.org/release-group/34dcc3f2-53e1-418e-baed-0963d0989efb"
+        },
+        {
+          "title": "Down To The Bones",
+          "year": "2016",
+          "type": "Single",
+          "mbid": "381e39c4-bc2e-4509-8e5d-586c47608e73",
+          "cover": "https://coverartarchive.org/release-group/381e39c4-bc2e-4509-8e5d-586c47608e73/front-250",
+          "url": "https://musicbrainz.org/release-group/381e39c4-bc2e-4509-8e5d-586c47608e73"
+        },
+        {
+          "title": "Being Boiled (Randolph & Mortimer Remix)",
+          "year": "2016",
+          "type": "Single",
+          "mbid": "cbb903e1-babb-4448-a4c2-dee31f89ddcc",
+          "cover": "https://coverartarchive.org/release-group/cbb903e1-babb-4448-a4c2-dee31f89ddcc/front-250",
+          "url": "https://musicbrainz.org/release-group/cbb903e1-babb-4448-a4c2-dee31f89ddcc"
+        },
+        {
+          "title": "Hissing Veil",
+          "year": "2014",
+          "type": "Album",
+          "mbid": "3682b913-b737-4faa-b5d2-6f516ad40b58",
+          "cover": "https://coverartarchive.org/release-group/3682b913-b737-4faa-b5d2-6f516ad40b58/front-250",
+          "url": "https://musicbrainz.org/release-group/3682b913-b737-4faa-b5d2-6f516ad40b58"
+        },
+        {
+          "title": "Bestial Mouths Remix LP",
+          "year": "2014",
+          "type": "Album",
+          "mbid": "a7b6ec03-d378-4256-945e-a79cd379a8db",
+          "cover": "https://coverartarchive.org/release-group/a7b6ec03-d378-4256-945e-a79cd379a8db/front-250",
+          "url": "https://musicbrainz.org/release-group/a7b6ec03-d378-4256-945e-a79cd379a8db"
+        },
+        {
+          "title": "Bestial Mouths",
+          "year": "2013",
+          "type": "Album",
+          "mbid": "77eddfd0-6f8b-49f8-942e-73609d207dc3",
+          "cover": "https://coverartarchive.org/release-group/77eddfd0-6f8b-49f8-942e-73609d207dc3/front-250",
+          "url": "https://musicbrainz.org/release-group/77eddfd0-6f8b-49f8-942e-73609d207dc3"
+        }
+      ]
     },
     {
       "slug": "blood-handsome",
       "name": "Blood Handsome",
-      "bio": "Blood Handsome\n\nis the Los Angeles based darkwave project of Gerren Reach. Since debuting, he has continued to forge a path of his own, having extensively toured the US and shared stages with acts such as Kontravoid, Buzz Kull, The Soft Moon, Twin Tribes, Actors, Spike Hellis, Geneva Jacuzzi, and more. The 2022 album \"A New Calm\" solidified the project's stamp on the genre. Signed to German-based label Young & Cold Records, anticipation is building after the announcement of a new album on the way and new band members joining Blood Handsome live.\n\nInstagram\n\nFacebook\n\nBandcamp\n\nSpotif",
+      "bio": "Blood Handsome is the Los Angeles based darkwave project of Gerren Reach. Since debuting, he has continued to forge a path of his own, having extensively toured the US and shared stages with acts such as Kontravoid, Buzz Kull, The Soft Moon, Twin Tribes, Actors, Spike Hellis, Geneva Jacuzzi, and more. The 2022 album \"A New Calm\" solidified the project's stamp on the genre. Signed to German-based label Young & Cold Records, anticipation is building after the announcement of a new album on the way and new band members joining Blood Handsome live.",
       "image": "blood_handsome_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/bloodhandsome/",
@@ -45,13 +288,81 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=hkVxxGcy8fs",
+          "title": "Blood Handsome \"Give\" (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/hkVxxGcy8fs/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=EdlyYEPGmNw",
+          "title": "Blood Handsome \"The Light\" (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/EdlyYEPGmNw/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=vIdTH0TsYoI",
+          "title": "Blood Handsome - \"Rituals\" (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/vIdTH0TsYoI/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=Xoh8TPGLdk0",
+          "title": "BLOOD HANDSOME - LEAVING (Official Video)",
+          "thumb": "https://img.youtube.com/vi/Xoh8TPGLdk0/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "blood_handsome_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_04.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Blood Handsome is the Los Angeles based darkwave project of Gerren Reach. Since debuting, he has continued to forge a path of his own, having extensively toured the US and shared stages with acts such as Kontravoid, Buzz Kull, The Soft Moon, Twin Tribes, Actor…",
+      "discography": [
+        {
+          "title": "Nostalgia Hold",
+          "year": "2025",
+          "type": "Album",
+          "mbid": "15964a9e-29ed-4150-8886-633f55c4dafa",
+          "cover": "https://coverartarchive.org/release-group/15964a9e-29ed-4150-8886-633f55c4dafa/front-250",
+          "url": "https://musicbrainz.org/release-group/15964a9e-29ed-4150-8886-633f55c4dafa"
+        },
+        {
+          "title": "Dancing on the Edge of a Knife",
+          "year": "2024",
+          "type": "EP",
+          "mbid": "38e36b2e-b78e-488d-b5d9-f1764544ac7f",
+          "cover": "https://coverartarchive.org/release-group/38e36b2e-b78e-488d-b5d9-f1764544ac7f/front-250",
+          "url": "https://musicbrainz.org/release-group/38e36b2e-b78e-488d-b5d9-f1764544ac7f"
+        },
+        {
+          "title": "Is Down",
+          "year": "2017",
+          "type": "Album",
+          "mbid": "d46fe1c5-54dc-40ef-9682-ad3e001f5d73",
+          "cover": "https://coverartarchive.org/release-group/d46fe1c5-54dc-40ef-9682-ad3e001f5d73/front-250",
+          "url": "https://musicbrainz.org/release-group/d46fe1c5-54dc-40ef-9682-ad3e001f5d73"
+        }
+      ]
     },
     {
       "slug": "blood-rave",
       "name": "Blood Rave",
-      "bio": "Blood\n\nRave\n\nis the darkwave/EBM project of San Francisco Bay Area musician and producer James Rogers, known for his work with Fearing and Creative Adult. Drawing from goth, techno, EBM, and dark electronic influences, Blood Rave explores a heavier, more dancefloor-focused sound while maintaining the atmospheric and melancholic qualities found throughout Rogers’ previous work.\n\nCombining driving basslines, pulsing rhythms, and textured synths with an unmistakably dark edge, Blood Rave creates immersive music equally suited for late-night clubs and underground venues. Their latest release, Exponential Decay (2025), showcases an energetic approach to dark dance music, blending infectious grooves, harsh electronic textures, and a modern take on classic darkwave and EBM influences.\n\nInstagram\n\nFacebook\n\nBandcamp\n\nSpotif",
-      "image": "blood_rave_0.jpg",
+      "bio": "Blood Rave is the darkwave/EBM project of San Francisco Bay Area musician and producer James Rogers, known for his work with Fearing and Creative Adult. Drawing from goth, techno, EBM, and dark electronic influences, Blood Rave explores a heavier, more dancefloor-focused sound while maintaining the atmospheric and melancholic qualities found throughout Rogers’ previous work. Combining driving basslines, pulsing rhythms, and textured synths with an unmistakably dark edge, Blood Rave creates immersive music equally suited for late-night clubs and underground venues. Their latest release, Exponential Decay (2025), showcases an energetic approach to dark dance music, blending infectious grooves, harsh electronic textures, and a modern take on classic darkwave and EBM influences.",
+      "image": "blood_rave_1.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/bloodrave.exe/?hl=en",
         "facebook": "https://www.facebook.com/bloodxrave/",
@@ -59,12 +370,55 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [],
+      "photos": [
+        "blood_rave_0.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_05.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Blood Rave is the darkwave/EBM project of San Francisco Bay Area musician and producer James Rogers, known for his work with Fearing and Creative Adult. Drawing from goth, techno, EBM, and dark electronic influences, Blood Rave explores a heavier, more dancefl…",
+      "discography": [
+        {
+          "title": "Exponential Decay",
+          "year": "2025",
+          "type": "Album",
+          "mbid": "37421754-8886-44cd-af4b-6a4ff94a844f",
+          "cover": "https://coverartarchive.org/release-group/37421754-8886-44cd-af4b-6a4ff94a844f/front-250",
+          "url": "https://musicbrainz.org/release-group/37421754-8886-44cd-af4b-6a4ff94a844f"
+        },
+        {
+          "title": "Dead Inside",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "76b4502e-55c0-4f4e-a5ff-f8ce973f5f5a",
+          "cover": "https://coverartarchive.org/release-group/76b4502e-55c0-4f4e-a5ff-f8ce973f5f5a/front-250",
+          "url": "https://musicbrainz.org/release-group/76b4502e-55c0-4f4e-a5ff-f8ce973f5f5a"
+        },
+        {
+          "title": "Determinate Bias",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "b684a9d2-c87c-4d0c-b7d5-f8d3388930c4",
+          "cover": "https://coverartarchive.org/release-group/b684a9d2-c87c-4d0c-b7d5-f8d3388930c4/front-250",
+          "url": "https://musicbrainz.org/release-group/b684a9d2-c87c-4d0c-b7d5-f8d3388930c4"
+        }
+      ]
     },
     {
       "slug": "bootblacks",
       "name": "Bootblacks",
-      "bio": "Bootblacks\n\nis a Brooklyn-based darkwave/post-punk band that was formed in 2010. The current lineup of the band consists of Panther Almqvist on vocals, Barrett Hiatt on synth, and Kalle Fagerberg on guitar.\n\nBootblacks' sound is characterized by its brooding and atmospheric melodies, driving rhythms, and Almqvist's emotive vocals. The band draws inspiration from the post-punk and darkwave movements of the 1980s, but also incorporates contemporary elements of electronic music into their sound.\n\nSince their formation, Bootblacks have released several critically acclaimed albums, including \"Veins\" (2016), \"Fragments\" (2018), and \"Thin Skies\" (2020). The band has also toured extensively throughout North America and Europe, performing at renowned venues and festivals.\n\nWith the addition of Fagerberg, Bootblacks are looking to explore new sonic territories and expand their already formidable musical horizons. Their new album \"Paradise\" will be released in June 2025. Fans can look forward to more exciting music and performances from the band in the years to come.\n\nWebsite\n\nInstagram\n\nandcamp\n\npotify",
+      "bio": "Bootblacks is a Brooklyn-based darkwave/post-punk band that was formed in 2010. The current lineup of the band consists of Panther Almqvist on vocals, Barrett Hiatt on synth, and Kalle Fagerberg on guitar. Bootblacks' sound is characterized by its brooding and atmospheric melodies, driving rhythms, and Almqvist's emotive vocals. The band draws inspiration from the post-punk and darkwave movements of the 1980s, but also incorporates contemporary elements of electronic music into their sound. Since their formation, Bootblacks have released several critically acclaimed albums, including \"Veins\" (2016), \"Fragments\" (2018), and \"Thin Skies\" (2020). The band has also toured extensively throughout North America and Europe, performing at renowned venues and festivals. With the addition of Fagerberg, Bootblacks are looking to explore new sonic territories and expand their already formidable musical horizons. Their new album \"Paradise\" will be released in June 2025. Fans can look forward to more exciting music and performances from the band in the years to come.",
       "image": "bootblacks_1.jpg",
       "social_links": {
         "website": "https://www.bootblacks.net/",
@@ -72,24 +426,412 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=HdomO4KTLTs",
+          "title": "Bootblacks - \"The Things We Did\"",
+          "thumb": "https://img.youtube.com/vi/HdomO4KTLTs/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=9uKhCouPVXU",
+          "title": "Bootblacks - Hidden Things",
+          "thumb": "https://img.youtube.com/vi/9uKhCouPVXU/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=3KkiRdcXqPE",
+          "title": "“Only You” April 4",
+          "thumb": "https://img.youtube.com/vi/3KkiRdcXqPE/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=MzYuKgB9gIA",
+          "title": "BOOTBLACKS: Ask Me About PARADISE #ARTOFFACT #postpunk",
+          "thumb": "https://img.youtube.com/vi/MzYuKgB9gIA/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "bootblacks_0.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_06.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Bootblacks is a Brooklyn-based darkwave/post-punk band that was formed in 2010. The current lineup of the band consists of Panther Almqvist on vocals, Barrett Hiatt on synth, and Kalle Fagerberg on guitar. Bootblacks' sound is characterized by its brooding and…",
+      "discography": [
+        {
+          "title": "Paradise",
+          "year": "2025",
+          "type": "Album",
+          "mbid": "546de9ee-2525-456e-8bd7-d3d2daf4ab61",
+          "cover": "https://coverartarchive.org/release-group/546de9ee-2525-456e-8bd7-d3d2daf4ab61/front-250",
+          "url": "https://musicbrainz.org/release-group/546de9ee-2525-456e-8bd7-d3d2daf4ab61"
+        },
+        {
+          "title": "When You Want",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "ecf83c58-1a57-4a0d-852b-da17062d753e",
+          "cover": "https://coverartarchive.org/release-group/ecf83c58-1a57-4a0d-852b-da17062d753e/front-250",
+          "url": "https://musicbrainz.org/release-group/ecf83c58-1a57-4a0d-852b-da17062d753e"
+        },
+        {
+          "title": "Force Carrier (remix)",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "b58ac2c8-e4ff-474b-8ebb-fe725c6d9790",
+          "cover": "https://coverartarchive.org/release-group/b58ac2c8-e4ff-474b-8ebb-fe725c6d9790/front-250",
+          "url": "https://musicbrainz.org/release-group/b58ac2c8-e4ff-474b-8ebb-fe725c6d9790"
+        },
+        {
+          "title": "Forbidden Flames (slowflood remix)",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "17dbef28-908b-4a06-a713-23046436b393",
+          "cover": "https://coverartarchive.org/release-group/17dbef28-908b-4a06-a713-23046436b393/front-250",
+          "url": "https://musicbrainz.org/release-group/17dbef28-908b-4a06-a713-23046436b393"
+        },
+        {
+          "title": "Wilderness",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "4f31bafc-eea7-4265-9d21-4fc453029242",
+          "cover": "https://coverartarchive.org/release-group/4f31bafc-eea7-4265-9d21-4fc453029242/front-250",
+          "url": "https://musicbrainz.org/release-group/4f31bafc-eea7-4265-9d21-4fc453029242"
+        },
+        {
+          "title": "Forbidden Flames",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "0e4b5d69-541b-4fe6-9ce6-b52addaa0445",
+          "cover": "https://coverartarchive.org/release-group/0e4b5d69-541b-4fe6-9ce6-b52addaa0445/front-250",
+          "url": "https://musicbrainz.org/release-group/0e4b5d69-541b-4fe6-9ce6-b52addaa0445"
+        },
+        {
+          "title": "Thin Skies Remixed",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "d04d5ace-cc3d-47d6-8733-c532ff6963fa",
+          "cover": "https://coverartarchive.org/release-group/d04d5ace-cc3d-47d6-8733-c532ff6963fa/front-250",
+          "url": "https://musicbrainz.org/release-group/d04d5ace-cc3d-47d6-8733-c532ff6963fa"
+        },
+        {
+          "title": "Thin Skies (Twin Tribes remix)",
+          "year": "2021",
+          "type": "Single",
+          "mbid": "632a4f9d-a771-45fa-b961-b8ef6eef1c65",
+          "cover": "https://coverartarchive.org/release-group/632a4f9d-a771-45fa-b961-b8ef6eef1c65/front-250",
+          "url": "https://musicbrainz.org/release-group/632a4f9d-a771-45fa-b961-b8ef6eef1c65"
+        },
+        {
+          "title": "Thin Skies",
+          "year": "2020",
+          "type": "Album",
+          "mbid": "ff4da827-463a-458a-b199-0eeb14e15d88",
+          "cover": "https://coverartarchive.org/release-group/ff4da827-463a-458a-b199-0eeb14e15d88/front-250",
+          "url": "https://musicbrainz.org/release-group/ff4da827-463a-458a-b199-0eeb14e15d88"
+        },
+        {
+          "title": "In Quarantine: Live at Saint Vitus",
+          "year": "2020",
+          "type": "EP",
+          "mbid": "68e11e2f-68b6-4b22-92d4-b53b54645669",
+          "cover": "https://coverartarchive.org/release-group/68e11e2f-68b6-4b22-92d4-b53b54645669/front-250",
+          "url": "https://musicbrainz.org/release-group/68e11e2f-68b6-4b22-92d4-b53b54645669"
+        },
+        {
+          "title": "Part Time Punks // Narrowed",
+          "year": "2018",
+          "type": "Album",
+          "mbid": "4e6bb916-62bf-4759-a9f9-54f5c17fee7f",
+          "cover": "https://coverartarchive.org/release-group/4e6bb916-62bf-4759-a9f9-54f5c17fee7f/front-250",
+          "url": "https://musicbrainz.org/release-group/4e6bb916-62bf-4759-a9f9-54f5c17fee7f"
+        },
+        {
+          "title": "Fragments",
+          "year": "2017",
+          "type": "Album",
+          "mbid": "e39ee10c-ec64-44c5-99c8-53eba5f1fe67",
+          "cover": "https://coverartarchive.org/release-group/e39ee10c-ec64-44c5-99c8-53eba5f1fe67/front-250",
+          "url": "https://musicbrainz.org/release-group/e39ee10c-ec64-44c5-99c8-53eba5f1fe67"
+        },
+        {
+          "title": "Veins",
+          "year": "2016",
+          "type": "Album",
+          "mbid": "a48681bd-7ae3-4f3f-9aca-8fb798f4aa19",
+          "cover": "https://coverartarchive.org/release-group/a48681bd-7ae3-4f3f-9aca-8fb798f4aa19/front-250",
+          "url": "https://musicbrainz.org/release-group/a48681bd-7ae3-4f3f-9aca-8fb798f4aa19"
+        },
+        {
+          "title": "Narrowed",
+          "year": "2013",
+          "type": "EP",
+          "mbid": "66399b69-4957-408d-bbfa-2eb412ecbba1",
+          "cover": "https://coverartarchive.org/release-group/66399b69-4957-408d-bbfa-2eb412ecbba1/front-250",
+          "url": "https://musicbrainz.org/release-group/66399b69-4957-408d-bbfa-2eb412ecbba1"
+        },
+        {
+          "title": "The Things We Did (Kodomo remix)",
+          "year": "2012",
+          "type": "Single",
+          "mbid": "911b05a5-f1bd-4c1d-9a7f-0af78969e46c",
+          "cover": "https://coverartarchive.org/release-group/911b05a5-f1bd-4c1d-9a7f-0af78969e46c/front-250",
+          "url": "https://musicbrainz.org/release-group/911b05a5-f1bd-4c1d-9a7f-0af78969e46c"
+        },
+        {
+          "title": "Bootblacks",
+          "year": "2012",
+          "type": "Album",
+          "mbid": "0f10be3e-dd02-46c8-9fb0-29b17c91c892",
+          "cover": "https://coverartarchive.org/release-group/0f10be3e-dd02-46c8-9fb0-29b17c91c892/front-250",
+          "url": "https://musicbrainz.org/release-group/0f10be3e-dd02-46c8-9fb0-29b17c91c892"
+        },
+        {
+          "title": "Monozid / Bootblacks",
+          "year": "2010",
+          "type": "EP",
+          "mbid": "5308b378-03bb-4699-9ca0-e17e60ab2e60",
+          "cover": "https://coverartarchive.org/release-group/5308b378-03bb-4699-9ca0-e17e60ab2e60/front-250",
+          "url": "https://musicbrainz.org/release-group/5308b378-03bb-4699-9ca0-e17e60ab2e60"
+        }
+      ]
+    },
+    {
+      "slug": "creux-lies",
+      "name": "Creux Lies",
+      "bio": "Revered for use of reverb-laden guitar work, creative synth structures, and dynamic vocals akin to the style of many shades of 80’s and early 90’s pop-darkness, Creux Lies hails from Sacramento, California. The lineup includes - Ean Clevenger (vox/programming), Barry Crider (guitarist), Jon Mak (synth/vocals) and Kyle Vorst (bassist). In late 2018, Creux Lies completed their first full-length album via Cleopatra, “The Hearth”, recorded at the creative fantasy-land known as Earthtone Studios (Tera Melos, So Stressed!, King Woman) in their home city under the creative care of producer/engineer extraordinaire Patrick Hills. Seminal performances for Creux Lies include appearances at WGT, Absolution Fest, Murder of Crows NY, and several other shared stages and tours with a roster of notable acts such as AFI, The Soft Moon, Clan of Xymox, Drab Majesty, Soft Kill, Gene Loves Jezebel, Actors, Vowws, Twin Tribes, and others. In 2021 Creux Lies was poised for 2021 with the release of their second full-length via the international Freakwave label and their new album is set to release in 2026. Headlining performance antics will ensue promptly. Catch them soon on tour throughout the reaches of the planet.",
+      "image": "creux_lies_0.jpg",
+      "social_links": {
+        "website": "https://www.creuxlies.com/",
+        "bandcamp": "https://creuxlies.bandcamp.com/music",
+        "instagram": "https://www.instagram.com/creuxlies/",
+        "spotify": "https://open.spotify.com/artist/4njFqWD04BTvOrYBXuzv6i?si=kBj0QE67SlCFlwF382QPQA"
+      },
+      "genres": [],
+      "featured": false,
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=LgMfK_wDlp8",
+          "title": "CD Ghost - On My Mind (Official Video)",
+          "thumb": "https://img.youtube.com/vi/LgMfK_wDlp8/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=tU-xPEuq4LY",
+          "title": "CD Ghost - When The Rain Stops (Official Video)",
+          "thumb": "https://img.youtube.com/vi/tU-xPEuq4LY/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=ZsXAM9PkbEo",
+          "title": "Lost and Found out now ⛈️",
+          "thumb": "https://img.youtube.com/vi/ZsXAM9PkbEo/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "creux_lies_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_07.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Revered for use of reverb-laden guitar work, creative synth structures, and dynamic vocals akin to the style of many shades of 80’s and early 90’s pop-darkness, Creux Lies hails from Sacramento, California. The lineup includes - Ean Clevenger (vox/programming)…",
+      "discography": [
+        {
+          "title": "Jubilate",
+          "year": "2026",
+          "type": "Single",
+          "mbid": "a60959da-b55f-450c-b5a7-df6bf8b6791a",
+          "cover": "https://coverartarchive.org/release-group/a60959da-b55f-450c-b5a7-df6bf8b6791a/front-250",
+          "url": "https://musicbrainz.org/release-group/a60959da-b55f-450c-b5a7-df6bf8b6791a"
+        },
+        {
+          "title": "Apocalypto",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "a8f8449f-d886-4c09-a63c-9d18a65ace99",
+          "cover": "https://coverartarchive.org/release-group/a8f8449f-d886-4c09-a63c-9d18a65ace99/front-250",
+          "url": "https://musicbrainz.org/release-group/a8f8449f-d886-4c09-a63c-9d18a65ace99"
+        },
+        {
+          "title": "Renegade (Pixel Grip remix)",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "953d1785-54f1-49f2-a58a-87f04bfca179",
+          "cover": "https://coverartarchive.org/release-group/953d1785-54f1-49f2-a58a-87f04bfca179/front-250",
+          "url": "https://musicbrainz.org/release-group/953d1785-54f1-49f2-a58a-87f04bfca179"
+        },
+        {
+          "title": "I Wish I Was You (Twin Tribes remix)",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "9df3e53c-4134-4d52-aedc-ac77ee8a1ebc",
+          "cover": "https://coverartarchive.org/release-group/9df3e53c-4134-4d52-aedc-ac77ee8a1ebc/front-250",
+          "url": "https://musicbrainz.org/release-group/9df3e53c-4134-4d52-aedc-ac77ee8a1ebc"
+        },
+        {
+          "title": "Divine Remix",
+          "year": "2023",
+          "type": "EP",
+          "mbid": "133d299a-a56b-4ed4-93a8-42669ca2e6e8",
+          "cover": "https://coverartarchive.org/release-group/133d299a-a56b-4ed4-93a8-42669ca2e6e8/front-250",
+          "url": "https://musicbrainz.org/release-group/133d299a-a56b-4ed4-93a8-42669ca2e6e8"
+        },
+        {
+          "title": "Goodbye Divine",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "538805eb-d486-423a-bf06-9b5b7e5a90fc",
+          "cover": "https://coverartarchive.org/release-group/538805eb-d486-423a-bf06-9b5b7e5a90fc/front-250",
+          "url": "https://musicbrainz.org/release-group/538805eb-d486-423a-bf06-9b5b7e5a90fc"
+        },
+        {
+          "title": "Electrum",
+          "year": "2021",
+          "type": "Single",
+          "mbid": "38d82754-a42d-468f-8aab-6fcc0cc2a20d",
+          "cover": "https://coverartarchive.org/release-group/38d82754-a42d-468f-8aab-6fcc0cc2a20d/front-250",
+          "url": "https://musicbrainz.org/release-group/38d82754-a42d-468f-8aab-6fcc0cc2a20d"
+        },
+        {
+          "title": "Blue / The Veil",
+          "year": "2020",
+          "type": "Single",
+          "mbid": "e2fc3966-d472-4125-a166-0e2a74847d4d",
+          "cover": "https://coverartarchive.org/release-group/e2fc3966-d472-4125-a166-0e2a74847d4d/front-250",
+          "url": "https://musicbrainz.org/release-group/e2fc3966-d472-4125-a166-0e2a74847d4d"
+        },
+        {
+          "title": "Spiritual Cramp (Halloween 2019 version)",
+          "year": "2019",
+          "type": "Single",
+          "mbid": "4bdf6525-5b4d-4ac8-94e4-635a3efb62f8",
+          "cover": "https://coverartarchive.org/release-group/4bdf6525-5b4d-4ac8-94e4-635a3efb62f8/front-250",
+          "url": "https://musicbrainz.org/release-group/4bdf6525-5b4d-4ac8-94e4-635a3efb62f8"
+        },
+        {
+          "title": "The Hearth",
+          "year": "2018",
+          "type": "Album",
+          "mbid": "c52f0553-32fa-4fe4-b463-0dcc9c137706",
+          "cover": "https://coverartarchive.org/release-group/c52f0553-32fa-4fe4-b463-0dcc9c137706/front-250",
+          "url": "https://musicbrainz.org/release-group/c52f0553-32fa-4fe4-b463-0dcc9c137706"
+        }
+      ]
     },
     {
       "slug": "cd-ghost",
       "name": "CD Ghost",
-      "bio": "Cody Han and Blake Dimas produce surreal yet danceable synthpop under the name\n\nCD Ghost\n\nThey began in 2020 by releasing three EPs in quick succession, with tracks such as “Roll the Dice” and “Undercurrent” garnering attention online.\n\nIn 2022, the pair joined Born Losers Records to release their first full length, “Night Music” which saw them expand their watercolor dream pop palette towards the intersections of indie pop, post-punk, and darkwave. Written during the pandemic while split between Los Angeles and Beijing, the project reflects on solitude, transformation, and the mysteries of the night.\n\nDrawing from a kitschy past as much as they are embracing pure contemporary pop, their hook-laden, beat-driven lamentations find a way to stick in your head and make their home. With a few releases under their belt and a growing audience, CD Ghost is steadfast in their impossible goal of writing the best pop songs ever.\n\nWebsite\n\nandcamp\n\npotify",
-      "image": "cd_ghost_0.jpg",
+      "bio": "Cody Han and Blake Dimas produce surreal yet danceable synthpop under the name CD Ghost They began in 2020 by releasing three EPs in quick succession, with tracks such as “Roll the Dice” and “Undercurrent” garnering attention online. In 2022, the pair joined Born Losers Records to release their first full length, “Night Music” which saw them expand their watercolor dream pop palette towards the intersections of indie pop, post-punk, and darkwave. Written during the pandemic while split between Los Angeles and Beijing, the project reflects on solitude, transformation, and the mysteries of the night. Drawing from a kitschy past as much as they are embracing pure contemporary pop, their hook-laden, beat-driven lamentations find a way to stick in your head and make their home. With a few releases under their belt and a growing audience, CD Ghost is steadfast in their impossible goal of writing the best pop songs ever.",
+      "image": "cd_ghost_1.jpg",
       "social_links": {
         "website": "https://cdghost.xyz/"
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [],
+      "photos": [
+        "cd_ghost_0.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_08.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Cody Han and Blake Dimas produce surreal yet danceable synthpop under the name CD Ghost They began in 2020 by releasing three EPs in quick succession, with tracks such as “Roll the Dice” and “Undercurrent” garnering attention online. In 2022, the pair joined B…",
+      "discography": [
+        {
+          "title": "Vignette II",
+          "year": "2024",
+          "type": "EP",
+          "mbid": "9a319565-272a-4d4d-a542-a2e88ffa9283",
+          "cover": "https://coverartarchive.org/release-group/9a319565-272a-4d4d-a542-a2e88ffa9283/front-250",
+          "url": "https://musicbrainz.org/release-group/9a319565-272a-4d4d-a542-a2e88ffa9283"
+        },
+        {
+          "title": "Vignette I",
+          "year": "2023",
+          "type": "Album",
+          "mbid": "c830664e-dfeb-45c1-88b6-546d60dccdf9",
+          "cover": "https://coverartarchive.org/release-group/c830664e-dfeb-45c1-88b6-546d60dccdf9/front-250",
+          "url": "https://musicbrainz.org/release-group/c830664e-dfeb-45c1-88b6-546d60dccdf9"
+        },
+        {
+          "title": "Roses",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "cd963780-b71a-414d-b1f6-076a30b4afd4",
+          "cover": "https://coverartarchive.org/release-group/cd963780-b71a-414d-b1f6-076a30b4afd4/front-250",
+          "url": "https://musicbrainz.org/release-group/cd963780-b71a-414d-b1f6-076a30b4afd4"
+        },
+        {
+          "title": "Night Music",
+          "year": "2022",
+          "type": "Album",
+          "mbid": "afb7d66c-1455-4d07-b195-bffa5311c616",
+          "cover": "https://coverartarchive.org/release-group/afb7d66c-1455-4d07-b195-bffa5311c616/front-250",
+          "url": "https://musicbrainz.org/release-group/afb7d66c-1455-4d07-b195-bffa5311c616"
+        },
+        {
+          "title": "Here It Comes Again",
+          "year": "2020",
+          "type": "EP",
+          "mbid": "0ca13af4-2580-43cf-8928-dcfde41967f8",
+          "cover": "https://coverartarchive.org/release-group/0ca13af4-2580-43cf-8928-dcfde41967f8/front-250",
+          "url": "https://musicbrainz.org/release-group/0ca13af4-2580-43cf-8928-dcfde41967f8"
+        },
+        {
+          "title": "Ghost Hunting",
+          "year": "2020",
+          "type": "EP",
+          "mbid": "c9f38f98-099d-4a43-81f7-d6d3e86d5aef",
+          "cover": "https://coverartarchive.org/release-group/c9f38f98-099d-4a43-81f7-d6d3e86d5aef/front-250",
+          "url": "https://musicbrainz.org/release-group/c9f38f98-099d-4a43-81f7-d6d3e86d5aef"
+        },
+        {
+          "title": "Dreams We Share",
+          "year": "2020",
+          "type": "EP",
+          "mbid": "33bf086a-aba2-44c6-afc8-c9445a686110",
+          "cover": "https://coverartarchive.org/release-group/33bf086a-aba2-44c6-afc8-c9445a686110/front-250",
+          "url": "https://musicbrainz.org/release-group/33bf086a-aba2-44c6-afc8-c9445a686110"
+        }
+      ]
     },
     {
       "slug": "corbeau-hangs",
       "name": "Corbeau Hangs",
-      "bio": "orbeau Hangs\n\nis the search into the anomalies of the nature of 80s darkness fusing darkwave, industrial and post punk influences to create a soundtrack of tragic hope. Blending post-punk grittiness, driven industrial tones and the atmospheric dilemma of darkwave and cold wave to garnish a wave of familiar and nostalgic hints while being something totally of its own electronic persona.\n\nManuel Perez is joined by Quinn Tipton in this project reminiscent of horror soundtracks to complement the societal void in which these sounds find themselves in.\n\nEPK\n\nWebsite\n\nInstagram\n\nSpotify\n\nandcamp\n\nFacebook\n\nTikTok",
+      "bio": "orbeau Hangs is the search into the anomalies of the nature of 80s darkness fusing darkwave, industrial and post punk influences to create a soundtrack of tragic hope. Blending post-punk grittiness, driven industrial tones and the atmospheric dilemma of darkwave and cold wave to garnish a wave of familiar and nostalgic hints while being something totally of its own electronic persona. Manuel Perez is joined by Quinn Tipton in this project reminiscent of horror soundtracks to complement the societal void in which these sounds find themselves in.",
       "image": "corbeau_hangs_0.jpg",
       "social_links": {
         "website": "https://www.corbeauhangs.com/",
@@ -100,27 +842,94 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
-    },
-    {
-      "slug": "creux-lies",
-      "name": "Creux Lies",
-      "bio": "Revered for use of reverb-laden guitar work, creative synth structures, and dynamic vocals akin to the style of many shades of 80’s and early 90’s pop-darkness,\n\nCreux Lies\n\nhails\n\nfrom Sacramento, California. The lineup includes - Ean Clevenger (vox/programming), Barry Crider (guitarist), Jon Mak (synth/vocals) and Kyle Vorst (bassist).\n\nIn late 2018, Creux Lies completed their first full-length album via Cleopatra, “The Hearth”, recorded at the creative fantasy-land known as Earthtone Studios (Tera Melos, So Stressed!, King Woman) in their home city under the creative care of producer/engineer extraordinaire Patrick Hills.\n\nSeminal performances for Creux Lies include appearances at WGT, Absolution Fest, Murder of Crows NY, and several other shared stages and tours with a roster of notable acts such as AFI, The Soft Moon, Clan of Xymox, Drab Majesty, Soft Kill, Gene Loves Jezebel, Actors, Vowws, Twin Tribes, and others. In 2021 Creux Lies was poised for 2021 with the release of their second full-length via the international Freakwave label and their new album is set to release in 2026. Headlining performance antics will ensue promptly. Catch them soon on tour throughout the reaches of the planet.\n\nWebsite\n\nBandcamp\n\nInstagram\n\nSpotify",
-      "image": "creux_lies_0.jpg",
-      "social_links": {
-        "website": "https://www.creuxlies.com/",
-        "bandcamp": "https://creuxlies.bandcamp.com/music",
-        "instagram": "https://www.instagram.com/creuxlies/",
-        "spotify": "https://open.spotify.com/artist/4njFqWD04BTvOrYBXuzv6i?si=kBj0QE67SlCFlwF382QPQA"
-      },
-      "genres": [],
-      "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=RGK02a3pH54",
+          "title": "Creux Lies \"Portals\" (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/RGK02a3pH54/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=O-IDWhpCPjw",
+          "title": "Creux Lies — Jubilate (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/O-IDWhpCPjw/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=elG8UBmZ-j4",
+          "title": "Creux Lies - Portals (Dark Wave Music Video)",
+          "thumb": "https://img.youtube.com/vi/elG8UBmZ-j4/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=-YzaMNc139U",
+          "title": "Creux Lies - Zone - (Official Video Version)",
+          "thumb": "https://img.youtube.com/vi/-YzaMNc139U/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=G15NisnkhzU",
+          "title": "Creux Lies - Blue (Official Video)",
+          "thumb": "https://img.youtube.com/vi/G15NisnkhzU/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "corbeau_hangs_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_09.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "orbeau Hangs is the search into the anomalies of the nature of 80s darkness fusing darkwave, industrial and post punk influences to create a soundtrack of tragic hope. Blending post-punk grittiness, driven industrial tones and the atmospheric dilemma of darkwa…",
+      "discography": [
+        {
+          "title": "Ill Intents",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "60e1a314-db87-4986-8193-5f61e97f8ebd",
+          "cover": "https://coverartarchive.org/release-group/60e1a314-db87-4986-8193-5f61e97f8ebd/front-250",
+          "url": "https://musicbrainz.org/release-group/60e1a314-db87-4986-8193-5f61e97f8ebd"
+        },
+        {
+          "title": "Archive State",
+          "year": "2025",
+          "type": "Album",
+          "mbid": "54571cd7-c9c6-4c6d-8578-dfe6704f39a8",
+          "cover": "https://coverartarchive.org/release-group/54571cd7-c9c6-4c6d-8578-dfe6704f39a8/front-250",
+          "url": "https://musicbrainz.org/release-group/54571cd7-c9c6-4c6d-8578-dfe6704f39a8"
+        },
+        {
+          "title": "Optograms",
+          "year": "2023",
+          "type": "Album",
+          "mbid": "00777711-8e6f-4b90-8cca-73e210e2aad5",
+          "cover": "https://coverartarchive.org/release-group/00777711-8e6f-4b90-8cca-73e210e2aad5/front-250",
+          "url": "https://musicbrainz.org/release-group/00777711-8e6f-4b90-8cca-73e210e2aad5"
+        },
+        {
+          "title": "Necroamor",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "6cf1684a-bac9-4371-9083-8e316c8ad774",
+          "cover": "https://coverartarchive.org/release-group/6cf1684a-bac9-4371-9083-8e316c8ad774/front-250",
+          "url": "https://musicbrainz.org/release-group/6cf1684a-bac9-4371-9083-8e316c8ad774"
+        }
+      ]
     },
     {
       "slug": "dame-area",
       "name": "Dame Area",
-      "bio": "Hailing from Barcelona,\n\nDame Area\n\nhas forged a sound that is both hypnotic and relentless—where primal polyrhythms, industrial intensity, and hypnotic synths collide. This Catalan-Italian duo is one of the most explosive live acts of the moment. Their latest LP, “Toda la verdad sobre Dame Area” (Mannequin Records / Humo), captures the feverish energy of their live shows. Named the second-best rock album of 2024 by Pitchfork and \"Record of the Week\" by The Quietus, it stands as a testament to their uncompromising vision and raw power.\n\nSince their beginnings, Dame Area has continuously evolved, refining their distinct sound across albums like “Centro di Gravitá”, “Ondas Tribales”, and “Toda la mentira sobre Dame Area”—each release pushing the boundaries of industrial, EBM, and post-punk. Their music is a ritual, a sonic force that refuses to be confined.\n\nInstagram\n\nFacebook\n\nandcamp\n\nSpotify",
+      "bio": "Hailing from Barcelona, Dame Area has forged a sound that is both hypnotic and relentless—where primal polyrhythms, industrial intensity, and hypnotic synths collide. This Catalan-Italian duo is one of the most explosive live acts of the moment. Their latest LP, “Toda la verdad sobre Dame Area” (Mannequin Records / Humo), captures the feverish energy of their live shows. Named the second-best rock album of 2024 by Pitchfork and \"Record of the Week\" by The Quietus, it stands as a testament to their uncompromising vision and raw power. Since their beginnings, Dame Area has continuously evolved, refining their distinct sound across albums like “Centro di Gravitá”, “Ondas Tribales”, and “Toda la mentira sobre Dame Area”—each release pushing the boundaries of industrial, EBM, and post-punk. Their music is a ritual, a sonic force that refuses to be confined.",
       "image": "dame_area_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/dame_area_/?hl=en",
@@ -129,12 +938,150 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=VJubkifWbzY",
+          "title": "MAQUINA. - dança (with Dame Area) (Official Video)",
+          "thumb": "https://img.youtube.com/vi/VJubkifWbzY/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=_AI1L5AqjvI",
+          "title": "Dame Area - Full Performance (Live on KEXP)",
+          "thumb": "https://img.youtube.com/vi/_AI1L5AqjvI/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=WzhBzOoicrw",
+          "title": "Dame Area - Si No Es Hoy, Cuando Es (Live on KEXP)",
+          "thumb": "https://img.youtube.com/vi/WzhBzOoicrw/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=4-quW7BfKdA",
+          "title": "Dame Area - Tu Me Hiciste Creer (Live on KEXP)",
+          "thumb": "https://img.youtube.com/vi/4-quW7BfKdA/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=_gi6ET40hfs",
+          "title": "Dame Area: \"La Notte é Oscura\" Videoclip",
+          "thumb": "https://img.youtube.com/vi/_gi6ET40hfs/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "dame_area_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_10.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Hailing from Barcelona, Dame Area has forged a sound that is both hypnotic and relentless—where primal polyrhythms, industrial intensity, and hypnotic synths collide. This Catalan-Italian duo is one of the most explosive live acts of the moment. Their latest L…",
+      "discography": [
+        {
+          "title": "Toda la verdad sobre Dame Area",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "d59c629d-a5d5-499c-a082-6b27d3d0e1af",
+          "cover": "https://coverartarchive.org/release-group/d59c629d-a5d5-499c-a082-6b27d3d0e1af/front-250",
+          "url": "https://musicbrainz.org/release-group/d59c629d-a5d5-499c-a082-6b27d3d0e1af"
+        },
+        {
+          "title": "Toda la mentira sobre Dame Area",
+          "year": "2022",
+          "type": "Album",
+          "mbid": "1164b118-d014-4bf4-a4c2-ee84a1617059",
+          "cover": "https://coverartarchive.org/release-group/1164b118-d014-4bf4-a4c2-ee84a1617059/front-250",
+          "url": "https://musicbrainz.org/release-group/1164b118-d014-4bf4-a4c2-ee84a1617059"
+        },
+        {
+          "title": "Esto me pertenece",
+          "year": "2022",
+          "type": "EP",
+          "mbid": "a9c029e3-2163-48e4-a406-d6cccc4219be",
+          "cover": "https://coverartarchive.org/release-group/a9c029e3-2163-48e4-a406-d6cccc4219be/front-250",
+          "url": "https://musicbrainz.org/release-group/a9c029e3-2163-48e4-a406-d6cccc4219be"
+        },
+        {
+          "title": "Ondas tribales",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "3bf51089-4f01-428e-927a-f0c677f6dcd3",
+          "cover": "https://coverartarchive.org/release-group/3bf51089-4f01-428e-927a-f0c677f6dcd3/front-250",
+          "url": "https://musicbrainz.org/release-group/3bf51089-4f01-428e-927a-f0c677f6dcd3"
+        },
+        {
+          "title": "La Soluzione é Una",
+          "year": "2020",
+          "type": "EP",
+          "mbid": "00a09c31-a6f0-4a6a-a401-2608bd7a4865",
+          "cover": "https://coverartarchive.org/release-group/00a09c31-a6f0-4a6a-a401-2608bd7a4865/front-250",
+          "url": "https://musicbrainz.org/release-group/00a09c31-a6f0-4a6a-a401-2608bd7a4865"
+        },
+        {
+          "title": "Absurdo",
+          "year": "2020",
+          "type": "Single",
+          "mbid": "8614278a-62a5-4d27-8590-b94ebd0c4510",
+          "cover": "https://coverartarchive.org/release-group/8614278a-62a5-4d27-8590-b94ebd0c4510/front-250",
+          "url": "https://musicbrainz.org/release-group/8614278a-62a5-4d27-8590-b94ebd0c4510"
+        },
+        {
+          "title": "Yo quiero, yo puedo",
+          "year": "2019",
+          "type": "EP",
+          "mbid": "41201551-3472-4392-b019-633b113c65e8",
+          "cover": "https://coverartarchive.org/release-group/41201551-3472-4392-b019-633b113c65e8/front-250",
+          "url": "https://musicbrainz.org/release-group/41201551-3472-4392-b019-633b113c65e8"
+        },
+        {
+          "title": "Muoviti",
+          "year": "2019",
+          "type": "Single",
+          "mbid": "a229a07d-76eb-409a-a305-10d9df877c55",
+          "cover": "https://coverartarchive.org/release-group/a229a07d-76eb-409a-a305-10d9df877c55/front-250",
+          "url": "https://musicbrainz.org/release-group/a229a07d-76eb-409a-a305-10d9df877c55"
+        },
+        {
+          "title": "Estas en un sueño",
+          "year": "2019",
+          "type": "EP",
+          "mbid": "82b109d8-8a03-4da5-812d-1732d6cd5557",
+          "cover": "https://coverartarchive.org/release-group/82b109d8-8a03-4da5-812d-1732d6cd5557/front-250",
+          "url": "https://musicbrainz.org/release-group/82b109d8-8a03-4da5-812d-1732d6cd5557"
+        },
+        {
+          "title": "Immagina il passato, ricorda il futuro",
+          "year": "2018",
+          "type": "EP",
+          "mbid": "4d16b70d-7c12-4e41-8c7b-8ba8134137c1",
+          "cover": "https://coverartarchive.org/release-group/4d16b70d-7c12-4e41-8c7b-8ba8134137c1/front-250",
+          "url": "https://musicbrainz.org/release-group/4d16b70d-7c12-4e41-8c7b-8ba8134137c1"
+        },
+        {
+          "title": "Centro di gravità",
+          "year": "2018",
+          "type": "Album",
+          "mbid": "11fe0d54-981f-474a-850a-8c015ee602a0",
+          "cover": "https://coverartarchive.org/release-group/11fe0d54-981f-474a-850a-8c015ee602a0/front-250",
+          "url": "https://musicbrainz.org/release-group/11fe0d54-981f-474a-850a-8c015ee602a0"
+        }
+      ]
     },
     {
       "slug": "daniel-myer",
       "name": "Daniel Myer",
-      "bio": "Daniel Myer\n\n, a visionary composer and producer who has left an indelible mark on the techno and house scene. From his early beginnings to his influential contributions, Daniel Myer's musical prowess has illuminated dance floors and inspired countless artists and fans alike.\n\nBorn in the seventies, Daniel Myer was fascinated by music from a young age, he found solace and inspiration in various genres, exploring the depths of punk, new wave, and electronic music. This diverse musical upbringing laid the foundation for his future endeavors and set the stage for his unique approach to composition. As a teenager, Myer began experimenting with synthesizers and drum machines, immersing himself in the world of electronic music. This led him to form his first band, Haujobb, in the nineties. With Haujobb, he merged elements of industrial, techno, and ambient music, pushing the boundaries of sound and captivating audiences with their innovative releases like \"Solutions for a Small Planet\" and \"Vertical Theory.\"\n\nDaniel Myer's talent for collaboration became evident as he worked as Remixer and collaborator with renowned artists like Depeche Mode, Alessandro Cortini, Camouflage, Black Line, Ben Lukas Boysen, Skinny Puppy, Recoil and many more. These collaborations showcased his ability to blend diverse musical styles while maintaining his unique sound and vision.\n\nMyer's influence on the techno and house scene cannot be overstated. His work seamlessly fuses pulsating beats, atmospheric melodies, and intricate textures, transporting listeners to captivating sonic realms. He has been credited with introducing a fresh, introspective approach to electronic music, infusing it with a cinematic quality that resonates deeply with his audience. The release Matrix was accompanied with a Sample CD and was used by Techno Artists, such as Oliver Huntemann, DJ Hell, Robag Wruhme or Laurent Garnier. The musician's solo releases under various aliases, including Architect, Aktivist or Hexer have garnered criticaal acclaim for their meticulous attention to detail and emotional depth. Tracks like \"Attack Ships On Fire“ and \"Voicestealer“ serve as prime examples of his ability to craft hypnotic and mesmerizing sonic landscapes that pulsate through the veins of the techno and house scene.\n\nMoreover, Daniel Myer's work extends beyond the studio and into live performances, where he mesmerizes crowds with his captivating stage presence and ability to create a resonant, immersive experience. His performances at renowned festivals such as MUTEK and Fusion Festival have solidified his status as a true luminary of the genre. Throughout his illustrious career, Daniel Myer has consistently pushed the boundaries of electronic music, refusing to be confined to one particular style or sound. His insatiable hunger for exploration drives him to continually evolve and experiment with new techniques and genres, concluding in creating soundtracks for videogames and movies and releases music on labels such as Groove Attack, Rough Trade, Sonic Groove, Aufnahme + Wiedergabe, Fleisch, Body Theory, Virgin, Poets Club, Form & Function, Metropolis, Ant-Zen and many more.\n\nInstagram\n\nFacebook\n\nandcamp\n\npotify",
+      "bio": "Daniel Myer , a visionary composer and producer who has left an indelible mark on the techno and house scene. From his early beginnings to his influential contributions, Daniel Myer's musical prowess has illuminated dance floors and inspired countless artists and fans alike. Born in the seventies, Daniel Myer was fascinated by music from a young age, he found solace and inspiration in various genres, exploring the depths of punk, new wave, and electronic music. This diverse musical upbringing laid the foundation for his future endeavors and set the stage for his unique approach to composition. As a teenager, Myer began experimenting with synthesizers and drum machines, immersing himself in the world of electronic music. This led him to form his first band, Haujobb, in the nineties. With Haujobb, he merged elements of industrial, techno, and ambient music, pushing the boundaries of sound and captivating audiences with their innovative releases like \"Solutions for a Small Planet\" and \"Vertical Theory.\" Daniel Myer's talent for collaboration became evident as he worked as Remixer and collaborator with renowned artists like Depeche Mode, Alessandro Cortini, Camouflage, Black Line, Ben Lukas Boysen, Skinny Puppy, Recoil and many more. These collaborations showcased his ability to blend diverse musical styles while maintaining his unique sound and vision. Myer's influence on the techno and house scene cannot be overstated. His work seamlessly fuses pulsating beats, atmospheric melodies, and intricate textures, transporting listeners to captivating sonic realms. He has been credited with introducing a fresh, introspective approach to electronic music, infusing it with a cinematic quality that resonates deeply with his audience. The release Matrix was accompanied with a Sample CD and was used by Techno Artists, such as Oliver Huntemann, DJ Hell, Robag Wruhme or Laurent Garnier. The musician's solo releases under various aliases, including Architect, Aktivist or Hexer have garnered criticaal acclaim for their meticulous attention to detail and emotional depth. Tracks like \"Attack Ships On Fire“ and \"Voicestealer“ serve as prime examples of his ability to craft hypnotic and mesmerizing sonic landscapes that pulsate through the veins of the techno and house scene. Moreover, Daniel Myer's work extends beyond the studio and into live performances, where he mesmerizes crowds with his captivating stage presence and ability to create a resonant, immersive experience. His performances at renowned festivals such as MUTEK and Fusion Festival have solidified his status as a true luminary of the genre. Throughout his illustrious career, Daniel Myer has consistently pushed the boundaries of electronic music, refusing to be confined to one particular style or sound. His insatiable hunger for exploration drives him to continually evolve and experiment with new techniques and genres, concluding in creating soundtracks for videogames and movies and releases music on labels such as Groove Attack, Rough Trade, Sonic Groove, Aufnahme + Wiedergabe, Fleisch, Body Theory, Virgin, Poets Club, Form & Function, Metropolis, Ant-Zen and many more.",
       "image": "daniel_myer_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/daniel_myer/?hl=en",
@@ -142,12 +1089,152 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=Pkp-9l-DuCI",
+          "title": "Architect - Hummingbird (Official Video)",
+          "thumb": "https://img.youtube.com/vi/Pkp-9l-DuCI/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=r0ovN1Te-jU",
+          "title": "Architect - Neon (Official Video)",
+          "thumb": "https://img.youtube.com/vi/r0ovN1Te-jU/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=ZTXEtAv0raQ",
+          "title": "Covenant (Daniel Myer) \"lightbringer\" (Musikzentrum Hannover)",
+          "thumb": "https://img.youtube.com/vi/ZTXEtAv0raQ/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=hVT0H2KGwUM",
+          "title": "My Sanity (Daniel Myer Remix)",
+          "thumb": "https://img.youtube.com/vi/hVT0H2KGwUM/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "daniel_myer_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_11.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Daniel Myer , a visionary composer and producer who has left an indelible mark on the techno and house scene. From his early beginnings to his influential contributions, Daniel Myer's musical prowess has illuminated dance floors and inspired countless artists …",
+      "discography": [
+        {
+          "title": "Arcuate Incision Files",
+          "year": "2025",
+          "type": "Album",
+          "mbid": "f9bf9b59-64fd-42e7-bb63-471b3ffd52e8",
+          "cover": "https://coverartarchive.org/release-group/f9bf9b59-64fd-42e7-bb63-471b3ffd52e8/front-250",
+          "url": "https://musicbrainz.org/release-group/f9bf9b59-64fd-42e7-bb63-471b3ffd52e8"
+        },
+        {
+          "title": "Hingabe",
+          "year": "2023",
+          "type": "Album",
+          "mbid": "5f290de1-b699-44b1-afc3-df35f6822fb4",
+          "cover": "https://coverartarchive.org/release-group/5f290de1-b699-44b1-afc3-df35f6822fb4/front-250",
+          "url": "https://musicbrainz.org/release-group/5f290de1-b699-44b1-afc3-df35f6822fb4"
+        },
+        {
+          "title": "A.N.W.N.T.D.2",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "1048fe2c-4a26-4b14-bdda-cad45ceef479",
+          "cover": "https://coverartarchive.org/release-group/1048fe2c-4a26-4b14-bdda-cad45ceef479/front-250",
+          "url": "https://musicbrainz.org/release-group/1048fe2c-4a26-4b14-bdda-cad45ceef479"
+        },
+        {
+          "title": "N.W.N.T.D.",
+          "year": "2022",
+          "type": "EP",
+          "mbid": "be6e7c48-0aae-481a-93d1-62b1417d4644",
+          "cover": "https://coverartarchive.org/release-group/be6e7c48-0aae-481a-93d1-62b1417d4644/front-250",
+          "url": "https://musicbrainz.org/release-group/be6e7c48-0aae-481a-93d1-62b1417d4644"
+        },
+        {
+          "title": "A.N.W.N.T.D.",
+          "year": "2022",
+          "type": "EP",
+          "mbid": "ee83f7c6-c58d-4c49-b30d-f885c6329881",
+          "cover": "https://coverartarchive.org/release-group/ee83f7c6-c58d-4c49-b30d-f885c6329881/front-250",
+          "url": "https://musicbrainz.org/release-group/ee83f7c6-c58d-4c49-b30d-f885c6329881"
+        },
+        {
+          "title": "H4AR 2020 Drum & Bass Stuff",
+          "year": "2020",
+          "type": "Album",
+          "mbid": "3709dd1f-2d9d-4d37-909f-83c7d4f76806",
+          "cover": "https://coverartarchive.org/release-group/3709dd1f-2d9d-4d37-909f-83c7d4f76806/front-250",
+          "url": "https://musicbrainz.org/release-group/3709dd1f-2d9d-4d37-909f-83c7d4f76806"
+        },
+        {
+          "title": "Find Fund Finish",
+          "year": "2018",
+          "type": "Album",
+          "mbid": "e4f6ad78-18f9-49fd-890d-416a66b6adc4",
+          "cover": "https://coverartarchive.org/release-group/e4f6ad78-18f9-49fd-890d-416a66b6adc4/front-250",
+          "url": "https://musicbrainz.org/release-group/e4f6ad78-18f9-49fd-890d-416a66b6adc4"
+        },
+        {
+          "title": "Tao Feng",
+          "year": "2003",
+          "type": "Album",
+          "mbid": "9c53661b-bc00-34c4-88d1-9332474ff031",
+          "cover": "https://coverartarchive.org/release-group/9c53661b-bc00-34c4-88d1-9332474ff031/front-250",
+          "url": "https://musicbrainz.org/release-group/9c53661b-bc00-34c4-88d1-9332474ff031"
+        },
+        {
+          "title": "Leavin' Space / Brown Sugar",
+          "year": "1999",
+          "type": "Single",
+          "mbid": "2e5cc394-a337-487f-abef-09e22b58baf6",
+          "cover": "https://coverartarchive.org/release-group/2e5cc394-a337-487f-abef-09e22b58baf6/front-250",
+          "url": "https://musicbrainz.org/release-group/2e5cc394-a337-487f-abef-09e22b58baf6"
+        },
+        {
+          "title": "Pressure Drop",
+          "year": "1998",
+          "type": "Single",
+          "mbid": "e3cc5e1a-d7a6-4a47-b39b-edf4a0cba758",
+          "cover": "https://coverartarchive.org/release-group/e3cc5e1a-d7a6-4a47-b39b-edf4a0cba758/front-250",
+          "url": "https://musicbrainz.org/release-group/e3cc5e1a-d7a6-4a47-b39b-edf4a0cba758"
+        },
+        {
+          "title": "Style",
+          "year": "1997",
+          "type": "Single",
+          "mbid": "4d1db83d-7871-4297-bf09-ce7dfc6cf441",
+          "cover": "https://coverartarchive.org/release-group/4d1db83d-7871-4297-bf09-ce7dfc6cf441/front-250",
+          "url": "https://musicbrainz.org/release-group/4d1db83d-7871-4297-bf09-ce7dfc6cf441"
+        },
+        {
+          "title": "Contra Technique",
+          "year": "1997",
+          "type": "Single",
+          "mbid": "b312ded1-2088-4e8d-8496-d07de500dedd",
+          "cover": "https://coverartarchive.org/release-group/b312ded1-2088-4e8d-8496-d07de500dedd/front-250",
+          "url": "https://musicbrainz.org/release-group/b312ded1-2088-4e8d-8496-d07de500dedd"
+        }
+      ]
     },
     {
       "slug": "die-sexual",
       "name": "Die Sexual",
-      "bio": "Die Sexual\n\nis the Los Angeles–based dark electronic duo of Rosselinni and Anton Floriano. Conjuring influences of EBM, techno, and electropop, their sound is an intoxicating mix of analog synthetics and seductive vocals — pure dancefloor decadence forged by pulsating industrial rhythms and dripping sensuality.\n\nSince releasing their debut EP \"Bound\" at the end of 2023, their tracks have continued to dominate DJ playlists across the globe, culminating in PYLON Records (Nitzer Ebb, Clan of Xymox) licensing their three EPs and re-releasing them as the album \"Elektro Body Musique\".\n\nMaking their live debut in 2024, Die Sexual quickly established themselves as a coveted act, playing over 70 shows across the U.S. and sharing the stage with IAMX, MATTE BLVCK, Buzz Kull, My Life With The Thrill Kill Kult, Light Asylum, and Leæther Strip. With appearances at major festivals like Dark Force Fest and Absolution Fest, they have become a must-see force on stage.\n\nDie Sexual entices you to join their journey from out of the shadows to under the strobe lights, with new singles like \"Desire\" and \"In For the Kill\" already continuing their momentum into 2025.\n\nInstagram\n\nBandcamp\n\nSpotify",
+      "bio": "Die Sexual is the Los Angeles–based dark electronic duo of Rosselinni and Anton Floriano. Conjuring influences of EBM, techno, and electropop, their sound is an intoxicating mix of analog synthetics and seductive vocals — pure dancefloor decadence forged by pulsating industrial rhythms and dripping sensuality. Since releasing their debut EP \"Bound\" at the end of 2023, their tracks have continued to dominate DJ playlists across the globe, culminating in PYLON Records (Nitzer Ebb, Clan of Xymox) licensing their three EPs and re-releasing them as the album \"Elektro Body Musique\". Making their live debut in 2024, Die Sexual quickly established themselves as a coveted act, playing over 70 shows across the U.S. and sharing the stage with IAMX, MATTE BLVCK, Buzz Kull, My Life With The Thrill Kill Kult, Light Asylum, and Leæther Strip. With appearances at major festivals like Dark Force Fest and Absolution Fest, they have become a must-see force on stage. Die Sexual entices you to join their journey from out of the shadows to under the strobe lights, with new singles like \"Desire\" and \"In For the Kill\" already continuing their momentum into 2025.",
       "image": "die_sexual_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/diesexualofficial/",
@@ -156,12 +1243,182 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=x_N7-dNc_qE",
+          "title": "Die Sexual - Darkest Hour (Official Video)",
+          "thumb": "https://img.youtube.com/vi/x_N7-dNc_qE/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=DK8oiu2ZYLA",
+          "title": "Die Sexual - Desire (Official Video)",
+          "thumb": "https://img.youtube.com/vi/DK8oiu2ZYLA/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=s8dnuHc79Bs",
+          "title": "Die Sexual - Need To Sin (Visualizer)",
+          "thumb": "https://img.youtube.com/vi/s8dnuHc79Bs/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=ZYE3A51NvGM",
+          "title": "Die Sexual On This Night (Encore) Live El Paso, Texas 10/17/25 Bye Bye Dear ",
+          "thumb": "https://img.youtube.com/vi/ZYE3A51NvGM/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=PnXc2mJyios",
+          "title": "Die Sexual - Darkest Hour",
+          "thumb": "https://img.youtube.com/vi/PnXc2mJyios/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "die_sexual_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_12.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Die Sexual is the Los Angeles–based dark electronic duo of Rosselinni and Anton Floriano. Conjuring influences of EBM, techno, and electropop, their sound is an intoxicating mix of analog synthetics and seductive vocals — pure dancefloor decadence forged by pu…",
+      "discography": [
+        {
+          "title": "In for the Kill",
+          "year": "2026",
+          "type": "Single",
+          "mbid": "8b780d04-c7b5-4d02-a9b7-cf582472ed9a",
+          "cover": "https://coverartarchive.org/release-group/8b780d04-c7b5-4d02-a9b7-cf582472ed9a/front-250",
+          "url": "https://musicbrainz.org/release-group/8b780d04-c7b5-4d02-a9b7-cf582472ed9a"
+        },
+        {
+          "title": "Magic Never Dies",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "66598cac-3cca-4e42-91eb-19571048d2b4",
+          "cover": "https://coverartarchive.org/release-group/66598cac-3cca-4e42-91eb-19571048d2b4/front-250",
+          "url": "https://musicbrainz.org/release-group/66598cac-3cca-4e42-91eb-19571048d2b4"
+        },
+        {
+          "title": "Lights Down Low (Black Light Smoke remix)",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "58cc1465-c106-4d08-b57e-8d865f0332af",
+          "cover": "https://coverartarchive.org/release-group/58cc1465-c106-4d08-b57e-8d865f0332af/front-250",
+          "url": "https://musicbrainz.org/release-group/58cc1465-c106-4d08-b57e-8d865f0332af"
+        },
+        {
+          "title": "Electric: Remixes",
+          "year": "2025",
+          "type": "EP",
+          "mbid": "a06b151b-c8a1-496d-9751-214f8583a0e4",
+          "cover": "https://coverartarchive.org/release-group/a06b151b-c8a1-496d-9751-214f8583a0e4/front-250",
+          "url": "https://musicbrainz.org/release-group/a06b151b-c8a1-496d-9751-214f8583a0e4"
+        },
+        {
+          "title": "Desire Remixes",
+          "year": "2025",
+          "type": "EP",
+          "mbid": "657833ef-993b-466d-83f1-15034cfab618",
+          "cover": "https://coverartarchive.org/release-group/657833ef-993b-466d-83f1-15034cfab618/front-250",
+          "url": "https://musicbrainz.org/release-group/657833ef-993b-466d-83f1-15034cfab618"
+        },
+        {
+          "title": "Desire",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "e9a6a87e-e4ed-4f72-a71a-1fff8204efd6",
+          "cover": "https://coverartarchive.org/release-group/e9a6a87e-e4ed-4f72-a71a-1fff8204efd6/front-250",
+          "url": "https://musicbrainz.org/release-group/e9a6a87e-e4ed-4f72-a71a-1fff8204efd6"
+        },
+        {
+          "title": "Remixes Vol. I",
+          "year": "2024",
+          "type": "EP",
+          "mbid": "2c3fe68a-fc8f-4118-ad01-457808cb166d",
+          "cover": "https://coverartarchive.org/release-group/2c3fe68a-fc8f-4118-ad01-457808cb166d/front-250",
+          "url": "https://musicbrainz.org/release-group/2c3fe68a-fc8f-4118-ad01-457808cb166d"
+        },
+        {
+          "title": "Need to Sin Remixes",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "b6a7fda9-5d96-44e0-a2b0-bc9a05b88ef0",
+          "cover": "https://coverartarchive.org/release-group/b6a7fda9-5d96-44e0-a2b0-bc9a05b88ef0/front-250",
+          "url": "https://musicbrainz.org/release-group/b6a7fda9-5d96-44e0-a2b0-bc9a05b88ef0"
+        },
+        {
+          "title": "Need to Sin",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "fa79ffff-ab13-442c-b7e2-e4caa05044ef",
+          "cover": "https://coverartarchive.org/release-group/fa79ffff-ab13-442c-b7e2-e4caa05044ef/front-250",
+          "url": "https://musicbrainz.org/release-group/fa79ffff-ab13-442c-b7e2-e4caa05044ef"
+        },
+        {
+          "title": "Inservio",
+          "year": "2024",
+          "type": "EP",
+          "mbid": "86807bed-e2c5-4955-a906-cb1efbdbeea7",
+          "cover": "https://coverartarchive.org/release-group/86807bed-e2c5-4955-a906-cb1efbdbeea7/front-250",
+          "url": "https://musicbrainz.org/release-group/86807bed-e2c5-4955-a906-cb1efbdbeea7"
+        },
+        {
+          "title": "Elektro Body Musique",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "341d4074-651d-4e8e-828a-bb029d7d70ba",
+          "cover": "https://coverartarchive.org/release-group/341d4074-651d-4e8e-828a-bb029d7d70ba/front-250",
+          "url": "https://musicbrainz.org/release-group/341d4074-651d-4e8e-828a-bb029d7d70ba"
+        },
+        {
+          "title": "Electric",
+          "year": "2024",
+          "type": "EP",
+          "mbid": "943ebf16-6f38-4970-8373-427d8b3079b5",
+          "cover": "https://coverartarchive.org/release-group/943ebf16-6f38-4970-8373-427d8b3079b5/front-250",
+          "url": "https://musicbrainz.org/release-group/943ebf16-6f38-4970-8373-427d8b3079b5"
+        },
+        {
+          "title": "Dressed in Black",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "1ef10e1c-ffdf-4ef4-9c02-597cde09f43b",
+          "cover": "https://coverartarchive.org/release-group/1ef10e1c-ffdf-4ef4-9c02-597cde09f43b/front-250",
+          "url": "https://musicbrainz.org/release-group/1ef10e1c-ffdf-4ef4-9c02-597cde09f43b"
+        },
+        {
+          "title": "Tremble for Me",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "c7965d2d-64cb-43bb-b952-487f6595bae0",
+          "cover": "https://coverartarchive.org/release-group/c7965d2d-64cb-43bb-b952-487f6595bae0/front-250",
+          "url": "https://musicbrainz.org/release-group/c7965d2d-64cb-43bb-b952-487f6595bae0"
+        },
+        {
+          "title": "Bound EP",
+          "year": "2023",
+          "type": "EP",
+          "mbid": "8b349129-7ba9-46ab-9ca4-3b32a777abbd",
+          "cover": "https://coverartarchive.org/release-group/8b349129-7ba9-46ab-9ca4-3b32a777abbd/front-250",
+          "url": "https://musicbrainz.org/release-group/8b349129-7ba9-46ab-9ca4-3b32a777abbd"
+        }
+      ]
     },
     {
       "slug": "donzii",
       "name": "DONZII",
-      "bio": "Los Angeles by way of Miami,\n\nDonzii\n\nis a time-bending, post-punk vision. A unity of go-hard industrial bangers, darkly ambient balladry, and new takes on the funk traditions of No Wave that make people dance! Their Live performances have developed a cult following because of their theatrics and world-building narratives that the audience  together in a moment. They go through different thematic phases, which keep audiences excited for what they are going to see next!\n\nEPK\n\nInstagram\n\nSpotify\n\nandcamp\n\nFacebook\n\nTikTok",
+      "bio": "Los Angeles by way of Miami, Donzii is a time-bending, post-punk vision. A unity of go-hard industrial bangers, darkly ambient balladry, and new takes on the funk traditions of No Wave that make people dance! Their Live performances have developed a cult following because of their theatrics and world-building narratives that the audience together in a moment. They go through different thematic phases, which keep audiences excited for what they are going to see next!",
       "image": "donzii_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/_donzii/?hl=en",
@@ -171,12 +1428,110 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=frE3t3dbSgk",
+          "title": "Donzii - \"Penetrate\" (Official Music Video directed by Trulee Hall)",
+          "thumb": "https://img.youtube.com/vi/frE3t3dbSgk/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=tdrotNCVD7k",
+          "title": "Donzii - Rightway Highway (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/tdrotNCVD7k/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=StxB3sVMXFA",
+          "title": "Donzii - \"Sand\" (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/StxB3sVMXFA/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=UqeNcHzDDms",
+          "title": "Donzii - \"Mines\" (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/UqeNcHzDDms/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=_UHPT6b1g34",
+          "title": "Donzii - \"Burn\" (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/_UHPT6b1g34/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "donzii_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_13.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Los Angeles by way of Miami, Donzii is a time-bending, post-punk vision. A unity of go-hard industrial bangers, darkly ambient balladry, and new takes on the funk traditions of No Wave that make people dance! Their Live performances have developed a cult follo…",
+      "discography": [
+        {
+          "title": "curveball",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "22f6e583-58e8-482f-b6ca-ed0a5112cd8e",
+          "cover": "https://coverartarchive.org/release-group/22f6e583-58e8-482f-b6ca-ed0a5112cd8e/front-250",
+          "url": "https://musicbrainz.org/release-group/22f6e583-58e8-482f-b6ca-ed0a5112cd8e"
+        },
+        {
+          "title": "Station",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "8056a389-cb26-4f9e-a0ad-946e10ded226",
+          "cover": "https://coverartarchive.org/release-group/8056a389-cb26-4f9e-a0ad-946e10ded226/front-250",
+          "url": "https://musicbrainz.org/release-group/8056a389-cb26-4f9e-a0ad-946e10ded226"
+        },
+        {
+          "title": "Penetrate",
+          "year": "2023",
+          "type": "EP",
+          "mbid": "00587976-2825-4dbc-90ef-fb21bef8f8c0",
+          "cover": "https://coverartarchive.org/release-group/00587976-2825-4dbc-90ef-fb21bef8f8c0/front-250",
+          "url": "https://musicbrainz.org/release-group/00587976-2825-4dbc-90ef-fb21bef8f8c0"
+        },
+        {
+          "title": "Fishbowl",
+          "year": "2022",
+          "type": "Album",
+          "mbid": "4e58f2de-3f0c-4152-aa75-6268d438878c",
+          "cover": "https://coverartarchive.org/release-group/4e58f2de-3f0c-4152-aa75-6268d438878c/front-250",
+          "url": "https://musicbrainz.org/release-group/4e58f2de-3f0c-4152-aa75-6268d438878c"
+        },
+        {
+          "title": "Hissy Hits",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "a739dd10-f48e-4542-9770-c8ff33b29b50",
+          "cover": "https://coverartarchive.org/release-group/a739dd10-f48e-4542-9770-c8ff33b29b50/front-250",
+          "url": "https://musicbrainz.org/release-group/a739dd10-f48e-4542-9770-c8ff33b29b50"
+        },
+        {
+          "title": "Gladugly",
+          "year": "2019",
+          "type": "EP",
+          "mbid": "9c2e1ab8-a3ee-415a-bf51-cbff36eaa992",
+          "cover": "https://coverartarchive.org/release-group/9c2e1ab8-a3ee-415a-bf51-cbff36eaa992/front-250",
+          "url": "https://musicbrainz.org/release-group/9c2e1ab8-a3ee-415a-bf51-cbff36eaa992"
+        }
+      ]
     },
     {
       "slug": "jorge-elbrecht",
       "name": "Jorge Elbrecht",
-      "bio": "Jorge Elbrecht\n\nis a songwriter, music producer, and visual artist who lives and works in Los Angeles. His multidisciplinary practice explores the connections between sound, performance, painting and video—creating immersive works that blur the boundaries between music and art. With his newest musical project, Galán, Elbrecht brings these elements together in a thoughtfully layered musical experience performed in his native language, Spanish. Having toured both the US and Europe extensively over the last decade, Elbrecht's intimate live performances evolve continually and utilize dance, video projection & theatrical costumes to convey the stories within the music.\n\nInstagram\n\nBandcamp\n\nSpotify",
+      "bio": "Jorge Elbrecht is a songwriter, music producer, and visual artist who lives and works in Los Angeles. His multidisciplinary practice explores the connections between sound, performance, painting and video—creating immersive works that blur the boundaries between music and art. With his newest musical project, Galán, Elbrecht brings these elements together in a thoughtfully layered musical experience performed in his native language, Spanish. Having toured both the US and Europe extensively over the last decade, Elbrecht's intimate live performances evolve continually and utilize dance, video projection & theatrical costumes to convey the stories within the music.",
       "image": "jorge_elbrecht_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/jorge_elbrecht/?hl=en",
@@ -185,12 +1540,206 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=x_pxkpxk5UI",
+          "title": "Jorge Elbrecht / Galán - Brillante Color (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/x_pxkpxk5UI/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=uaHmMCwHEzw",
+          "title": "Jorge Elbrecht - \"Cryptic Moon (feat. Molina)\" [Official Video]",
+          "thumb": "https://img.youtube.com/vi/uaHmMCwHEzw/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=03d1qVM1NXE",
+          "title": "Jorge Elbrecht / Galán - Sueños Y Colores (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/03d1qVM1NXE/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=56-xtqCzp64",
+          "title": "Jorge Elbrecht - \"Perish (feat. Geneva Jacuzzi)\" [Official Video]",
+          "thumb": "https://img.youtube.com/vi/56-xtqCzp64/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=ZNtSmNhU98A",
+          "title": "Jorge Elbrecht / Galán - Si Tú No Existieras (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/ZNtSmNhU98A/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "jorge_elbrecht_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_14.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Jorge Elbrecht is a songwriter, music producer, and visual artist who lives and works in Los Angeles. His multidisciplinary practice explores the connections between sound, performance, painting and video—creating immersive works that blur the boundaries betwe…",
+      "discography": [
+        {
+          "title": "Presentable Corpse 002",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "283e4c86-c67a-46da-a573-47593a2b897c",
+          "cover": "https://coverartarchive.org/release-group/283e4c86-c67a-46da-a573-47593a2b897c/front-250",
+          "url": "https://musicbrainz.org/release-group/283e4c86-c67a-46da-a573-47593a2b897c"
+        },
+        {
+          "title": "Tuesday Morning",
+          "year": "2020",
+          "type": "Single",
+          "mbid": "3980c268-8234-4a0f-91ec-395492a20471",
+          "cover": "https://coverartarchive.org/release-group/3980c268-8234-4a0f-91ec-395492a20471/front-250",
+          "url": "https://musicbrainz.org/release-group/3980c268-8234-4a0f-91ec-395492a20471"
+        },
+        {
+          "title": "The Clouds Are Gone",
+          "year": "2020",
+          "type": "Album",
+          "mbid": "b86ba75a-1a9e-40fa-a2c4-40ef50378719",
+          "cover": "https://coverartarchive.org/release-group/b86ba75a-1a9e-40fa-a2c4-40ef50378719/front-250",
+          "url": "https://musicbrainz.org/release-group/b86ba75a-1a9e-40fa-a2c4-40ef50378719"
+        },
+        {
+          "title": "Presentable Corpse…",
+          "year": "2020",
+          "type": "EP",
+          "mbid": "a061180d-ea17-43d1-bb65-44c2197d42cb",
+          "cover": "https://coverartarchive.org/release-group/a061180d-ea17-43d1-bb65-44c2197d42cb/front-250",
+          "url": "https://musicbrainz.org/release-group/a061180d-ea17-43d1-bb65-44c2197d42cb"
+        },
+        {
+          "title": "Gloss Coma 003",
+          "year": "2020",
+          "type": "EP",
+          "mbid": "f36b576a-8b5f-4c6f-ae8f-f18573f093f9",
+          "cover": "https://coverartarchive.org/release-group/f36b576a-8b5f-4c6f-ae8f-f18573f093f9/front-250",
+          "url": "https://musicbrainz.org/release-group/f36b576a-8b5f-4c6f-ae8f-f18573f093f9"
+        },
+        {
+          "title": "Only Gonna Break Your Heart",
+          "year": "2019",
+          "type": "Single",
+          "mbid": "bc82a193-69c3-4ba0-8e36-bb90001b5c55",
+          "cover": "https://coverartarchive.org/release-group/bc82a193-69c3-4ba0-8e36-bb90001b5c55/front-250",
+          "url": "https://musicbrainz.org/release-group/bc82a193-69c3-4ba0-8e36-bb90001b5c55"
+        },
+        {
+          "title": "Gloss Coma 002",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "300789c0-a5cc-47e9-9e34-9b1740a6f0c9",
+          "cover": "https://coverartarchive.org/release-group/300789c0-a5cc-47e9-9e34-9b1740a6f0c9/front-250",
+          "url": "https://musicbrainz.org/release-group/300789c0-a5cc-47e9-9e34-9b1740a6f0c9"
+        },
+        {
+          "title": "Coral Cross 002",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "ac12e784-f020-4757-b3f7-0828aeb24150",
+          "cover": "https://coverartarchive.org/release-group/ac12e784-f020-4757-b3f7-0828aeb24150/front-250",
+          "url": "https://musicbrainz.org/release-group/ac12e784-f020-4757-b3f7-0828aeb24150"
+        },
+        {
+          "title": "No Real Friend",
+          "year": "2018",
+          "type": "Single",
+          "mbid": "b9ffd834-e60f-40f2-b8c5-8fb857ec8c42",
+          "cover": "https://coverartarchive.org/release-group/b9ffd834-e60f-40f2-b8c5-8fb857ec8c42/front-250",
+          "url": "https://musicbrainz.org/release-group/b9ffd834-e60f-40f2-b8c5-8fb857ec8c42"
+        },
+        {
+          "title": "Here Lies",
+          "year": "2018",
+          "type": "Album",
+          "mbid": "93589083-2e81-42b7-a52e-1bee60bd66e4",
+          "cover": "https://coverartarchive.org/release-group/93589083-2e81-42b7-a52e-1bee60bd66e4/front-250",
+          "url": "https://musicbrainz.org/release-group/93589083-2e81-42b7-a52e-1bee60bd66e4"
+        },
+        {
+          "title": "Happiness",
+          "year": "2018",
+          "type": "EP",
+          "mbid": "d54e9ca6-9f02-4421-ab8e-86854ada40e6",
+          "cover": "https://coverartarchive.org/release-group/d54e9ca6-9f02-4421-ab8e-86854ada40e6/front-250",
+          "url": "https://musicbrainz.org/release-group/d54e9ca6-9f02-4421-ab8e-86854ada40e6"
+        },
+        {
+          "title": "Hang On to Life",
+          "year": "2018",
+          "type": "Single",
+          "mbid": "767bd84b-d030-4eff-8764-516ce22bc729",
+          "cover": "https://coverartarchive.org/release-group/767bd84b-d030-4eff-8764-516ce22bc729/front-250",
+          "url": "https://musicbrainz.org/release-group/767bd84b-d030-4eff-8764-516ce22bc729"
+        },
+        {
+          "title": "Guillotine",
+          "year": "2018",
+          "type": "Single",
+          "mbid": "97969b90-823b-4ea8-a520-20293da9dd3e",
+          "cover": "https://coverartarchive.org/release-group/97969b90-823b-4ea8-a520-20293da9dd3e/front-250",
+          "url": "https://musicbrainz.org/release-group/97969b90-823b-4ea8-a520-20293da9dd3e"
+        },
+        {
+          "title": "Down in Flames",
+          "year": "2018",
+          "type": "Single",
+          "mbid": "ef660b46-0dff-4023-b62c-62d3ca0dd555",
+          "cover": "https://coverartarchive.org/release-group/ef660b46-0dff-4023-b62c-62d3ca0dd555/front-250",
+          "url": "https://musicbrainz.org/release-group/ef660b46-0dff-4023-b62c-62d3ca0dd555"
+        },
+        {
+          "title": "Presentable Corpse 001",
+          "year": "2017",
+          "type": "EP",
+          "mbid": "9769c662-febc-46bf-a148-4e2d7e70f737",
+          "cover": "https://coverartarchive.org/release-group/9769c662-febc-46bf-a148-4e2d7e70f737/front-250",
+          "url": "https://musicbrainz.org/release-group/9769c662-febc-46bf-a148-4e2d7e70f737"
+        },
+        {
+          "title": "Flesh to Ash",
+          "year": "2017",
+          "type": "Single",
+          "mbid": "a3f7229d-ea0d-4cb3-846d-c198cd1bd802",
+          "cover": "https://coverartarchive.org/release-group/a3f7229d-ea0d-4cb3-846d-c198cd1bd802/front-250",
+          "url": "https://musicbrainz.org/release-group/a3f7229d-ea0d-4cb3-846d-c198cd1bd802"
+        },
+        {
+          "title": "Almost",
+          "year": "2017",
+          "type": "Single",
+          "mbid": "6bf57644-ac67-4311-a1af-82d19300c82e",
+          "cover": "https://coverartarchive.org/release-group/6bf57644-ac67-4311-a1af-82d19300c82e/front-250",
+          "url": "https://musicbrainz.org/release-group/6bf57644-ac67-4311-a1af-82d19300c82e"
+        },
+        {
+          "title": "Coral Cross 001",
+          "year": "2014",
+          "type": "EP",
+          "mbid": "4bdf4f4e-1056-462c-ba57-4fb10f1da461",
+          "cover": "https://coverartarchive.org/release-group/4bdf4f4e-1056-462c-ba57-4fb10f1da461/front-250",
+          "url": "https://musicbrainz.org/release-group/4bdf4f4e-1056-462c-ba57-4fb10f1da461"
+        }
+      ]
     },
     {
       "slug": "light-asylum",
       "name": "LIGHT ASYLUM",
-      "bio": "LIGHT ASYLUM\n\nis the internationally revered techno-punk music project of vocalist, producer\n\nShannon Funchess founded in Brooklyn, New York in 2007. Captivating audiences with\n\ncathartic performances, LIGHT ASYLUM emerged in 2009 at the forefront of a movement\n\nturned full blown revival of late 70’s to 90’s electronic music inspired by pioneers of Detroit\n\ntechno, Belgian new beat, EBM, gothic rock, Chicago house, new wave and synth pop.\n\nAutumn of 2011 would herald a new gothic club anthem “Dark Allies” with Funchess emoting\n\neternal life in her signature contralto singing, “Forever...and ever” on the debut ‘In Tension’ EP\n\n(Mexican Summer/Kemado Records). A debut full length S/T LP released the following spring\n\naided in igniting the dark wave genre that coincided with the cold wave revival in NYC’s\n\nunderground music scene. Funchess carried the torch above ground to iconic venues Radio\n\nCity Music Hall, Koko, The Sydney Opera House, Moulin Rouge,\n\nWave-Gotik-Treffen\n\nand Berghain. 202\n\nwill mark the first release of LIGHT ASYLUM since 2012.\n\nInstagram\n\nFacebook\n\nBandcamp\n\nSpotify",
+      "bio": "LIGHT ASYLUM is the internationally revered techno-punk music project of vocalist, producer Shannon Funchess founded in Brooklyn, New York in 2007. Captivating audiences with cathartic performances, LIGHT ASYLUM emerged in 2009 at the forefront of a movement turned full blown revival of late 70’s to 90’s electronic music inspired by pioneers of Detroit techno, Belgian new beat, EBM, gothic rock, Chicago house, new wave and synth pop. Autumn of 2011 would herald a new gothic club anthem “Dark Allies” with Funchess emoting eternal life in her signature contralto singing, “Forever...and ever” on the debut ‘In Tension’ EP (Mexican Summer/Kemado Records). A debut full length S/T LP released the following spring aided in igniting the dark wave genre that coincided with the cold wave revival in NYC’s underground music scene. Funchess carried the torch above ground to iconic venues Radio City Music Hall, Koko, The Sydney Opera House, Moulin Rouge, Wave-Gotik-Treffen and Berghain. 202 will mark the first release of LIGHT ASYLUM since 2012.",
       "image": "light_asylum_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/light_asylum/?hl=en",
@@ -200,12 +1749,110 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=cUyv3HTjNRU",
+          "title": "LIGHT ASYLUM - Dark Allies [OFFICIAL VIDEO]",
+          "thumb": "https://img.youtube.com/vi/cUyv3HTjNRU/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=TTk3R--Heug",
+          "title": "LIGHT ASYLUM - Skull Fuct [OFFICIAL VIDEO]",
+          "thumb": "https://img.youtube.com/vi/TTk3R--Heug/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=LYqsMXL6B08",
+          "title": "Light Asylum - Dark Allies (Fader Fort by Fiat 2011)",
+          "thumb": "https://img.youtube.com/vi/LYqsMXL6B08/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=F3AVVvRMwU4",
+          "title": "Light Asylum - Full Performance (Live on KEXP)",
+          "thumb": "https://img.youtube.com/vi/F3AVVvRMwU4/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=NqvBXuXJDuI",
+          "title": "Light Asylum - Dark Allies #friday #electronicmusic #music #goodvibes",
+          "thumb": "https://img.youtube.com/vi/NqvBXuXJDuI/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "light_asylum_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_15.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "LIGHT ASYLUM is the internationally revered techno-punk music project of vocalist, producer Shannon Funchess founded in Brooklyn, New York in 2007. Captivating audiences with cathartic performances, LIGHT ASYLUM emerged in 2009 at the forefront of a movement t…",
+      "discography": [
+        {
+          "title": "Dark Allies (Pablo Bozzi edit)",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "4eba166d-8da0-40a5-8cef-5c3ed83d330e",
+          "cover": "https://coverartarchive.org/release-group/4eba166d-8da0-40a5-8cef-5c3ed83d330e/front-250",
+          "url": "https://musicbrainz.org/release-group/4eba166d-8da0-40a5-8cef-5c3ed83d330e"
+        },
+        {
+          "title": "Dark Allies (Switchblade remix)",
+          "year": "2014",
+          "type": "Single",
+          "mbid": "69f006ac-87db-4d2e-bc09-aad9568b9601",
+          "cover": "https://coverartarchive.org/release-group/69f006ac-87db-4d2e-bc09-aad9568b9601/front-250",
+          "url": "https://musicbrainz.org/release-group/69f006ac-87db-4d2e-bc09-aad9568b9601"
+        },
+        {
+          "title": "Shallow Tears",
+          "year": "2012",
+          "type": "Single",
+          "mbid": "c5775880-79fd-4692-b3a8-659cdb931681",
+          "cover": "https://coverartarchive.org/release-group/c5775880-79fd-4692-b3a8-659cdb931681/front-250",
+          "url": "https://musicbrainz.org/release-group/c5775880-79fd-4692-b3a8-659cdb931681"
+        },
+        {
+          "title": "Light Asylum",
+          "year": "2012",
+          "type": "Album",
+          "mbid": "38afcd45-9dc1-4a29-a347-4ce3157d0d5c",
+          "cover": "https://coverartarchive.org/release-group/38afcd45-9dc1-4a29-a347-4ce3157d0d5c/front-250",
+          "url": "https://musicbrainz.org/release-group/38afcd45-9dc1-4a29-a347-4ce3157d0d5c"
+        },
+        {
+          "title": "A Certain Person",
+          "year": "2012",
+          "type": "Single",
+          "mbid": "fa0c01f9-9c6d-424c-aa8d-96fb6f9bff92",
+          "cover": "https://coverartarchive.org/release-group/fa0c01f9-9c6d-424c-aa8d-96fb6f9bff92/front-250",
+          "url": "https://musicbrainz.org/release-group/fa0c01f9-9c6d-424c-aa8d-96fb6f9bff92"
+        },
+        {
+          "title": "In Tension",
+          "year": "2010",
+          "type": "EP",
+          "mbid": "66745fd5-390e-4feb-b6e0-1549b70061ac",
+          "cover": "https://coverartarchive.org/release-group/66745fd5-390e-4feb-b6e0-1549b70061ac/front-250",
+          "url": "https://musicbrainz.org/release-group/66745fd5-390e-4feb-b6e0-1549b70061ac"
+        }
+      ]
     },
     {
       "slug": "male-tears",
       "name": "Male Tears",
-      "bio": "Male Tears\n\n, is a Los Angeles-based three-piece weirdo-pop and dark synth project led by singer-songwriter James Edward. Formed in the aftermath of the pandemic, the band has quickly become a standout name in the modern darkwave and synth-pop underground, known for blending camp aesthetics, sharp emotional flair, and dance-floor melancholy.\n\nThe group first gained attention with their 2021 self-titled debut album, now considered a cult favorite for its fusion of glittery synth-pop nostalgia and melodramatic, tongue-in-cheek songwriting. They followed with Trauma Club (2021) and KRYPT (2023), a deeper dive into shadowy club textures and romantic gloom that solidified their position within the alternative electronic scene.Their latest full-length, Paradísco (2024), marked a bold turn toward italo-disco, hi-NRG, and neon-soaked pop maximalism.\n\nMale Tears is currently preparing their new studio album, set for release in 2026 on Artoffact Records, with the first single landing in early 2026. The upcoming era promises a further evolution of their hybrid of darkwave, synth-pop, and camp-infused performance art.\n\nInstagram\n\nBandcamp\n\nSpotify\n\nFacebook",
+      "bio": "Male Tears , is a Los Angeles-based three-piece weirdo-pop and dark synth project led by singer-songwriter James Edward. Formed in the aftermath of the pandemic, the band has quickly become a standout name in the modern darkwave and synth-pop underground, known for blending camp aesthetics, sharp emotional flair, and dance-floor melancholy. The group first gained attention with their 2021 self-titled debut album, now considered a cult favorite for its fusion of glittery synth-pop nostalgia and melodramatic, tongue-in-cheek songwriting. They followed with Trauma Club (2021) and KRYPT (2023), a deeper dive into shadowy club textures and romantic gloom that solidified their position within the alternative electronic scene.Their latest full-length, Paradísco (2024), marked a bold turn toward italo-disco, hi-NRG, and neon-soaked pop maximalism. Male Tears is currently preparing their new studio album, set for release in 2026 on Artoffact Records, with the first single landing in early 2026. The upcoming era promises a further evolution of their hybrid of darkwave, synth-pop, and camp-infused performance art.",
       "image": "male_tears_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/maletearsmusic/?hl=en",
@@ -215,13 +1862,173 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=wUX1vbyCv_E",
+          "title": "MALE TEARS - MODEL CITIZEN (VIDEO)",
+          "thumb": "https://img.youtube.com/vi/wUX1vbyCv_E/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=xlBikPOehEg",
+          "title": "Male Tears - Talk To Me (VIDEO)",
+          "thumb": "https://img.youtube.com/vi/xlBikPOehEg/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=aZIg-0YpupM",
+          "title": "MALE TEARS - HIT ME (VIDEO)",
+          "thumb": "https://img.youtube.com/vi/aZIg-0YpupM/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=Up__LwbtkBg",
+          "title": "Male Tears - Take My Picture (Official Video)",
+          "thumb": "https://img.youtube.com/vi/Up__LwbtkBg/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=8qoEWc5NBeA",
+          "title": "Male Tears - Regret 4 Nothing (VIDEO)",
+          "thumb": "https://img.youtube.com/vi/8qoEWc5NBeA/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=JeN6bYqs8zA",
+          "title": "Male Tears - Good In The Dark (Official Video)",
+          "thumb": "https://img.youtube.com/vi/JeN6bYqs8zA/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "male_tears_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_16.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Male Tears , is a Los Angeles-based three-piece weirdo-pop and dark synth project led by singer-songwriter James Edward. Formed in the aftermath of the pandemic, the band has quickly become a standout name in the modern darkwave and synth-pop underground, know…",
+      "discography": [
+        {
+          "title": "Spellbound Live",
+          "year": "2025",
+          "type": "Album",
+          "mbid": "8ffc53b7-d40d-4f0e-9150-45924ac7c9e2",
+          "cover": "https://coverartarchive.org/release-group/8ffc53b7-d40d-4f0e-9150-45924ac7c9e2/front-250",
+          "url": "https://musicbrainz.org/release-group/8ffc53b7-d40d-4f0e-9150-45924ac7c9e2"
+        },
+        {
+          "title": "This Party Ends In Tears",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "176e1f62-65cb-4345-8f60-c836014485bc",
+          "cover": "https://coverartarchive.org/release-group/176e1f62-65cb-4345-8f60-c836014485bc/front-250",
+          "url": "https://musicbrainz.org/release-group/176e1f62-65cb-4345-8f60-c836014485bc"
+        },
+        {
+          "title": "Sioux So Pretty",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "631d1d11-854e-4d57-a1e0-9201eea6527c",
+          "cover": "https://coverartarchive.org/release-group/631d1d11-854e-4d57-a1e0-9201eea6527c/front-250",
+          "url": "https://musicbrainz.org/release-group/631d1d11-854e-4d57-a1e0-9201eea6527c"
+        },
+        {
+          "title": "Paradísco",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "d7222900-30a5-4a6f-8e09-ebad94d5e8f2",
+          "cover": "https://coverartarchive.org/release-group/d7222900-30a5-4a6f-8e09-ebad94d5e8f2/front-250",
+          "url": "https://musicbrainz.org/release-group/d7222900-30a5-4a6f-8e09-ebad94d5e8f2"
+        },
+        {
+          "title": "Little Doll",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "10e12866-fa5b-49aa-a690-ec206177c8f3",
+          "cover": "https://coverartarchive.org/release-group/10e12866-fa5b-49aa-a690-ec206177c8f3/front-250",
+          "url": "https://musicbrainz.org/release-group/10e12866-fa5b-49aa-a690-ec206177c8f3"
+        },
+        {
+          "title": "Switchblade",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "07c45200-6124-4190-afcf-7d01d7185e40",
+          "cover": "https://coverartarchive.org/release-group/07c45200-6124-4190-afcf-7d01d7185e40/front-250",
+          "url": "https://musicbrainz.org/release-group/07c45200-6124-4190-afcf-7d01d7185e40"
+        },
+        {
+          "title": "Illuminate",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "27fc2e78-b041-4113-af1c-baf4f3bcdc12",
+          "cover": "https://coverartarchive.org/release-group/27fc2e78-b041-4113-af1c-baf4f3bcdc12/front-250",
+          "url": "https://musicbrainz.org/release-group/27fc2e78-b041-4113-af1c-baf4f3bcdc12"
+        },
+        {
+          "title": "Trauma Club",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "8f391d49-902f-4f34-a880-bac0f1412b44",
+          "cover": "https://coverartarchive.org/release-group/8f391d49-902f-4f34-a880-bac0f1412b44/front-250",
+          "url": "https://musicbrainz.org/release-group/8f391d49-902f-4f34-a880-bac0f1412b44"
+        },
+        {
+          "title": "Male Tears",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "b6669c51-5ee7-4ba6-897f-d414d9262a2a",
+          "cover": "https://coverartarchive.org/release-group/b6669c51-5ee7-4ba6-897f-d414d9262a2a/front-250",
+          "url": "https://musicbrainz.org/release-group/b6669c51-5ee7-4ba6-897f-d414d9262a2a"
+        },
+        {
+          "title": "Endless Tears",
+          "year": "2020",
+          "type": "Album",
+          "mbid": "18e54ae3-e2c8-4b48-926b-de8bc71abce5",
+          "cover": "https://coverartarchive.org/release-group/18e54ae3-e2c8-4b48-926b-de8bc71abce5/front-250",
+          "url": "https://musicbrainz.org/release-group/18e54ae3-e2c8-4b48-926b-de8bc71abce5"
+        },
+        {
+          "title": "SOBER YEAR EP",
+          "year": "2019",
+          "type": "EP",
+          "mbid": "c036ba21-53d1-4839-b303-465ed9cdf26a",
+          "cover": "https://coverartarchive.org/release-group/c036ba21-53d1-4839-b303-465ed9cdf26a/front-250",
+          "url": "https://musicbrainz.org/release-group/c036ba21-53d1-4839-b303-465ed9cdf26a"
+        },
+        {
+          "title": "Artism",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "ead50a09-8fd6-4116-9ead-45a3f7ee7046",
+          "cover": "https://coverartarchive.org/release-group/ead50a09-8fd6-4116-9ead-45a3f7ee7046/front-250",
+          "url": "https://musicbrainz.org/release-group/ead50a09-8fd6-4116-9ead-45a3f7ee7046"
+        },
+        {
+          "title": "DRUG YEAR EP",
+          "year": "2018",
+          "type": "EP",
+          "mbid": "9f6783ec-e1f7-4363-9e13-845ae62c7e28",
+          "cover": "https://coverartarchive.org/release-group/9f6783ec-e1f7-4363-9e13-845ae62c7e28/front-250",
+          "url": "https://musicbrainz.org/release-group/9f6783ec-e1f7-4363-9e13-845ae62c7e28"
+        }
+      ]
     },
     {
       "slug": "mellow-code",
       "name": "Mellow Code",
-      "bio": "Mellow Code\n\nis an avant-garde darkwave project, led by Josh McVety and Oliver Michael German, offering a unique blend of hypnotic mechanical rhythms and new wave vocals. Often getting inspiration and sound samples from their fabrication workshop, Mellow Code’s sound is a mix of EBM, house, and various electronic styles\n\ncombined with glittering FM synthesis\n\n, creating an experience that goes beyond typical genre boundaries. Explore their recent album, “Object Reality”, and tracks like “Ich stehe im Blut” and “Face It” for a creative spin on darkwave and EBM. Get ready to be immersed in Mellow Code’s eclectic and resonant music—a perfect soundtrack for introspection or hitting the dance floor.\n\nInstagram\n\nBandcamp\n\nSpotify\n\nFacebook",
-      "image": "mellow_code_0.jpg",
+      "bio": "Mellow Code is an avant-garde darkwave project, led by Josh McVety and Oliver Michael German, offering a unique blend of hypnotic mechanical rhythms and new wave vocals. Often getting inspiration and sound samples from their fabrication workshop, Mellow Code’s sound is a mix of EBM, house, and various electronic styles combined with glittering FM synthesis , creating an experience that goes beyond typical genre boundaries. Explore their recent album, “Object Reality”, and tracks like “Ich stehe im Blut” and “Face It” for a creative spin on darkwave and EBM. Get ready to be immersed in Mellow Code’s eclectic and resonant music—a perfect soundtrack for introspection or hitting the dance floor.",
+      "image": "mellow_code_1.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/mellowcodemusic/",
         "bandcamp": "https://mellowcode.bandcamp.com/",
@@ -230,12 +2037,152 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=Oq1teH_siBA",
+          "title": "MELLOW CODE - FACE IT (Official Video)",
+          "thumb": "https://img.youtube.com/vi/Oq1teH_siBA/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=lx7H_j4Vktc",
+          "title": "MELLOW CODE & SKM/LKR - KNIVES (OFFICIAL VIDEO)",
+          "thumb": "https://img.youtube.com/vi/lx7H_j4Vktc/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=yAn965YGqgo",
+          "title": "Communion After Dark feat. Mellow Code - New Dark Electro, Industrial, EBM, Gothic, Synthpop",
+          "thumb": "https://img.youtube.com/vi/yAn965YGqgo/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=WpSsEOJXUtk",
+          "title": "Mellow Code * Face It",
+          "thumb": "https://img.youtube.com/vi/WpSsEOJXUtk/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "mellow_code_0.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_17.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Mellow Code is an avant-garde darkwave project, led by Josh McVety and Oliver Michael German, offering a unique blend of hypnotic mechanical rhythms and new wave vocals. Often getting inspiration and sound samples from their fabrication workshop, Mellow Code’s…",
+      "discography": [
+        {
+          "title": "Objekt Reality",
+          "year": "2023",
+          "type": "Album",
+          "mbid": "08bf82eb-064f-437b-9084-758f518a2a34",
+          "cover": "https://coverartarchive.org/release-group/08bf82eb-064f-437b-9084-758f518a2a34/front-250",
+          "url": "https://musicbrainz.org/release-group/08bf82eb-064f-437b-9084-758f518a2a34"
+        },
+        {
+          "title": "Свежие биты",
+          "year": "2021",
+          "type": "EP",
+          "mbid": "71d63678-07ab-4f89-af89-3daa7428fb89",
+          "cover": "https://coverartarchive.org/release-group/71d63678-07ab-4f89-af89-3daa7428fb89/front-250",
+          "url": "https://musicbrainz.org/release-group/71d63678-07ab-4f89-af89-3daa7428fb89"
+        },
+        {
+          "title": "Yells at the Obelisk",
+          "year": "2021",
+          "type": "EP",
+          "mbid": "5553f45c-1749-4998-9564-2bc94cfc8537",
+          "cover": "https://coverartarchive.org/release-group/5553f45c-1749-4998-9564-2bc94cfc8537/front-250",
+          "url": "https://musicbrainz.org/release-group/5553f45c-1749-4998-9564-2bc94cfc8537"
+        },
+        {
+          "title": "Infinity Nights",
+          "year": "2021",
+          "type": "Single",
+          "mbid": "26575628-cbc1-45fa-a775-25c43f23e0ee",
+          "cover": "https://coverartarchive.org/release-group/26575628-cbc1-45fa-a775-25c43f23e0ee/front-250",
+          "url": "https://musicbrainz.org/release-group/26575628-cbc1-45fa-a775-25c43f23e0ee"
+        },
+        {
+          "title": "Nostalgia",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "48b7c03a-ff57-40c9-bc71-eb1402e73874",
+          "cover": "https://coverartarchive.org/release-group/48b7c03a-ff57-40c9-bc71-eb1402e73874/front-250",
+          "url": "https://musicbrainz.org/release-group/48b7c03a-ff57-40c9-bc71-eb1402e73874"
+        },
+        {
+          "title": "Eurotrash Hitmen",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "df072461-f294-4707-8c29-e21c1192493d",
+          "cover": "https://coverartarchive.org/release-group/df072461-f294-4707-8c29-e21c1192493d/front-250",
+          "url": "https://musicbrainz.org/release-group/df072461-f294-4707-8c29-e21c1192493d"
+        },
+        {
+          "title": "Distracted",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "cfbee2c5-7519-4afa-a671-aca24896880b",
+          "cover": "https://coverartarchive.org/release-group/cfbee2c5-7519-4afa-a671-aca24896880b/front-250",
+          "url": "https://musicbrainz.org/release-group/cfbee2c5-7519-4afa-a671-aca24896880b"
+        },
+        {
+          "title": "Default",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "aeb4d68d-c6cc-4e4a-a6be-e292ba18037a",
+          "cover": "https://coverartarchive.org/release-group/aeb4d68d-c6cc-4e4a-a6be-e292ba18037a/front-250",
+          "url": "https://musicbrainz.org/release-group/aeb4d68d-c6cc-4e4a-a6be-e292ba18037a"
+        },
+        {
+          "title": "Codex V.1",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "33dbc4c9-16e2-4097-bef0-98de6f837eac",
+          "cover": "https://coverartarchive.org/release-group/33dbc4c9-16e2-4097-bef0-98de6f837eac/front-250",
+          "url": "https://musicbrainz.org/release-group/33dbc4c9-16e2-4097-bef0-98de6f837eac"
+        },
+        {
+          "title": "Borsa in Vendita",
+          "year": "2019",
+          "type": "Single",
+          "mbid": "2bcb55f1-1b2f-4435-90dd-d25a88d244f4",
+          "cover": "https://coverartarchive.org/release-group/2bcb55f1-1b2f-4435-90dd-d25a88d244f4/front-250",
+          "url": "https://musicbrainz.org/release-group/2bcb55f1-1b2f-4435-90dd-d25a88d244f4"
+        },
+        {
+          "title": "Body Cuerpo",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "6e5e54a1-77da-4acb-80fc-fdc3d3f525da",
+          "cover": "https://coverartarchive.org/release-group/6e5e54a1-77da-4acb-80fc-fdc3d3f525da/front-250",
+          "url": "https://musicbrainz.org/release-group/6e5e54a1-77da-4acb-80fc-fdc3d3f525da"
+        },
+        {
+          "title": "A House 109",
+          "year": "2019",
+          "type": "EP",
+          "mbid": "132c15f9-e0e3-479b-895a-ef86a5b630aa",
+          "cover": "https://coverartarchive.org/release-group/132c15f9-e0e3-479b-895a-ef86a5b630aa/front-250",
+          "url": "https://musicbrainz.org/release-group/132c15f9-e0e3-479b-895a-ef86a5b630aa"
+        }
+      ]
     },
     {
       "slug": "nox-novacula",
       "name": "Nox Novacula",
-      "bio": "Since their formation in 2017,\n\nNox Novacula\n\nhas carved out a commanding presence in the deathrock scene with their icy, visceral sound. Emerging from Seattle, the band channels the raw spirit of goth and punk into a distinctively modern yet hauntingly timeless identity. Their 2021 release, Ascension, showcased a mastery of traditional deathrock influences, drawing comparisons to legendary acts like Christian Death while solidifying their place among contemporary dark music innovators.\n\nTheir latest album, Feed the Fire (2024), takes their artistry to a new level. Released on Artoffact Records, it blends the band's signature ominous riffs and energetic rhythms with an expanded palette of electronic elements and experimental compositions. Tracks like \"Plague\" and \"No Forgiveness\" exemplify their ability to balance fierce, anthemic energy with intricate arrangements, while \"Stay\" and \"Flood\" highlight their bold foray into darkwave and electropop. The result is an album that pushes the boundaries of the genre without losing its dark, evocative core.\n\nNox Novacula’s sound is a meticulously crafted homage to the genre’s origins—evoking the apocalyptic anthems of Sisters of Mercy and the gritty gothic punk of Death Cult—while forging a path that feels both urgent and innovative. Whether you're a long-time devotee of deathrock's theatrical gloom or a new admirer drawn by the genre's revival, Nox Novacula offers a thrilling dive into a soundscape of shadows and rebellion.\n\nFacebook\n\nInstagram\n\nSpotify",
+      "bio": "Since their formation in 2017, Nox Novacula has carved out a commanding presence in the deathrock scene with their icy, visceral sound. Emerging from Seattle, the band channels the raw spirit of goth and punk into a distinctively modern yet hauntingly timeless identity. Their 2021 release, Ascension, showcased a mastery of traditional deathrock influences, drawing comparisons to legendary acts like Christian Death while solidifying their place among contemporary dark music innovators. Their latest album, Feed the Fire (2024), takes their artistry to a new level. Released on Artoffact Records, it blends the band's signature ominous riffs and energetic rhythms with an expanded palette of electronic elements and experimental compositions. Tracks like \"Plague\" and \"No Forgiveness\" exemplify their ability to balance fierce, anthemic energy with intricate arrangements, while \"Stay\" and \"Flood\" highlight their bold foray into darkwave and electropop. The result is an album that pushes the boundaries of the genre without losing its dark, evocative core. Nox Novacula’s sound is a meticulously crafted homage to the genre’s origins—evoking the apocalyptic anthems of Sisters of Mercy and the gritty gothic punk of Death Cult—while forging a path that feels both urgent and innovative. Whether you're a long-time devotee of deathrock's theatrical gloom or a new admirer drawn by the genre's revival, Nox Novacula offers a thrilling dive into a soundscape of shadows and rebellion.",
       "image": "nox_novacula_0.jpg",
       "social_links": {
         "facebook": "https://www.facebook.com/nox.novacula/",
@@ -244,13 +2191,101 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=7MsUfb3mPGY",
+          "title": "Nox Novacula- Last Will and Testament (Official Video)",
+          "thumb": "https://img.youtube.com/vi/7MsUfb3mPGY/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=Y_k0rTujBvg",
+          "title": "Nox Novacula - Flood (official video)",
+          "thumb": "https://img.youtube.com/vi/Y_k0rTujBvg/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=-vzXlARzjxk",
+          "title": "NOX NOVACULA - DRUG 7\" version  (official video)",
+          "thumb": "https://img.youtube.com/vi/-vzXlARzjxk/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=09yTUKwJy4k",
+          "title": "Pray For Sleep (demo)",
+          "thumb": "https://img.youtube.com/vi/09yTUKwJy4k/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=DBTedpMBoQI",
+          "title": "Nox Novacula: The Path",
+          "thumb": "https://img.youtube.com/vi/DBTedpMBoQI/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_18.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Since their formation in 2017, Nox Novacula has carved out a commanding presence in the deathrock scene with their icy, visceral sound. Emerging from Seattle, the band channels the raw spirit of goth and punk into a distinctively modern yet hauntingly timeless…",
+      "discography": [
+        {
+          "title": "Flood",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "770709a1-8e52-4098-827c-a8d47c07323b",
+          "cover": "https://coverartarchive.org/release-group/770709a1-8e52-4098-827c-a8d47c07323b/front-250",
+          "url": "https://musicbrainz.org/release-group/770709a1-8e52-4098-827c-a8d47c07323b"
+        },
+        {
+          "title": "Feed the Fire",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "3eef7563-88f2-495c-b5ed-8687ec5f46f5",
+          "cover": "https://coverartarchive.org/release-group/3eef7563-88f2-495c-b5ed-8687ec5f46f5/front-250",
+          "url": "https://musicbrainz.org/release-group/3eef7563-88f2-495c-b5ed-8687ec5f46f5"
+        },
+        {
+          "title": "Ascension",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "291d2954-2952-4dd3-9d61-27a33e8d4819",
+          "cover": "https://coverartarchive.org/release-group/291d2954-2952-4dd3-9d61-27a33e8d4819/front-250",
+          "url": "https://musicbrainz.org/release-group/291d2954-2952-4dd3-9d61-27a33e8d4819"
+        },
+        {
+          "title": "The Beginning",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "dd0c03d8-0f4a-4d30-bc0c-b26629b61d13",
+          "cover": "https://coverartarchive.org/release-group/dd0c03d8-0f4a-4d30-bc0c-b26629b61d13/front-250",
+          "url": "https://musicbrainz.org/release-group/dd0c03d8-0f4a-4d30-bc0c-b26629b61d13"
+        },
+        {
+          "title": "Nox Novacula",
+          "year": "2018",
+          "type": "EP",
+          "mbid": "0ceb3e2c-adb0-45dd-a3cb-e65f1a4aa06f",
+          "cover": "https://coverartarchive.org/release-group/0ceb3e2c-adb0-45dd-a3cb-e65f1a4aa06f/front-250",
+          "url": "https://musicbrainz.org/release-group/0ceb3e2c-adb0-45dd-a3cb-e65f1a4aa06f"
+        }
+      ]
     },
     {
       "slug": "sacred-skin",
       "name": "Sacred Skin",
-      "bio": "Los Angeles-based duo Brian DaMert and Brian Tarney explore the vastness of spellbinding, anthemic new wave synth-pop music under the name\n\nSacred Skin\n\n. Their first single, Colder was released in March of 2021. The melancholic undertones and pitch perfect songwriting stole the hearts of dark souls everywhere. Subsequent single- Eyes Closed and Far Away - landed them early live shows at LA’s Substance Festival and famed venue the Hollywood Palladium supporting AFI.\n\nThe succession of singles and live dates led to the release of their first LP, The Decline of Pleasure in May 2022. With its distinctive and dreamlike new wave arrangements and DaMert’s powerful vocals infused with lust and longing, the album is unlike anything in its class. Their use of early digital outboard gear and samplers, namely the Sequential Prophet VS synthesizer and the EMU Emulator II, retains a classic studio feel that is timelessly unique. Sacred Skin’s second LP \"Born In Fire was released on Artoffact Records in 2024. Their latest and third EP is set to be out in 2025.\n\nInstagram\n\nBandcamp\n\nSpotify",
-      "image": "sacred_skin_0.jpg",
+      "bio": "Los Angeles-based duo Brian DaMert and Brian Tarney explore the vastness of spellbinding, anthemic new wave synth-pop music under the name Sacred Skin . Their first single, Colder was released in March of 2021. The melancholic undertones and pitch perfect songwriting stole the hearts of dark souls everywhere. Subsequent single- Eyes Closed and Far Away - landed them early live shows at LA’s Substance Festival and famed venue the Hollywood Palladium supporting AFI. The succession of singles and live dates led to the release of their first LP, The Decline of Pleasure in May 2022. With its distinctive and dreamlike new wave arrangements and DaMert’s powerful vocals infused with lust and longing, the album is unlike anything in its class. Their use of early digital outboard gear and samplers, namely the Sequential Prophet VS synthesizer and the EMU Emulator II, retains a classic studio feel that is timelessly unique. Sacred Skin’s second LP \"Born In Fire was released on Artoffact Records in 2024. Their latest and third EP is set to be out in 2025.",
+      "image": "sacred_skin_1.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/_sacredskin_/?hl=en",
         "bandcamp": "https://sacredskin.bandcamp.com/album/bitter-heart",
@@ -258,12 +2293,200 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=x9-JTKWP9Lc",
+          "title": "SACRED SKIN: \"Insomnia\" feat. SRSQ- OFFICIAL VIDEO #ARTOFFACT #newwave #darkwave #synth",
+          "thumb": "https://img.youtube.com/vi/x9-JTKWP9Lc/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=3C1y4RKLX5U",
+          "title": "SACRED SKIN: \"Waiting\" from Born in Fire OFFICIAL VIDEO #ARTOFFACT #newwave",
+          "thumb": "https://img.youtube.com/vi/3C1y4RKLX5U/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=2NAQeyDt0kg",
+          "title": "Far Away",
+          "thumb": "https://img.youtube.com/vi/2NAQeyDt0kg/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=Wi1MxoxXRZ0",
+          "title": "Sacred Skin - Far Away (Music Video)",
+          "thumb": "https://img.youtube.com/vi/Wi1MxoxXRZ0/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "sacred_skin_0.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_19.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Los Angeles-based duo Brian DaMert and Brian Tarney explore the vastness of spellbinding, anthemic new wave synth-pop music under the name Sacred Skin . Their first single, Colder was released in March of 2021. The melancholic undertones and pitch perfect song…",
+      "discography": [
+        {
+          "title": "This Pressure",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "59c2a2be-073e-4685-9a58-996a22d15531",
+          "cover": "https://coverartarchive.org/release-group/59c2a2be-073e-4685-9a58-996a22d15531/front-250",
+          "url": "https://musicbrainz.org/release-group/59c2a2be-073e-4685-9a58-996a22d15531"
+        },
+        {
+          "title": "The Lights",
+          "year": "2025",
+          "type": "EP",
+          "mbid": "73f33eaa-ff2f-4809-8eca-4141f3fb703b",
+          "cover": "https://coverartarchive.org/release-group/73f33eaa-ff2f-4809-8eca-4141f3fb703b/front-250",
+          "url": "https://musicbrainz.org/release-group/73f33eaa-ff2f-4809-8eca-4141f3fb703b"
+        },
+        {
+          "title": "Insomnia",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "21149a67-1984-4883-911c-ddd773408b3b",
+          "cover": "https://coverartarchive.org/release-group/21149a67-1984-4883-911c-ddd773408b3b/front-250",
+          "url": "https://musicbrainz.org/release-group/21149a67-1984-4883-911c-ddd773408b3b"
+        },
+        {
+          "title": "Waiting (Ronnie Stone Remix)",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "cca89be5-d0b0-4346-9714-e72b5fb4e10a",
+          "cover": "https://coverartarchive.org/release-group/cca89be5-d0b0-4346-9714-e72b5fb4e10a/front-250",
+          "url": "https://musicbrainz.org/release-group/cca89be5-d0b0-4346-9714-e72b5fb4e10a"
+        },
+        {
+          "title": "Waiting",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "fb861556-8ff6-4e01-af80-59e31e0468f2",
+          "cover": "https://coverartarchive.org/release-group/fb861556-8ff6-4e01-af80-59e31e0468f2/front-250",
+          "url": "https://musicbrainz.org/release-group/fb861556-8ff6-4e01-af80-59e31e0468f2"
+        },
+        {
+          "title": "Too Hard To Find",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "1f78a6c2-d9e2-4590-9244-5a461bfb9a18",
+          "cover": "https://coverartarchive.org/release-group/1f78a6c2-d9e2-4590-9244-5a461bfb9a18/front-250",
+          "url": "https://musicbrainz.org/release-group/1f78a6c2-d9e2-4590-9244-5a461bfb9a18"
+        },
+        {
+          "title": "Paranoid",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "55e3ef5c-de83-4c50-973e-a1cf2c52be22",
+          "cover": "https://coverartarchive.org/release-group/55e3ef5c-de83-4c50-973e-a1cf2c52be22/front-250",
+          "url": "https://musicbrainz.org/release-group/55e3ef5c-de83-4c50-973e-a1cf2c52be22"
+        },
+        {
+          "title": "Call It Off",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "ab730257-4cb6-4632-9bbe-ba0f20d9c282",
+          "cover": "https://coverartarchive.org/release-group/ab730257-4cb6-4632-9bbe-ba0f20d9c282/front-250",
+          "url": "https://musicbrainz.org/release-group/ab730257-4cb6-4632-9bbe-ba0f20d9c282"
+        },
+        {
+          "title": "Born in Fire",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "ff0bf9cc-e56f-4974-a687-7e9585cc8617",
+          "cover": "https://coverartarchive.org/release-group/ff0bf9cc-e56f-4974-a687-7e9585cc8617/front-250",
+          "url": "https://musicbrainz.org/release-group/ff0bf9cc-e56f-4974-a687-7e9585cc8617"
+        },
+        {
+          "title": "Bitter Heart",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "3c2672dc-f1e0-49c8-ad53-2a0124611303",
+          "cover": "https://coverartarchive.org/release-group/3c2672dc-f1e0-49c8-ad53-2a0124611303/front-250",
+          "url": "https://musicbrainz.org/release-group/3c2672dc-f1e0-49c8-ad53-2a0124611303"
+        },
+        {
+          "title": "The Decline of Pleasure",
+          "year": "2022",
+          "type": "Album",
+          "mbid": "e1f3a91b-c4ef-4a25-8ba0-3723b5339365",
+          "cover": "https://coverartarchive.org/release-group/e1f3a91b-c4ef-4a25-8ba0-3723b5339365/front-250",
+          "url": "https://musicbrainz.org/release-group/e1f3a91b-c4ef-4a25-8ba0-3723b5339365"
+        },
+        {
+          "title": "No Surprise (MVTANT Remix)",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "f9840b49-9848-4441-85d4-beaf6cd4bb4e",
+          "cover": "https://coverartarchive.org/release-group/f9840b49-9848-4441-85d4-beaf6cd4bb4e/front-250",
+          "url": "https://musicbrainz.org/release-group/f9840b49-9848-4441-85d4-beaf6cd4bb4e"
+        },
+        {
+          "title": "No Surprise",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "8942838c-ec98-4eff-b86f-9d8c6e59d6f1",
+          "cover": "https://coverartarchive.org/release-group/8942838c-ec98-4eff-b86f-9d8c6e59d6f1/front-250",
+          "url": "https://musicbrainz.org/release-group/8942838c-ec98-4eff-b86f-9d8c6e59d6f1"
+        },
+        {
+          "title": "Killer's Mind",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "c29e1af5-3998-42ab-b755-715e502d21aa",
+          "cover": "https://coverartarchive.org/release-group/c29e1af5-3998-42ab-b755-715e502d21aa/front-250",
+          "url": "https://musicbrainz.org/release-group/c29e1af5-3998-42ab-b755-715e502d21aa"
+        },
+        {
+          "title": "Earthbound (Nuovo Testamento Remix)",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "4227dfef-0622-4e7e-918a-f91f9075c767",
+          "cover": "https://coverartarchive.org/release-group/4227dfef-0622-4e7e-918a-f91f9075c767/front-250",
+          "url": "https://musicbrainz.org/release-group/4227dfef-0622-4e7e-918a-f91f9075c767"
+        },
+        {
+          "title": "Earthbound",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "457e7de9-fc05-489d-a835-75690321e20e",
+          "cover": "https://coverartarchive.org/release-group/457e7de9-fc05-489d-a835-75690321e20e/front-250",
+          "url": "https://musicbrainz.org/release-group/457e7de9-fc05-489d-a835-75690321e20e"
+        },
+        {
+          "title": "Circles",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "cb3c8996-03d8-450d-9b87-360c5e9961c3",
+          "cover": "https://coverartarchive.org/release-group/cb3c8996-03d8-450d-9b87-360c5e9961c3/front-250",
+          "url": "https://musicbrainz.org/release-group/cb3c8996-03d8-450d-9b87-360c5e9961c3"
+        },
+        {
+          "title": "Far Away",
+          "year": "2021",
+          "type": "Single",
+          "mbid": "034feeb6-2bb5-444a-933c-7dc86c9f8608",
+          "cover": "https://coverartarchive.org/release-group/034feeb6-2bb5-444a-933c-7dc86c9f8608/front-250",
+          "url": "https://musicbrainz.org/release-group/034feeb6-2bb5-444a-933c-7dc86c9f8608"
+        }
+      ]
     },
     {
       "slug": "secret-attraction",
       "name": "Secret Attraction",
-      "bio": "Secret Attraction\n\nis a Phoenix-based project of Derek Wise and Rachel Hutchins that weaves a dreamy tapestry of synth-pop and post-punk. Their fourth and most recent album \"Evening Blue”, released in 2025, encapsulates their ethereal sound with a beautiful blend of dreamy guitar tones and smooth vocals, creating an immersive soundscape that resonates with warmth and depth. With influences that span across alternative, dark wave, dream pop, and goth, Secret Attraction's music is a refreshing dive into melodic introspection and emotive storytelling.\n\nInstagram\n\nBandcamp\n\nSpotify",
+      "bio": "Secret Attraction is a Phoenix-based project of Derek Wise and Rachel Hutchins that weaves a dreamy tapestry of synth-pop and post-punk. Their fourth and most recent album \"Evening Blue”, released in 2025, encapsulates their ethereal sound with a beautiful blend of dreamy guitar tones and smooth vocals, creating an immersive soundscape that resonates with warmth and depth. With influences that span across alternative, dark wave, dream pop, and goth, Secret Attraction's music is a refreshing dive into melodic introspection and emotive storytelling.",
       "image": "secret_attraction_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/secretattractionmusic/",
@@ -272,12 +2495,126 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=HDsZ-Nmowjc",
+          "title": "Secret Attraction - Strawberry (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/HDsZ-Nmowjc/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=3BOMNhMSt_I",
+          "title": "Secret Attraction - Next To You (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/3BOMNhMSt_I/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=PQrniXkAim0",
+          "title": "Secret Attraction - True Love (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/PQrniXkAim0/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=H6pewxVg7Ts",
+          "title": "Secret Attraction - You",
+          "thumb": "https://img.youtube.com/vi/H6pewxVg7Ts/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=DFRNc0VKDeA",
+          "title": "Secret Attraction - All Night",
+          "thumb": "https://img.youtube.com/vi/DFRNc0VKDeA/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "secret_attraction_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_20.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Secret Attraction is a Phoenix-based project of Derek Wise and Rachel Hutchins that weaves a dreamy tapestry of synth-pop and post-punk. Their fourth and most recent album \"Evening Blue”, released in 2025, encapsulates their ethereal sound with a beautiful ble…",
+      "discography": [
+        {
+          "title": "Oceans",
+          "year": "2026",
+          "type": "EP",
+          "mbid": "57f04630-36e8-4e29-ba88-ca5fbda69d3d",
+          "cover": "https://coverartarchive.org/release-group/57f04630-36e8-4e29-ba88-ca5fbda69d3d/front-250",
+          "url": "https://musicbrainz.org/release-group/57f04630-36e8-4e29-ba88-ca5fbda69d3d"
+        },
+        {
+          "title": "Replica",
+          "year": "2022",
+          "type": "Album",
+          "mbid": "c5858f47-28b6-4234-8548-142b7e931017",
+          "cover": "https://coverartarchive.org/release-group/c5858f47-28b6-4234-8548-142b7e931017/front-250",
+          "url": "https://musicbrainz.org/release-group/c5858f47-28b6-4234-8548-142b7e931017"
+        },
+        {
+          "title": "True Love EP",
+          "year": "2021",
+          "type": "EP",
+          "mbid": "3ba373ce-5525-45e4-8b07-76369746b943",
+          "cover": "https://coverartarchive.org/release-group/3ba373ce-5525-45e4-8b07-76369746b943/front-250",
+          "url": "https://musicbrainz.org/release-group/3ba373ce-5525-45e4-8b07-76369746b943"
+        },
+        {
+          "title": "Sensitivity/Drifting",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "5a94add5-4c3a-4ea1-b9b9-73ec4b97f587",
+          "cover": "https://coverartarchive.org/release-group/5a94add5-4c3a-4ea1-b9b9-73ec4b97f587/front-250",
+          "url": "https://musicbrainz.org/release-group/5a94add5-4c3a-4ea1-b9b9-73ec4b97f587"
+        },
+        {
+          "title": "A Love That Never Fades",
+          "year": "2021",
+          "type": "Single",
+          "mbid": "30c8d8e6-86d1-4c3f-8f69-06e589a5343c",
+          "cover": "https://coverartarchive.org/release-group/30c8d8e6-86d1-4c3f-8f69-06e589a5343c/front-250",
+          "url": "https://musicbrainz.org/release-group/30c8d8e6-86d1-4c3f-8f69-06e589a5343c"
+        },
+        {
+          "title": "Strawberry",
+          "year": "2020",
+          "type": "EP",
+          "mbid": "1d14dafc-57f9-4c4b-883b-0fd8bb7e16e5",
+          "cover": "https://coverartarchive.org/release-group/1d14dafc-57f9-4c4b-883b-0fd8bb7e16e5/front-250",
+          "url": "https://musicbrainz.org/release-group/1d14dafc-57f9-4c4b-883b-0fd8bb7e16e5"
+        },
+        {
+          "title": "Blush",
+          "year": "2019",
+          "type": "Album",
+          "mbid": "2cd88488-086d-4bad-b886-6ebf2955c0ef",
+          "cover": "https://coverartarchive.org/release-group/2cd88488-086d-4bad-b886-6ebf2955c0ef/front-250",
+          "url": "https://musicbrainz.org/release-group/2cd88488-086d-4bad-b886-6ebf2955c0ef"
+        },
+        {
+          "title": "Melt",
+          "year": "2016",
+          "type": "Album",
+          "mbid": "a42c1b5e-da4f-48c5-b97b-a0745bdc8874",
+          "cover": "https://coverartarchive.org/release-group/a42c1b5e-da4f-48c5-b97b-a0745bdc8874/front-250",
+          "url": "https://musicbrainz.org/release-group/a42c1b5e-da4f-48c5-b97b-a0745bdc8874"
+        }
+      ]
     },
     {
       "slug": "sleek-teeth",
       "name": "Sleek Teeth",
-      "bio": "LA based duo\n\nSleek Teeth\n\ncrafts moody, melodic electronic music that feels right at home on the dancefloor of a shadowy underground nightclub. Blending darkwave, electro-pop, and EBM, their sound navigates themes of isolation, dissociation, and the struggle to make sense of the senseless—without ever sacrificing a strong hook. Haunting, slightly melodramatic vocals glide over pulse-driven beats, creating a dynamic and cathartic live experience. Their acclaimed self-titled debut EP arrived in 2024, followed by the 2025 \"Gone Remixes\" featuring standout reworks by Kris Baha, XTR Human, and SIIE. Recent singles \"Same\" and \"The River\" have been met with an enthusiastic response, building momentum toward their highly anticipated new album, set for release in 2026.\n\nSleek Teeth's music videos for \"Gone\", \"Endless\", \"Operating\" and \"Same\" which can be found below were produced, directed and filmed by Melankolia Agency's Director of Photography Adrian Stucker.\n\nPhoto by Holy Smoke Photography\n\nInstagram\n\nBandcamp\n\nSpotify",
+      "bio": "LA based duo Sleek Teeth crafts moody, melodic electronic music that feels right at home on the dancefloor of a shadowy underground nightclub. Blending darkwave, electro-pop, and EBM, their sound navigates themes of isolation, dissociation, and the struggle to make sense of the senseless—without ever sacrificing a strong hook. Haunting, slightly melodramatic vocals glide over pulse-driven beats, creating a dynamic and cathartic live experience. Their acclaimed self-titled debut EP arrived in 2024, followed by the 2025 \"Gone Remixes\" featuring standout reworks by Kris Baha, XTR Human, and SIIE. Recent singles \"Same\" and \"The River\" have been met with an enthusiastic response, building momentum toward their highly anticipated new album, set for release in 2026. Sleek Teeth's music videos for \"Gone\", \"Endless\", \"Operating\" and \"Same\" which can be found below were produced, directed and filmed by Melankolia Agency's Director of Photography Adrian Stucker. Photo by Holy Smoke Photography",
       "image": "sleek_teeth_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/sleek_teeth/",
@@ -286,12 +2623,110 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=Hht-7g-jsoI",
+          "title": "Sleek Teeth - Operating (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/Hht-7g-jsoI/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=B3BKTtkH_F4",
+          "title": "Sleek Teeth - Same (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/B3BKTtkH_F4/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=Rc6Y_mkRdPM",
+          "title": "Sleek Teeth - Gone (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/Rc6Y_mkRdPM/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=FiDTAJy5MA8",
+          "title": "Sleek Teeth - Endless (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/FiDTAJy5MA8/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_21.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "LA based duo Sleek Teeth crafts moody, melodic electronic music that feels right at home on the dancefloor of a shadowy underground nightclub. Blending darkwave, electro-pop, and EBM, their sound navigates themes of isolation, dissociation, and the struggle to…",
+      "discography": [
+        {
+          "title": "The River",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "80b75da4-327a-41f7-a7cb-4b8ebaa4337e",
+          "cover": "https://coverartarchive.org/release-group/80b75da4-327a-41f7-a7cb-4b8ebaa4337e/front-250",
+          "url": "https://musicbrainz.org/release-group/80b75da4-327a-41f7-a7cb-4b8ebaa4337e"
+        },
+        {
+          "title": "Same",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "f9b4afd8-8cc7-426a-8c72-b2dac293a82b",
+          "cover": "https://coverartarchive.org/release-group/f9b4afd8-8cc7-426a-8c72-b2dac293a82b/front-250",
+          "url": "https://musicbrainz.org/release-group/f9b4afd8-8cc7-426a-8c72-b2dac293a82b"
+        },
+        {
+          "title": "Gone Remixes",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "bec033a2-aeb7-43d2-9dde-af5bd2a56129",
+          "cover": "https://coverartarchive.org/release-group/bec033a2-aeb7-43d2-9dde-af5bd2a56129/front-250",
+          "url": "https://musicbrainz.org/release-group/bec033a2-aeb7-43d2-9dde-af5bd2a56129"
+        },
+        {
+          "title": "Sleek Teeth",
+          "year": "2024",
+          "type": "EP",
+          "mbid": "f9a22289-1628-4298-a8ab-a77a3bfecbb0",
+          "cover": "https://coverartarchive.org/release-group/f9a22289-1628-4298-a8ab-a77a3bfecbb0/front-250",
+          "url": "https://musicbrainz.org/release-group/f9a22289-1628-4298-a8ab-a77a3bfecbb0"
+        },
+        {
+          "title": "Operating",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "f2244043-500e-4b7a-b293-cabab46dd3ba",
+          "cover": "https://coverartarchive.org/release-group/f2244043-500e-4b7a-b293-cabab46dd3ba/front-250",
+          "url": "https://musicbrainz.org/release-group/f2244043-500e-4b7a-b293-cabab46dd3ba"
+        },
+        {
+          "title": "Endless",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "5c971bd3-18c1-44a0-a8ee-fdab918e647c",
+          "cover": "https://coverartarchive.org/release-group/5c971bd3-18c1-44a0-a8ee-fdab918e647c/front-250",
+          "url": "https://musicbrainz.org/release-group/5c971bd3-18c1-44a0-a8ee-fdab918e647c"
+        },
+        {
+          "title": "Gone",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "da04ca03-ea50-447e-a1b2-ebd31f5bab02",
+          "cover": "https://coverartarchive.org/release-group/da04ca03-ea50-447e-a1b2-ebd31f5bab02/front-250",
+          "url": "https://musicbrainz.org/release-group/da04ca03-ea50-447e-a1b2-ebd31f5bab02"
+        }
+      ]
     },
     {
       "slug": "some-ember",
       "name": "Some Ember",
-      "bio": "Some Ember\n\nis the project of producer, vocalist and multi-instrumentalist Dylan Travis. Formed in 2011 in Oakland, California, Some Ember has been a fixture of the minimal synth and DIY communities in the Bay Area, Berlin, and now Los Angeles. Lately joined live and on record by Marisa Prietto (Bizoux, Wax Idols, Glaare) Some Ember's dramatic performances are anchored around the duo's powerful voices and presence. Always focused on themes of immanence, renewal, and buoyed by self-produced electronics, the project has evolved into a physical, danceable form. Releases include LPs on Third Coming and Dream Recordings, cassettes on Night-People, Ascetic House, and Crash Symbols, and most recently the self-released EP \"Held a Fragment of the Moon\" and the single \"Pendulum\".\n\nInstagram\n\nFacebook\n\nBandcamp\n\nSpotify",
+      "bio": "Some Ember is the project of producer, vocalist and multi-instrumentalist Dylan Travis. Formed in 2011 in Oakland, California, Some Ember has been a fixture of the minimal synth and DIY communities in the Bay Area, Berlin, and now Los Angeles. Lately joined live and on record by Marisa Prietto (Bizoux, Wax Idols, Glaare) Some Ember's dramatic performances are anchored around the duo's powerful voices and presence. Always focused on themes of immanence, renewal, and buoyed by self-produced electronics, the project has evolved into a physical, danceable form. Releases include LPs on Third Coming and Dream Recordings, cassettes on Night-People, Ascetic House, and Crash Symbols, and most recently the self-released EP \"Held a Fragment of the Moon\" and the single \"Pendulum\".",
       "image": "some_ember_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/some.ember/?hl=en",
@@ -301,13 +2736,143 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=j2qAgncjPfs",
+          "title": "Some Ember - Rift (Official Video)",
+          "thumb": "https://img.youtube.com/vi/j2qAgncjPfs/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=WAxuRjSD4R4",
+          "title": "Some Ember - Excavate (Official Video)",
+          "thumb": "https://img.youtube.com/vi/WAxuRjSD4R4/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=nmaEDHpCOA0",
+          "title": "Some Ember - Love Comes Quickly (Official Video)",
+          "thumb": "https://img.youtube.com/vi/nmaEDHpCOA0/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=JR9pylnvY_0",
+          "title": "Some Ember - Towed (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/JR9pylnvY_0/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=4hh_CYCvYNo",
+          "title": "Some Ember - Meaning Is Deprecated (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/4hh_CYCvYNo/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "some_ember_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_22.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Some Ember is the project of producer, vocalist and multi-instrumentalist Dylan Travis. Formed in 2011 in Oakland, California, Some Ember has been a fixture of the minimal synth and DIY communities in the Bay Area, Berlin, and now Los Angeles. Lately joined li…",
+      "discography": [
+        {
+          "title": "Touch",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "4f36a424-df66-49a3-b85c-ef6318b99ac6",
+          "cover": "https://coverartarchive.org/release-group/4f36a424-df66-49a3-b85c-ef6318b99ac6/front-250",
+          "url": "https://musicbrainz.org/release-group/4f36a424-df66-49a3-b85c-ef6318b99ac6"
+        },
+        {
+          "title": "Held a Fragment of the Moon",
+          "year": "2021",
+          "type": "EP",
+          "mbid": "b8bfa993-114c-4e7a-893e-ff234677a47e",
+          "cover": "https://coverartarchive.org/release-group/b8bfa993-114c-4e7a-893e-ff234677a47e/front-250",
+          "url": "https://musicbrainz.org/release-group/b8bfa993-114c-4e7a-893e-ff234677a47e"
+        },
+        {
+          "title": "Submerged",
+          "year": "2019",
+          "type": "EP",
+          "mbid": "fc7af9f8-9baf-4784-a0d2-8c893fe28257",
+          "cover": "https://coverartarchive.org/release-group/fc7af9f8-9baf-4784-a0d2-8c893fe28257/front-250",
+          "url": "https://musicbrainz.org/release-group/fc7af9f8-9baf-4784-a0d2-8c893fe28257"
+        },
+        {
+          "title": "Submerging the Sun",
+          "year": "2018",
+          "type": "Album",
+          "mbid": "35dc27ba-75ab-4815-aa28-f7e2ae8c67ee",
+          "cover": "https://coverartarchive.org/release-group/35dc27ba-75ab-4815-aa28-f7e2ae8c67ee/front-250",
+          "url": "https://musicbrainz.org/release-group/35dc27ba-75ab-4815-aa28-f7e2ae8c67ee"
+        },
+        {
+          "title": "Magnetic",
+          "year": "2016",
+          "type": "EP",
+          "mbid": "3dc32922-1906-4c4a-9bce-38319058a9b8",
+          "cover": "https://coverartarchive.org/release-group/3dc32922-1906-4c4a-9bce-38319058a9b8/front-250",
+          "url": "https://musicbrainz.org/release-group/3dc32922-1906-4c4a-9bce-38319058a9b8"
+        },
+        {
+          "title": "Debts of Love",
+          "year": "2016",
+          "type": "EP",
+          "mbid": "359b1347-1328-48e7-8115-2c7558c66461",
+          "cover": "https://coverartarchive.org/release-group/359b1347-1328-48e7-8115-2c7558c66461/front-250",
+          "url": "https://musicbrainz.org/release-group/359b1347-1328-48e7-8115-2c7558c66461"
+        },
+        {
+          "title": "Walls Disappear",
+          "year": "2014",
+          "type": "Single",
+          "mbid": "962ecef5-f67a-4a3c-accd-60a8523647e3",
+          "cover": "https://coverartarchive.org/release-group/962ecef5-f67a-4a3c-accd-60a8523647e3/front-250",
+          "url": "https://musicbrainz.org/release-group/962ecef5-f67a-4a3c-accd-60a8523647e3"
+        },
+        {
+          "title": "Some Ember",
+          "year": "2014",
+          "type": "Album",
+          "mbid": "e0578784-24df-4ad2-ba32-73df6a29075a",
+          "cover": "https://coverartarchive.org/release-group/e0578784-24df-4ad2-ba32-73df6a29075a/front-250",
+          "url": "https://musicbrainz.org/release-group/e0578784-24df-4ad2-ba32-73df6a29075a"
+        },
+        {
+          "title": "Asleep in the Ice Palace",
+          "year": "2013",
+          "type": "EP",
+          "mbid": "fb4842af-dc77-4a54-969d-bab457faea3f",
+          "cover": "https://coverartarchive.org/release-group/fb4842af-dc77-4a54-969d-bab457faea3f/front-250",
+          "url": "https://musicbrainz.org/release-group/fb4842af-dc77-4a54-969d-bab457faea3f"
+        },
+        {
+          "title": "Hotel of Lost Light",
+          "year": "2011",
+          "type": "Album",
+          "mbid": "73213d31-a978-4b0a-96e1-9633ced15443",
+          "cover": "https://coverartarchive.org/release-group/73213d31-a978-4b0a-96e1-9633ced15443/front-250",
+          "url": "https://musicbrainz.org/release-group/73213d31-a978-4b0a-96e1-9633ced15443"
+        }
+      ]
     },
     {
       "slug": "street-fever",
       "name": "Street Fever",
-      "bio": "Street Fever\n\nis a versatile, mixed-media performance-artist currently residing in Boise, Idaho. Whom, remains anonymous. Their music is a gritty symphony born from profound life experiences and sonic experimentation. From the shrines of Three 6 Mafia in their bedroom as a kid, to being raised by the DIY hardcore scene- they have an eclectic background that sources inspiration from hardcore / heavy rap / industrial techno / EBM / noise / electro / techno and classical music.\n\nRooted in an ongoing spiritual awakening, Street Fever has been on a wildly cinematic path to better understand themselves as an artist, spiritual seeker, and human being. After losing all their possessions, being institutionalized multiple times and nearly losing their life in a South East Asian prison, this project has since been reborn and aims to use it as a platform to speak on their own recovery and addiction. Now more than ever they are empowered to share their story in hopes to connect with others who are seeking personal and spiritual growth.\n\nStreet Fever deftly balances between destructive possession and holy reclamation, extending a hand to invite you into their world through the powerful mediums of art and sound. Witness their journey of self-discovery and enlightenment through their thought-provoking creations.\n\nInstagram\n\nFacebook\n\nBandcamp\n\nSpotify\n\nYouTube",
-      "image": "street_fever_0.jpg",
+      "bio": "Street Fever is a versatile, mixed-media performance-artist currently residing in Boise, Idaho. Whom, remains anonymous. Their music is a gritty symphony born from profound life experiences and sonic experimentation. From the shrines of Three 6 Mafia in their bedroom as a kid, to being raised by the DIY hardcore scene- they have an eclectic background that sources inspiration from hardcore / heavy rap / industrial techno / EBM / noise / electro / techno and classical music. Rooted in an ongoing spiritual awakening, Street Fever has been on a wildly cinematic path to better understand themselves as an artist, spiritual seeker, and human being. After losing all their possessions, being institutionalized multiple times and nearly losing their life in a South East Asian prison, this project has since been reborn and aims to use it as a platform to speak on their own recovery and addiction. Now more than ever they are empowered to share their story in hopes to connect with others who are seeking personal and spiritual growth. Street Fever deftly balances between destructive possession and holy reclamation, extending a hand to invite you into their world through the powerful mediums of art and sound. Witness their journey of self-discovery and enlightenment through their thought-provoking creations.",
+      "image": "street_fever_1.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/streetfever/?hl=en",
         "facebook": "https://www.facebook.com/StreetFever/",
@@ -317,12 +2882,134 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=rrjk6elYSHI",
+          "title": "Street Fever - La Corde (video)",
+          "thumb": "https://img.youtube.com/vi/rrjk6elYSHI/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=gh8nE8UYeaQ",
+          "title": "Street Fever - Fate (Official Video)",
+          "thumb": "https://img.youtube.com/vi/gh8nE8UYeaQ/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=gpV_Ncaln8s",
+          "title": "Street Fever - \"Sinner\" Official Music Video",
+          "thumb": "https://img.youtube.com/vi/gpV_Ncaln8s/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=EDHULcbd4dI",
+          "title": "Street Fever 🔥 | Official Music Video 2026 ",
+          "thumb": "https://img.youtube.com/vi/EDHULcbd4dI/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=Ut62GatRbk0",
+          "title": "Street Fever Live",
+          "thumb": "https://img.youtube.com/vi/Ut62GatRbk0/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "street_fever_0.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_23.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Street Fever is a versatile, mixed-media performance-artist currently residing in Boise, Idaho. Whom, remains anonymous. Their music is a gritty symphony born from profound life experiences and sonic experimentation. From the shrines of Three 6 Mafia in their …",
+      "discography": [
+        {
+          "title": "Sinner",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "ec1a8077-6c1d-422a-83f7-f1f2ea8173fe",
+          "cover": "https://coverartarchive.org/release-group/ec1a8077-6c1d-422a-83f7-f1f2ea8173fe/front-250",
+          "url": "https://musicbrainz.org/release-group/ec1a8077-6c1d-422a-83f7-f1f2ea8173fe"
+        },
+        {
+          "title": "Fate",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "c1630e70-6474-43d7-b6a8-d397d8fa3935",
+          "cover": "https://coverartarchive.org/release-group/c1630e70-6474-43d7-b6a8-d397d8fa3935/front-250",
+          "url": "https://musicbrainz.org/release-group/c1630e70-6474-43d7-b6a8-d397d8fa3935"
+        },
+        {
+          "title": "Absolution",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "395abee2-f9fe-4533-8937-eaa2cf954509",
+          "cover": "https://coverartarchive.org/release-group/395abee2-f9fe-4533-8937-eaa2cf954509/front-250",
+          "url": "https://musicbrainz.org/release-group/395abee2-f9fe-4533-8937-eaa2cf954509"
+        },
+        {
+          "title": "Feel My Vibe",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "ad878fc2-c6f5-43a5-879a-fb45ea3478ea",
+          "cover": "https://coverartarchive.org/release-group/ad878fc2-c6f5-43a5-879a-fb45ea3478ea/front-250",
+          "url": "https://musicbrainz.org/release-group/ad878fc2-c6f5-43a5-879a-fb45ea3478ea"
+        },
+        {
+          "title": "Black Crown",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "69c72b18-cd82-48b6-8f9f-3341ebafd7dd",
+          "cover": "https://coverartarchive.org/release-group/69c72b18-cd82-48b6-8f9f-3341ebafd7dd/front-250",
+          "url": "https://musicbrainz.org/release-group/69c72b18-cd82-48b6-8f9f-3341ebafd7dd"
+        },
+        {
+          "title": "GOLD BLOOD EP",
+          "year": "2020",
+          "type": "EP",
+          "mbid": "8772bf25-7bb2-429c-b448-679814dd042c",
+          "cover": "https://coverartarchive.org/release-group/8772bf25-7bb2-429c-b448-679814dd042c/front-250",
+          "url": "https://musicbrainz.org/release-group/8772bf25-7bb2-429c-b448-679814dd042c"
+        },
+        {
+          "title": "NO FACE",
+          "year": "2018",
+          "type": "Single",
+          "mbid": "6c131dd6-308c-4986-a6b9-127eea28ef8c",
+          "cover": "https://coverartarchive.org/release-group/6c131dd6-308c-4986-a6b9-127eea28ef8c/front-250",
+          "url": "https://musicbrainz.org/release-group/6c131dd6-308c-4986-a6b9-127eea28ef8c"
+        },
+        {
+          "title": "Enchaîné",
+          "year": "2018",
+          "type": "EP",
+          "mbid": "e36cab37-ea27-4b2c-86a7-ab774aac0ca3",
+          "cover": "https://coverartarchive.org/release-group/e36cab37-ea27-4b2c-86a7-ab774aac0ca3/front-250",
+          "url": "https://musicbrainz.org/release-group/e36cab37-ea27-4b2c-86a7-ab774aac0ca3"
+        },
+        {
+          "title": "Afflictions EP",
+          "year": "2015",
+          "type": "EP",
+          "mbid": "e32d1b1b-d7b0-4115-93e9-567b9177b61f",
+          "cover": "https://coverartarchive.org/release-group/e32d1b1b-d7b0-4115-93e9-567b9177b61f/front-250",
+          "url": "https://musicbrainz.org/release-group/e32d1b1b-d7b0-4115-93e9-567b9177b61f"
+        }
+      ]
     },
     {
       "slug": "topographies",
       "name": "Topographies",
-      "bio": "Topographies\n\nis a coldwave group based in San Francisco and Los Angeles. The group was founded by Justin Oronos, Jeremie Ruest and Gray Tolhurst. The band’s sound developed from ethereal shoegaze and dreampop to a more streamlined coldwave sound over the course of several early EPs and crystallized in their debut record \"Ideal Form\" (2020). This record outlined their unique aesthetic: the icy drums and lockstep bass of coldwave meeting the hazy textures of shoegaze guitars, united by Tolhurt’s introspective and impassioned vocal melodies and lyrics. After a series of US tours in 2022 and 2023, the band released their follow up \"Interior Spring\" in early 2024 to be followed by a series of dates in Europe including Wave-Gotik-Treffen festival in Germany. In 2025 the band released their new EP \"Brutality of Fact\" and continues to conquer more global stages.\n\nInstagram\n\nBandcamp\n\nSpotify",
+      "bio": "Topographies is a coldwave group based in San Francisco and Los Angeles. The group was founded by Justin Oronos, Jeremie Ruest and Gray Tolhurst. The band’s sound developed from ethereal shoegaze and dreampop to a more streamlined coldwave sound over the course of several early EPs and crystallized in their debut record \"Ideal Form\" (2020). This record outlined their unique aesthetic: the icy drums and lockstep bass of coldwave meeting the hazy textures of shoegaze guitars, united by Tolhurt’s introspective and impassioned vocal melodies and lyrics. After a series of US tours in 2022 and 2023, the band released their follow up \"Interior Spring\" in early 2024 to be followed by a series of dates in Europe including Wave-Gotik-Treffen festival in Germany. In 2025 the band released their new EP \"Brutality of Fact\" and continues to conquer more global stages.",
       "image": "topographies_0.jpg",
       "social_links": {
         "instagram": "https://www.instagram.com/_topographies_/?hl=en",
@@ -331,12 +3018,124 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=w9y9hvJrpnA",
+          "title": "Topographies \"False Desire\" [Official Video]",
+          "thumb": "https://img.youtube.com/vi/w9y9hvJrpnA/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=E71a0Y3je_Y",
+          "title": "topographies - pink thoughts (Official Video)",
+          "thumb": "https://img.youtube.com/vi/E71a0Y3je_Y/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=4doVXWHJQrw",
+          "title": "topographies - roman figure (Official Video)",
+          "thumb": "https://img.youtube.com/vi/4doVXWHJQrw/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=ww9q_0d-ywM",
+          "title": "Topographies - Rose Of Sharon (vídeo)",
+          "thumb": "https://img.youtube.com/vi/ww9q_0d-ywM/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=0uWO9zzKY00",
+          "title": "topographies - Rose of Sharon (Music Video)",
+          "thumb": "https://img.youtube.com/vi/0uWO9zzKY00/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_24.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Topographies is a coldwave group based in San Francisco and Los Angeles. The group was founded by Justin Oronos, Jeremie Ruest and Gray Tolhurst. The band’s sound developed from ethereal shoegaze and dreampop to a more streamlined coldwave sound over the cours…",
+      "discography": [
+        {
+          "title": "Brutality of Fact",
+          "year": "2025",
+          "type": "EP",
+          "mbid": "91057ac1-56bb-4067-8c2f-63e1285bc283",
+          "cover": "https://coverartarchive.org/release-group/91057ac1-56bb-4067-8c2f-63e1285bc283/front-250",
+          "url": "https://musicbrainz.org/release-group/91057ac1-56bb-4067-8c2f-63e1285bc283"
+        },
+        {
+          "title": "Interior Spring",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "af91eeec-8419-420e-ab8f-9e90ab6db994",
+          "cover": "https://coverartarchive.org/release-group/af91eeec-8419-420e-ab8f-9e90ab6db994/front-250",
+          "url": "https://musicbrainz.org/release-group/af91eeec-8419-420e-ab8f-9e90ab6db994"
+        },
+        {
+          "title": "Tied / Arch",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "b6c77c8d-9aff-4428-bfd3-d69e8f6d78a6",
+          "cover": "https://coverartarchive.org/release-group/b6c77c8d-9aff-4428-bfd3-d69e8f6d78a6/front-250",
+          "url": "https://musicbrainz.org/release-group/b6c77c8d-9aff-4428-bfd3-d69e8f6d78a6"
+        },
+        {
+          "title": "Not My Loneliness, But Ours",
+          "year": "2020",
+          "type": "EP",
+          "mbid": "c9d572e2-8c29-4fa0-81b8-2a309ecd604b",
+          "cover": "https://coverartarchive.org/release-group/c9d572e2-8c29-4fa0-81b8-2a309ecd604b/front-250",
+          "url": "https://musicbrainz.org/release-group/c9d572e2-8c29-4fa0-81b8-2a309ecd604b"
+        },
+        {
+          "title": "Ideal Form",
+          "year": "2020",
+          "type": "Album",
+          "mbid": "fa10fb28-a911-463b-9808-e5610457aab2",
+          "cover": "https://coverartarchive.org/release-group/fa10fb28-a911-463b-9808-e5610457aab2/front-250",
+          "url": "https://musicbrainz.org/release-group/fa10fb28-a911-463b-9808-e5610457aab2"
+        },
+        {
+          "title": "Difference & Repetition",
+          "year": "2020",
+          "type": "EP",
+          "mbid": "0f588a0a-3f8f-4245-9d7f-049487ab01a1",
+          "cover": "https://coverartarchive.org/release-group/0f588a0a-3f8f-4245-9d7f-049487ab01a1/front-250",
+          "url": "https://musicbrainz.org/release-group/0f588a0a-3f8f-4245-9d7f-049487ab01a1"
+        },
+        {
+          "title": "Part Time Punks Session",
+          "year": "2019",
+          "type": "EP",
+          "mbid": "0656c49c-bced-4548-b6da-1d4d5758556e",
+          "cover": "https://coverartarchive.org/release-group/0656c49c-bced-4548-b6da-1d4d5758556e/front-250",
+          "url": "https://musicbrainz.org/release-group/0656c49c-bced-4548-b6da-1d4d5758556e"
+        },
+        {
+          "title": "Topographies",
+          "year": "2018",
+          "type": "EP",
+          "mbid": "bb29db50-51f3-44fc-af3d-d4a7f8373a85",
+          "cover": "https://coverartarchive.org/release-group/bb29db50-51f3-44fc-af3d-d4a7f8373a85/front-250",
+          "url": "https://musicbrainz.org/release-group/bb29db50-51f3-44fc-af3d-d4a7f8373a85"
+        }
+      ]
     },
     {
       "slug": "xtr-human",
       "name": "XTR Human",
-      "bio": "Born in fire and tempered in the batcaves and warehouse raves of Berlin, Johannes Stabel brings a leather-wrapped hammer to gothic nightlife. A Don amongst the burnt strobes, grime-soaked venues and endless nights of Berlin, Stabel is revered for his high-energy performances as\n\nXTR HUMAN\n\nHis deeply rich and arresting vocals herald back to the dark romance of ‘80s legends, while a mere flex of his fists send brutal blasts of bass scurrying, emotional coldwave terminated beneath a furioso of modernized hardbody EBM beats that put the Schwarz in Schwarzenegger.\n\nGracing the international stages of Substance, Sanctum Festival, Wave Gotik Treffen, Absolution Festival, Autumn Moon, NCN, E-Only and more since 2012 (including two extensive US tours), he’s shared the spotlight with the likes of Die Selektion, Sacred Skin, Bestial Mouths, Qual, Filmmaker, Mvtant, Lebanon Hanover, Black Marble, Minuit Machine, She Past Away and other forcible figures within nightlife’s crucible. With his new record label WIE EIN GOTT assembling a cavalcade of the most robust industrial club sounds in the underground to sweep DJ decks across the world, Stabel aims to keep ears, minds and boots as shredded as his muscular grooves.\n\nWebsite\n\nFacebook\n\nInstagram\n\nSpotify",
+      "bio": "Born in fire and tempered in the batcaves and warehouse raves of Berlin, Johannes Stabel brings a leather-wrapped hammer to gothic nightlife. A Don amongst the burnt strobes, grime-soaked venues and endless nights of Berlin, Stabel is revered for his high-energy performances as XTR HUMAN His deeply rich and arresting vocals herald back to the dark romance of ‘80s legends, while a mere flex of his fists send brutal blasts of bass scurrying, emotional coldwave terminated beneath a furioso of modernized hardbody EBM beats that put the Schwarz in Schwarzenegger. Gracing the international stages of Substance, Sanctum Festival, Wave Gotik Treffen, Absolution Festival, Autumn Moon, NCN, E-Only and more since 2012 (including two extensive US tours), he’s shared the spotlight with the likes of Die Selektion, Sacred Skin, Bestial Mouths, Qual, Filmmaker, Mvtant, Lebanon Hanover, Black Marble, Minuit Machine, She Past Away and other forcible figures within nightlife’s crucible. With his new record label WIE EIN GOTT assembling a cavalcade of the most robust industrial club sounds in the underground to sweep DJ decks across the world, Stabel aims to keep ears, minds and boots as shredded as his muscular grooves.",
       "image": "xtr_human_0.jpg",
       "social_links": {
         "website": "https://www.xtrhuman.de/",
@@ -346,12 +3145,206 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=7Y0blxOf4CM",
+          "title": "XTR HUMAN - Reflections [Official Video]",
+          "thumb": "https://img.youtube.com/vi/7Y0blxOf4CM/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=IwLkzGQf15w",
+          "title": "XTR HUMAN // Monitor [Offical Video]",
+          "thumb": "https://img.youtube.com/vi/IwLkzGQf15w/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=OuXn-Ysp9HM",
+          "title": "XTR HUMAN -  I WANT MORE (Official Video)",
+          "thumb": "https://img.youtube.com/vi/OuXn-Ysp9HM/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=_9f1bHHIcNk",
+          "title": "XTR HUMAN // Monospace [Official Video]",
+          "thumb": "https://img.youtube.com/vi/_9f1bHHIcNk/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=OwK2B_LorgI",
+          "title": "XTR HUMAN - ABGRUND (Official Video)",
+          "thumb": "https://img.youtube.com/vi/OwK2B_LorgI/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "xtr_human_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_25.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Born in fire and tempered in the batcaves and warehouse raves of Berlin, Johannes Stabel brings a leather-wrapped hammer to gothic nightlife. A Don amongst the burnt strobes, grime-soaked venues and endless nights of Berlin, Stabel is revered for his high-ener…",
+      "discography": [
+        {
+          "title": "Schrank Remixes",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "eb8cc72d-9f22-464c-8377-b3f21aad2827",
+          "cover": "https://coverartarchive.org/release-group/eb8cc72d-9f22-464c-8377-b3f21aad2827/front-250",
+          "url": "https://musicbrainz.org/release-group/eb8cc72d-9f22-464c-8377-b3f21aad2827"
+        },
+        {
+          "title": "Schrank",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "15fbae50-8f59-4770-bfdf-4f24e19dad17",
+          "cover": "https://coverartarchive.org/release-group/15fbae50-8f59-4770-bfdf-4f24e19dad17/front-250",
+          "url": "https://musicbrainz.org/release-group/15fbae50-8f59-4770-bfdf-4f24e19dad17"
+        },
+        {
+          "title": "ABGRUND",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "0bcbbc0a-bbab-471a-8d6c-12abe7b83603",
+          "cover": "https://coverartarchive.org/release-group/0bcbbc0a-bbab-471a-8d6c-12abe7b83603/front-250",
+          "url": "https://musicbrainz.org/release-group/0bcbbc0a-bbab-471a-8d6c-12abe7b83603"
+        },
+        {
+          "title": "Singles I (2021-2022)",
+          "year": "2023",
+          "type": "EP",
+          "mbid": "4ada9721-f0ef-4712-acf9-004decf5a621",
+          "cover": "https://coverartarchive.org/release-group/4ada9721-f0ef-4712-acf9-004decf5a621/front-250",
+          "url": "https://musicbrainz.org/release-group/4ada9721-f0ef-4712-acf9-004decf5a621"
+        },
+        {
+          "title": "I Want More",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "9f1a3e9c-f399-4512-94a9-306bfbd67bfd",
+          "cover": "https://coverartarchive.org/release-group/9f1a3e9c-f399-4512-94a9-306bfbd67bfd/front-250",
+          "url": "https://musicbrainz.org/release-group/9f1a3e9c-f399-4512-94a9-306bfbd67bfd"
+        },
+        {
+          "title": "City Hai",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "00d6749c-997e-4e00-98a9-c06838e7e1ea",
+          "cover": "https://coverartarchive.org/release-group/00d6749c-997e-4e00-98a9-c06838e7e1ea/front-250",
+          "url": "https://musicbrainz.org/release-group/00d6749c-997e-4e00-98a9-c06838e7e1ea"
+        },
+        {
+          "title": "Blue Monday (New Order cover / German version)",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "78f6e22d-ffb7-412a-ae7e-eda2e158ea4e",
+          "cover": "https://coverartarchive.org/release-group/78f6e22d-ffb7-412a-ae7e-eda2e158ea4e/front-250",
+          "url": "https://musicbrainz.org/release-group/78f6e22d-ffb7-412a-ae7e-eda2e158ea4e"
+        },
+        {
+          "title": "VERFALL - EP",
+          "year": "2022",
+          "type": "EP",
+          "mbid": "43b2d526-4a4b-4bcd-bf65-d4ef9f33fd9b",
+          "cover": "https://coverartarchive.org/release-group/43b2d526-4a4b-4bcd-bf65-d4ef9f33fd9b/front-250",
+          "url": "https://musicbrainz.org/release-group/43b2d526-4a4b-4bcd-bf65-d4ef9f33fd9b"
+        },
+        {
+          "title": "Schwarzes Licht",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "08fd9522-884b-4e37-bc63-911c04a7270d",
+          "cover": "https://coverartarchive.org/release-group/08fd9522-884b-4e37-bc63-911c04a7270d/front-250",
+          "url": "https://musicbrainz.org/release-group/08fd9522-884b-4e37-bc63-911c04a7270d"
+        },
+        {
+          "title": "Hardcore",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "d0bd968a-352c-4a73-9770-7ea1c5eb6e31",
+          "cover": "https://coverartarchive.org/release-group/d0bd968a-352c-4a73-9770-7ea1c5eb6e31/front-250",
+          "url": "https://musicbrainz.org/release-group/d0bd968a-352c-4a73-9770-7ea1c5eb6e31"
+        },
+        {
+          "title": "G.O.L.D / Technofossil Remix Split",
+          "year": "2022",
+          "type": "EP",
+          "mbid": "e77e0298-491c-40e8-a793-b519f3ac9fd6",
+          "cover": "https://coverartarchive.org/release-group/e77e0298-491c-40e8-a793-b519f3ac9fd6/front-250",
+          "url": "https://musicbrainz.org/release-group/e77e0298-491c-40e8-a793-b519f3ac9fd6"
+        },
+        {
+          "title": "Collabs 2020-2022",
+          "year": "2022",
+          "type": "Album",
+          "mbid": "0478fc39-bddc-492b-8514-991443887063",
+          "cover": "https://coverartarchive.org/release-group/0478fc39-bddc-492b-8514-991443887063/front-250",
+          "url": "https://musicbrainz.org/release-group/0478fc39-bddc-492b-8514-991443887063"
+        },
+        {
+          "title": "Blue Monday (New Order cover)",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "f624b4ba-e507-4de3-b80b-ce7896a13c78",
+          "cover": "https://coverartarchive.org/release-group/f624b4ba-e507-4de3-b80b-ce7896a13c78/front-250",
+          "url": "https://musicbrainz.org/release-group/f624b4ba-e507-4de3-b80b-ce7896a13c78"
+        },
+        {
+          "title": "G.O.L.D",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "7516d033-ff88-4bc0-92c2-19768e2f93ab",
+          "cover": "https://coverartarchive.org/release-group/7516d033-ff88-4bc0-92c2-19768e2f93ab/front-250",
+          "url": "https://musicbrainz.org/release-group/7516d033-ff88-4bc0-92c2-19768e2f93ab"
+        },
+        {
+          "title": "Interior",
+          "year": "2020",
+          "type": "Album",
+          "mbid": "95fe282b-71a1-458a-925a-b5553469b7cd",
+          "cover": "https://coverartarchive.org/release-group/95fe282b-71a1-458a-925a-b5553469b7cd/front-250",
+          "url": "https://musicbrainz.org/release-group/95fe282b-71a1-458a-925a-b5553469b7cd"
+        },
+        {
+          "title": "On a Greater Scale",
+          "year": "2019",
+          "type": "Single",
+          "mbid": "284ad0fa-3034-4224-94bf-b76cc818bb95",
+          "cover": "https://coverartarchive.org/release-group/284ad0fa-3034-4224-94bf-b76cc818bb95/front-250",
+          "url": "https://musicbrainz.org/release-group/284ad0fa-3034-4224-94bf-b76cc818bb95"
+        },
+        {
+          "title": "Reflections",
+          "year": "2018",
+          "type": "EP",
+          "mbid": "b785d8a5-aa52-4d8c-a304-da43660d3278",
+          "cover": "https://coverartarchive.org/release-group/b785d8a5-aa52-4d8c-a304-da43660d3278/front-250",
+          "url": "https://musicbrainz.org/release-group/b785d8a5-aa52-4d8c-a304-da43660d3278"
+        },
+        {
+          "title": "Monospace",
+          "year": "2015",
+          "type": "Single",
+          "mbid": "1ff55824-e235-4447-b3e6-ae5b41fc0a7e",
+          "cover": "https://coverartarchive.org/release-group/1ff55824-e235-4447-b3e6-ae5b41fc0a7e/front-250",
+          "url": "https://musicbrainz.org/release-group/1ff55824-e235-4447-b3e6-ae5b41fc0a7e"
+        }
+      ]
     },
     {
       "slug": "yama-uba",
       "name": "Yama Uba",
-      "bio": "Yama Uba\n\nis a dark synth pop / post-punk duo that reaches into the depths of human experience and brings to light the range of emotion that makes us whole. The sonic palette of duo Akiko Sampson and Winter Zora expresses the complexity of the human spirit, from love to hope to rage, through emotive vocals, shimmering guitar, and soaring saxophone atop explosive bass, velvet synthesizers, and machine beats.\n\nYama Uba has captivated audiences across the United States and Japan, sharing stages with darkwave luminaries Kaelan Mikla, Buzz Kull, Harsh Symmetry, post-punk legends Pink Turns Blue, and Japanese gothic rock pioneers Phaidia.\n\nOn stage, live shows are performed either by Akiko Sampson solo (vocals, bass, synth, drum programming) or by both Akiko and Winter Zora (vocals, guitar, saxophone).\n\nBased in Oakland, California, this duo just released their 2024 debut album, \"Silhouettes\", on Psychic Eye and Ratskin Records. Cover art designed by Pearl Thompson (The Cure).\n\nWebsite\n\nBandcamp\n\nInstagram\n\nSpotify",
+      "bio": "Yama Uba is a dark synth pop / post-punk duo that reaches into the depths of human experience and brings to light the range of emotion that makes us whole. The sonic palette of duo Akiko Sampson and Winter Zora expresses the complexity of the human spirit, from love to hope to rage, through emotive vocals, shimmering guitar, and soaring saxophone atop explosive bass, velvet synthesizers, and machine beats. Yama Uba has captivated audiences across the United States and Japan, sharing stages with darkwave luminaries Kaelan Mikla, Buzz Kull, Harsh Symmetry, post-punk legends Pink Turns Blue, and Japanese gothic rock pioneers Phaidia. On stage, live shows are performed either by Akiko Sampson solo (vocals, bass, synth, drum programming) or by both Akiko and Winter Zora (vocals, guitar, saxophone). Based in Oakland, California, this duo just released their 2024 debut album, \"Silhouettes\", on Psychic Eye and Ratskin Records. Cover art designed by Pearl Thompson (The Cure).",
       "image": "yama_uba_0.jpg",
       "social_links": {
         "website": "https://yamaubamusic.com/",
@@ -361,12 +3354,104 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=vy1PgyM22rw",
+          "title": "Yama Uba - Isolation (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/vy1PgyM22rw/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=N5s2OgLd5lE",
+          "title": "Yama Uba - Shapes (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/N5s2OgLd5lE/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=qR013LMNfOI",
+          "title": "Yama Uba - Phantom World (Music Video) HD",
+          "thumb": "https://img.youtube.com/vi/qR013LMNfOI/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=e-jFnKO621g",
+          "title": "Yama Uba - I'm in Love with a German Film Star (The Passions Cover) (Official Audio)",
+          "thumb": "https://img.youtube.com/vi/e-jFnKO621g/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "yama_uba_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_26.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Yama Uba is a dark synth pop / post-punk duo that reaches into the depths of human experience and brings to light the range of emotion that makes us whole. The sonic palette of duo Akiko Sampson and Winter Zora expresses the complexity of the human spirit, fro…",
+      "discography": [
+        {
+          "title": "Silhouettes",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "3206b560-8115-4569-b6d7-382c49e9c60b",
+          "cover": "https://coverartarchive.org/release-group/3206b560-8115-4569-b6d7-382c49e9c60b/front-250",
+          "url": "https://musicbrainz.org/release-group/3206b560-8115-4569-b6d7-382c49e9c60b"
+        },
+        {
+          "title": "Shatter (Cult of Alia Remix)",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "08d3876c-fa3e-469b-b4d8-67536ff18a51",
+          "cover": "https://coverartarchive.org/release-group/08d3876c-fa3e-469b-b4d8-67536ff18a51/front-250",
+          "url": "https://musicbrainz.org/release-group/08d3876c-fa3e-469b-b4d8-67536ff18a51"
+        },
+        {
+          "title": "Shatter",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "59e9281b-cd05-475e-b3d8-246f97bf600f",
+          "cover": "https://coverartarchive.org/release-group/59e9281b-cd05-475e-b3d8-246f97bf600f/front-250",
+          "url": "https://musicbrainz.org/release-group/59e9281b-cd05-475e-b3d8-246f97bf600f"
+        },
+        {
+          "title": "Disappear",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "bc0feae5-fa53-4e8c-b16b-495cb97373d2",
+          "cover": "https://coverartarchive.org/release-group/bc0feae5-fa53-4e8c-b16b-495cb97373d2/front-250",
+          "url": "https://musicbrainz.org/release-group/bc0feae5-fa53-4e8c-b16b-495cb97373d2"
+        },
+        {
+          "title": "Laura b/w Isolation",
+          "year": "2022",
+          "type": "Single",
+          "mbid": "bf063c32-f823-4b54-9aa5-75affb824163",
+          "cover": "https://coverartarchive.org/release-group/bf063c32-f823-4b54-9aa5-75affb824163/front-250",
+          "url": "https://musicbrainz.org/release-group/bf063c32-f823-4b54-9aa5-75affb824163"
+        },
+        {
+          "title": "Phantom World",
+          "year": "2021",
+          "type": "Single",
+          "mbid": "541617a1-660b-428c-9259-da240721da33",
+          "cover": "https://coverartarchive.org/release-group/541617a1-660b-428c-9259-da240721da33/front-250",
+          "url": "https://musicbrainz.org/release-group/541617a1-660b-428c-9259-da240721da33"
+        }
+      ]
     },
     {
       "slug": "zanias",
       "name": "Zanias",
-      "bio": "Zanias\n\nhas been haunting underground clubs around the world with her instantly\n\nrecognisable voice and uniquely ethereal electronic productions since 2011, with\n\nthe spawning of her first project Linea Aspera in London. As a solo artist, based in\n\nBerlin since 2013, she explores a more alien and spherical palette of sounds,\n\nusing her coldwave past with the experimental pop influences of Fever Ray, Enya,\n\nearly Grimes and Caroline Polachek. With her latest album ‘Cataclysm’, Zanias\n\nmakes a poignant call for revolution of both politics and consciousness in the\n\nface of humanity’s existential threats of war and climate collapse, conveyed\n\nthrough her signature of deeply personal and poetic lyricism. Every song inhabits\n\nits own aesthetic universe and rhythm, featuring elemental fusions of post-industrial, witchhouse, trance, breakbeats and hyperpop. As with all her previous\n\nalbums, Zanias carves her own genre from the solidified ashes of her influences.\n\nIn 2025 Zanias created a whole new live set with London-based drummer Dream\n\nDilate Decay. Industrial polyrhythms, tribal intensity and a vocal performance akin\n\nto a banshee characterise the sonic ritual conjured by the duo, striking a delicate\n\nbalance of ethereal fragility and iron strength. This new incarnation promises to be\n\nher most captivating era yet.\n\nWebsite\n\nBandcamp\n\nSpotify\n\nInstagram\n\nTikTok\n\nYou\n\nTube\n\nacebook",
+      "bio": "Zanias has been haunting underground clubs around the world with her instantly recognisable voice and uniquely ethereal electronic productions since 2011, with the spawning of her first project Linea Aspera in London. As a solo artist, based in Berlin since 2013, she explores a more alien and spherical palette of sounds, using her coldwave past with the experimental pop influences of Fever Ray, Enya, early Grimes and Caroline Polachek. With her latest album ‘Cataclysm’, Zanias makes a poignant call for revolution of both politics and consciousness in the face of humanity’s existential threats of war and climate collapse, conveyed through her signature of deeply personal and poetic lyricism. Every song inhabits its own aesthetic universe and rhythm, featuring elemental fusions of post-industrial, witchhouse, trance, breakbeats and hyperpop. As with all her previous albums, Zanias carves her own genre from the solidified ashes of her influences. In 2025 Zanias created a whole new live set with London-based drummer Dream Dilate Decay. Industrial polyrhythms, tribal intensity and a vocal performance akin to a banshee characterise the sonic ritual conjured by the duo, striking a delicate balance of ethereal fragility and iron strength. This new incarnation promises to be her most captivating era yet.",
       "image": "zanias_0.jpg",
       "social_links": {
         "website": "https://www.zanias-music.com/",
@@ -379,7 +3464,1607 @@ const MELANKOLIA_DATA = {
       },
       "genres": [],
       "featured": false,
-      "music_videos": []
+      "music_videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=e7Tc5Nk_n4M",
+          "title": "Zanias - Follow the Body (Official Video)",
+          "thumb": "https://img.youtube.com/vi/e7Tc5Nk_n4M/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=vDo4PFZrxow",
+          "title": "Zanias - Cataclysm (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/vDo4PFZrxow/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=Q-_qBnO_PQc",
+          "title": "Zanias - Untethered (Official Video)",
+          "thumb": "https://img.youtube.com/vi/Q-_qBnO_PQc/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=QknrDYYfsJ4",
+          "title": "Zanias - Dawn (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/QknrDYYfsJ4/mqdefault.jpg",
+          "description": ""
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=AsQfcuL2z2g",
+          "title": "Zanias - Serpentsmile (Official Music Video)",
+          "thumb": "https://img.youtube.com/vi/AsQfcuL2z2g/mqdefault.jpg",
+          "description": ""
+        }
+      ],
+      "photos": [
+        "zanias_1.jpg"
+      ],
+      "focalX": 50,
+      "focalY": 50,
+      "cropScale": 1,
+      "gridFocalX": 50,
+      "gridFocalY": 50,
+      "gridCropScale": 1,
+      "bannerFocalX": 50,
+      "bannerFocalY": 50,
+      "bannerCropScale": 1,
+      "gridImage": "original-home/home_27.jpg",
+      "profileFocalX": 50,
+      "profileFocalY": 50,
+      "profileCropScale": 1,
+      "shortBio": "Zanias has been haunting underground clubs around the world with her instantly recognisable voice and uniquely ethereal electronic productions since 2011, with the spawning of her first project Linea Aspera in London. As a solo artist, based in Berlin since 20…",
+      "discography": [
+        {
+          "title": "Cataclysm: Voiceless Edition",
+          "year": "2026",
+          "type": "Album",
+          "mbid": "1c63608d-5c8e-4eb7-a091-64726d07eba9",
+          "cover": "https://coverartarchive.org/release-group/1c63608d-5c8e-4eb7-a091-64726d07eba9/front-250",
+          "url": "https://musicbrainz.org/release-group/1c63608d-5c8e-4eb7-a091-64726d07eba9"
+        },
+        {
+          "title": "Serpentsmile",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "b5909ae8-6ea2-4883-964c-8f431e1bdc92",
+          "cover": "https://coverartarchive.org/release-group/b5909ae8-6ea2-4883-964c-8f431e1bdc92/front-250",
+          "url": "https://musicbrainz.org/release-group/b5909ae8-6ea2-4883-964c-8f431e1bdc92"
+        },
+        {
+          "title": "Dawn",
+          "year": "2025",
+          "type": "Single",
+          "mbid": "572c020e-db8a-4483-ac2b-32344c41f511",
+          "cover": "https://coverartarchive.org/release-group/572c020e-db8a-4483-ac2b-32344c41f511/front-250",
+          "url": "https://musicbrainz.org/release-group/572c020e-db8a-4483-ac2b-32344c41f511"
+        },
+        {
+          "title": "Cataclysm",
+          "year": "2025",
+          "type": "Album",
+          "mbid": "3e8acfa4-cf8d-4b28-9023-82466023c9fe",
+          "cover": "https://coverartarchive.org/release-group/3e8acfa4-cf8d-4b28-9023-82466023c9fe/front-250",
+          "url": "https://musicbrainz.org/release-group/3e8acfa4-cf8d-4b28-9023-82466023c9fe"
+        },
+        {
+          "title": "Teatree (Neu-Romancer remix)",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "1aa66f9b-99c4-499b-a4f0-8d55b402bc51",
+          "cover": "https://coverartarchive.org/release-group/1aa66f9b-99c4-499b-a4f0-8d55b402bc51/front-250",
+          "url": "https://musicbrainz.org/release-group/1aa66f9b-99c4-499b-a4f0-8d55b402bc51"
+        },
+        {
+          "title": "Lovelife Remixes",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "e86e83c3-0d03-4e5b-8394-0ac0c60964f7",
+          "cover": "https://coverartarchive.org/release-group/e86e83c3-0d03-4e5b-8394-0ac0c60964f7/front-250",
+          "url": "https://musicbrainz.org/release-group/e86e83c3-0d03-4e5b-8394-0ac0c60964f7"
+        },
+        {
+          "title": "Ecdysis",
+          "year": "2024",
+          "type": "Album",
+          "mbid": "b4a85b3e-f775-451b-9910-1aca480315b8",
+          "cover": "https://coverartarchive.org/release-group/b4a85b3e-f775-451b-9910-1aca480315b8/front-250",
+          "url": "https://musicbrainz.org/release-group/b4a85b3e-f775-451b-9910-1aca480315b8"
+        },
+        {
+          "title": "Chrysalis (Metamorphosis)",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "fbac4b42-932b-4f79-ae8b-7dd51e387b81",
+          "cover": "https://coverartarchive.org/release-group/fbac4b42-932b-4f79-ae8b-7dd51e387b81/front-250",
+          "url": "https://musicbrainz.org/release-group/fbac4b42-932b-4f79-ae8b-7dd51e387b81"
+        },
+        {
+          "title": "Burial (Qual Remix)",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "aecdae40-019c-4863-8630-75aabf326118",
+          "cover": "https://coverartarchive.org/release-group/aecdae40-019c-4863-8630-75aabf326118/front-250",
+          "url": "https://musicbrainz.org/release-group/aecdae40-019c-4863-8630-75aabf326118"
+        },
+        {
+          "title": "Ashes (Fundraiser for Palestine)",
+          "year": "2024",
+          "type": "Single",
+          "mbid": "03884e5b-89ce-44c6-949a-fc512c5e76d8",
+          "cover": "https://coverartarchive.org/release-group/03884e5b-89ce-44c6-949a-fc512c5e76d8/front-250",
+          "url": "https://musicbrainz.org/release-group/03884e5b-89ce-44c6-949a-fc512c5e76d8"
+        },
+        {
+          "title": "Simulation (Forces remix)",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "9dde2bd3-acf7-486a-839e-2d6e616a6ef2",
+          "cover": "https://coverartarchive.org/release-group/9dde2bd3-acf7-486a-839e-2d6e616a6ef2/front-250",
+          "url": "https://musicbrainz.org/release-group/9dde2bd3-acf7-486a-839e-2d6e616a6ef2"
+        },
+        {
+          "title": "Simulation (Clouzer remix)",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "0ef27014-9d30-4864-8c60-8c42ad0f01a5",
+          "cover": "https://coverartarchive.org/release-group/0ef27014-9d30-4864-8c60-8c42ad0f01a5/front-250",
+          "url": "https://musicbrainz.org/release-group/0ef27014-9d30-4864-8c60-8c42ad0f01a5"
+        },
+        {
+          "title": "Simulation (Alen Skanner remix)",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "f2b48a4b-59f4-40db-bdf9-8d557d9ae662",
+          "cover": "https://coverartarchive.org/release-group/f2b48a4b-59f4-40db-bdf9-8d557d9ae662/front-250",
+          "url": "https://musicbrainz.org/release-group/f2b48a4b-59f4-40db-bdf9-8d557d9ae662"
+        },
+        {
+          "title": "Simulation",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "342ff323-84bb-436a-ab0d-eea17a9937f0",
+          "cover": "https://coverartarchive.org/release-group/342ff323-84bb-436a-ab0d-eea17a9937f0/front-250",
+          "url": "https://musicbrainz.org/release-group/342ff323-84bb-436a-ab0d-eea17a9937f0"
+        },
+        {
+          "title": "Metrics",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "f6c2151b-60bd-49eb-91ca-020d53627f85",
+          "cover": "https://coverartarchive.org/release-group/f6c2151b-60bd-49eb-91ca-020d53627f85/front-250",
+          "url": "https://musicbrainz.org/release-group/f6c2151b-60bd-49eb-91ca-020d53627f85"
+        },
+        {
+          "title": "Chrysalis",
+          "year": "2023",
+          "type": "Album",
+          "mbid": "a36e232c-5a4f-41fa-8cea-fbdb9fb5cfde",
+          "cover": "https://coverartarchive.org/release-group/a36e232c-5a4f-41fa-8cea-fbdb9fb5cfde/front-250",
+          "url": "https://musicbrainz.org/release-group/a36e232c-5a4f-41fa-8cea-fbdb9fb5cfde"
+        },
+        {
+          "title": "Burial",
+          "year": "2023",
+          "type": "Single",
+          "mbid": "925a8e07-2658-410a-a007-9e7b770442ce",
+          "cover": "https://coverartarchive.org/release-group/925a8e07-2658-410a-a007-9e7b770442ce/front-250",
+          "url": "https://musicbrainz.org/release-group/925a8e07-2658-410a-a007-9e7b770442ce"
+        },
+        {
+          "title": "Unearthed",
+          "year": "2021",
+          "type": "Album",
+          "mbid": "a353c530-9901-4deb-bc66-4846e039ad57",
+          "cover": "https://coverartarchive.org/release-group/a353c530-9901-4deb-bc66-4846e039ad57/front-250",
+          "url": "https://musicbrainz.org/release-group/a353c530-9901-4deb-bc66-4846e039ad57"
+        }
+      ]
+    }
+  ],
+  "videos": [
+    {
+      "id": "vid_1782424620841_1xst",
+      "artistId": "artist_1",
+      "artistName": "Bestial Mouths",
+      "artistSlug": "bestial-mouths",
+      "url": "https://www.youtube.com/watch?v=b6O0fw29ApY",
+      "title": "BESTIAL MOUTHS - \"Faceless\" (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/b6O0fw29ApY/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 0
+    },
+    {
+      "id": "vid_1782424620841_ry5x",
+      "artistId": "artist_1",
+      "artistName": "Bestial Mouths",
+      "artistSlug": "bestial-mouths",
+      "url": "https://www.youtube.com/watch?v=raKGk2w2Wf8",
+      "title": "Bestial Mouths - UNSHIVERED (ADULT. Remix)  [OFFICIAL VIDEO]",
+      "thumb": "https://img.youtube.com/vi/raKGk2w2Wf8/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 1
+    },
+    {
+      "id": "vid_1782424620841_i3u4",
+      "artistId": "artist_1",
+      "artistName": "Bestial Mouths",
+      "artistSlug": "bestial-mouths",
+      "url": "https://www.youtube.com/watch?v=3BaQGJFKdSQ",
+      "title": "Bestial Mouths - INSHROUDSS (Official Video)",
+      "thumb": "https://img.youtube.com/vi/3BaQGJFKdSQ/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 2
+    },
+    {
+      "id": "vid_1782424620841_bko1",
+      "artistId": "artist_1",
+      "artistName": "Bestial Mouths",
+      "artistSlug": "bestial-mouths",
+      "url": "https://www.youtube.com/watch?v=c5WXijMpJkk",
+      "title": "Bestial Mouths - INDUSTRIAL WASTE (Official Video)",
+      "thumb": "https://img.youtube.com/vi/c5WXijMpJkk/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 3
+    },
+    {
+      "id": "vid_1782424620841_qye6",
+      "artistId": "artist_1",
+      "artistName": "Bestial Mouths",
+      "artistSlug": "bestial-mouths",
+      "url": "https://www.youtube.com/watch?v=Ue1CYX7mRPE",
+      "title": "Bestial Mouths - LAIN TO RUST (Official Video)",
+      "thumb": "https://img.youtube.com/vi/Ue1CYX7mRPE/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 4
+    },
+    {
+      "id": "vid_1782424891714_r6mt",
+      "artistId": "artist_1",
+      "artistName": "Bestial Mouths",
+      "artistSlug": "bestial-mouths",
+      "url": "https://www.youtube.com/watch?v=0ygPBaSodHk",
+      "title": "Bestial Mouths - Earth (Official Video)",
+      "thumb": "https://img.youtube.com/vi/0ygPBaSodHk/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 5
+    },
+    {
+      "id": "vid_1782425090914_jimd",
+      "artistId": "artist_2",
+      "artistName": "Blood Handsome",
+      "artistSlug": "blood-handsome",
+      "url": "https://www.youtube.com/watch?v=hkVxxGcy8fs",
+      "title": "Blood Handsome \"Give\" (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/hkVxxGcy8fs/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 6
+    },
+    {
+      "id": "vid_1782425090915_ydwv",
+      "artistId": "artist_2",
+      "artistName": "Blood Handsome",
+      "artistSlug": "blood-handsome",
+      "url": "https://www.youtube.com/watch?v=EdlyYEPGmNw",
+      "title": "Blood Handsome \"The Light\" (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/EdlyYEPGmNw/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 7
+    },
+    {
+      "id": "vid_1782425090915_fzqw",
+      "artistId": "artist_2",
+      "artistName": "Blood Handsome",
+      "artistSlug": "blood-handsome",
+      "url": "https://www.youtube.com/watch?v=vIdTH0TsYoI",
+      "title": "Blood Handsome - \"Rituals\" (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/vIdTH0TsYoI/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 9
+    },
+    {
+      "id": "vid_1782425090915_n63v",
+      "artistId": "artist_2",
+      "artistName": "Blood Handsome",
+      "artistSlug": "blood-handsome",
+      "url": "https://www.youtube.com/watch?v=Xoh8TPGLdk0",
+      "title": "BLOOD HANDSOME - LEAVING (Official Video)",
+      "thumb": "https://img.youtube.com/vi/Xoh8TPGLdk0/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 10
+    },
+    {
+      "id": "vid_1782425369755_1h51",
+      "artistId": "artist_4",
+      "artistName": "Bootblacks",
+      "artistSlug": "bootblacks",
+      "url": "https://www.youtube.com/watch?v=HdomO4KTLTs",
+      "title": "Bootblacks - \"The Things We Did\"",
+      "thumb": "https://img.youtube.com/vi/HdomO4KTLTs/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 11
+    },
+    {
+      "id": "vid_1782425369755_kid8",
+      "artistId": "artist_4",
+      "artistName": "Bootblacks",
+      "artistSlug": "bootblacks",
+      "url": "https://www.youtube.com/watch?v=9uKhCouPVXU",
+      "title": "Bootblacks - Hidden Things",
+      "thumb": "https://img.youtube.com/vi/9uKhCouPVXU/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 12
+    },
+    {
+      "id": "vid_1782425369755_7pdz",
+      "artistId": "artist_4",
+      "artistName": "Bootblacks",
+      "artistSlug": "bootblacks",
+      "url": "https://www.youtube.com/watch?v=3KkiRdcXqPE",
+      "title": "“Only You” April 4",
+      "thumb": "https://img.youtube.com/vi/3KkiRdcXqPE/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 13
+    },
+    {
+      "id": "vid_1782425369755_57rn",
+      "artistId": "artist_4",
+      "artistName": "Bootblacks",
+      "artistSlug": "bootblacks",
+      "url": "https://www.youtube.com/watch?v=MzYuKgB9gIA",
+      "title": "BOOTBLACKS: Ask Me About PARADISE #ARTOFFACT #postpunk",
+      "thumb": "https://img.youtube.com/vi/MzYuKgB9gIA/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 14
+    },
+    {
+      "id": "vid_1782425484345_vjiy",
+      "artistId": "artist_5",
+      "artistName": "CD Ghost",
+      "artistSlug": "creux-lies",
+      "url": "https://www.youtube.com/watch?v=LgMfK_wDlp8",
+      "title": "CD Ghost - On My Mind (Official Video)",
+      "thumb": "https://img.youtube.com/vi/LgMfK_wDlp8/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 15
+    },
+    {
+      "id": "vid_1782425484345_vehd",
+      "artistId": "artist_5",
+      "artistName": "CD Ghost",
+      "artistSlug": "creux-lies",
+      "url": "https://www.youtube.com/watch?v=tU-xPEuq4LY",
+      "title": "CD Ghost - When The Rain Stops (Official Video)",
+      "thumb": "https://img.youtube.com/vi/tU-xPEuq4LY/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 16
+    },
+    {
+      "id": "vid_1782425484345_vlvy",
+      "artistId": "artist_5",
+      "artistName": "CD Ghost",
+      "artistSlug": "creux-lies",
+      "url": "https://www.youtube.com/watch?v=ZsXAM9PkbEo",
+      "title": "Lost and Found out now ⛈️",
+      "thumb": "https://img.youtube.com/vi/ZsXAM9PkbEo/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 17
+    },
+    {
+      "id": "vid_1782425821750_yxog",
+      "artistId": "artist_7",
+      "artistName": "Creux Lies",
+      "artistSlug": "corbeau-hangs",
+      "url": "https://www.youtube.com/watch?v=RGK02a3pH54",
+      "title": "Creux Lies \"Portals\" (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/RGK02a3pH54/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 20
+    },
+    {
+      "id": "vid_1782425821750_jb1j",
+      "artistId": "artist_7",
+      "artistName": "Creux Lies",
+      "artistSlug": "corbeau-hangs",
+      "url": "https://www.youtube.com/watch?v=O-IDWhpCPjw",
+      "title": "Creux Lies — Jubilate (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/O-IDWhpCPjw/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 21
+    },
+    {
+      "id": "vid_1782425821750_3qe5",
+      "artistId": "artist_7",
+      "artistName": "Creux Lies",
+      "artistSlug": "corbeau-hangs",
+      "url": "https://www.youtube.com/watch?v=elG8UBmZ-j4",
+      "title": "Creux Lies - Portals (Dark Wave Music Video)",
+      "thumb": "https://img.youtube.com/vi/elG8UBmZ-j4/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 22
+    },
+    {
+      "id": "vid_1782425821750_b65h",
+      "artistId": "artist_7",
+      "artistName": "Creux Lies",
+      "artistSlug": "corbeau-hangs",
+      "url": "https://www.youtube.com/watch?v=-YzaMNc139U",
+      "title": "Creux Lies - Zone - (Official Video Version)",
+      "thumb": "https://img.youtube.com/vi/-YzaMNc139U/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 23
+    },
+    {
+      "id": "vid_1782425821750_k12m",
+      "artistId": "artist_7",
+      "artistName": "Creux Lies",
+      "artistSlug": "corbeau-hangs",
+      "url": "https://www.youtube.com/watch?v=G15NisnkhzU",
+      "title": "Creux Lies - Blue (Official Video)",
+      "thumb": "https://img.youtube.com/vi/G15NisnkhzU/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 24
+    },
+    {
+      "id": "vid_1782425994178_zo91",
+      "artistId": "artist_8",
+      "artistName": "Dame Area",
+      "artistSlug": "dame-area",
+      "url": "https://www.youtube.com/watch?v=VJubkifWbzY",
+      "title": "MAQUINA. - dança (with Dame Area) (Official Video)",
+      "thumb": "https://img.youtube.com/vi/VJubkifWbzY/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 25
+    },
+    {
+      "id": "vid_1782425994178_r4o6",
+      "artistId": "artist_8",
+      "artistName": "Dame Area",
+      "artistSlug": "dame-area",
+      "url": "https://www.youtube.com/watch?v=_AI1L5AqjvI",
+      "title": "Dame Area - Full Performance (Live on KEXP)",
+      "thumb": "https://img.youtube.com/vi/_AI1L5AqjvI/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 26
+    },
+    {
+      "id": "vid_1782425994178_zqaq",
+      "artistId": "artist_8",
+      "artistName": "Dame Area",
+      "artistSlug": "dame-area",
+      "url": "https://www.youtube.com/watch?v=WzhBzOoicrw",
+      "title": "Dame Area - Si No Es Hoy, Cuando Es (Live on KEXP)",
+      "thumb": "https://img.youtube.com/vi/WzhBzOoicrw/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 27
+    },
+    {
+      "id": "vid_1782425994178_tb00",
+      "artistId": "artist_8",
+      "artistName": "Dame Area",
+      "artistSlug": "dame-area",
+      "url": "https://www.youtube.com/watch?v=4-quW7BfKdA",
+      "title": "Dame Area - Tu Me Hiciste Creer (Live on KEXP)",
+      "thumb": "https://img.youtube.com/vi/4-quW7BfKdA/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 28
+    },
+    {
+      "id": "vid_1782425994178_cbev",
+      "artistId": "artist_8",
+      "artistName": "Dame Area",
+      "artistSlug": "dame-area",
+      "url": "https://www.youtube.com/watch?v=_gi6ET40hfs",
+      "title": "Dame Area: \"La Notte é Oscura\" Videoclip",
+      "thumb": "https://img.youtube.com/vi/_gi6ET40hfs/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 29
+    },
+    {
+      "id": "vid_1782426189690_3dbl",
+      "artistId": "artist_9",
+      "artistName": "Daniel Myer",
+      "artistSlug": "daniel-myer",
+      "url": "https://www.youtube.com/watch?v=Pkp-9l-DuCI",
+      "title": "Architect - Hummingbird (Official Video)",
+      "thumb": "https://img.youtube.com/vi/Pkp-9l-DuCI/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 30
+    },
+    {
+      "id": "vid_1782426189690_id1h",
+      "artistId": "artist_9",
+      "artistName": "Daniel Myer",
+      "artistSlug": "daniel-myer",
+      "url": "https://www.youtube.com/watch?v=r0ovN1Te-jU",
+      "title": "Architect - Neon (Official Video)",
+      "thumb": "https://img.youtube.com/vi/r0ovN1Te-jU/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 31
+    },
+    {
+      "id": "vid_1782426189690_nkiz",
+      "artistId": "artist_9",
+      "artistName": "Daniel Myer",
+      "artistSlug": "daniel-myer",
+      "url": "https://www.youtube.com/watch?v=ZTXEtAv0raQ",
+      "title": "Covenant (Daniel Myer) \"lightbringer\" (Musikzentrum Hannover)",
+      "thumb": "https://img.youtube.com/vi/ZTXEtAv0raQ/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 32
+    },
+    {
+      "id": "vid_1782426189690_dhah",
+      "artistId": "artist_9",
+      "artistName": "Daniel Myer",
+      "artistSlug": "daniel-myer",
+      "url": "https://www.youtube.com/watch?v=hVT0H2KGwUM",
+      "title": "My Sanity (Daniel Myer Remix)",
+      "thumb": "https://img.youtube.com/vi/hVT0H2KGwUM/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 33
+    },
+    {
+      "id": "vid_1782464774814_brfk",
+      "artistId": "artist_10",
+      "artistName": "Die Sexual",
+      "artistSlug": "die-sexual",
+      "url": "https://www.youtube.com/watch?v=x_N7-dNc_qE",
+      "title": "Die Sexual - Darkest Hour (Official Video)",
+      "thumb": "https://img.youtube.com/vi/x_N7-dNc_qE/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 34
+    },
+    {
+      "id": "vid_1782464774814_waq0",
+      "artistId": "artist_10",
+      "artistName": "Die Sexual",
+      "artistSlug": "die-sexual",
+      "url": "https://www.youtube.com/watch?v=DK8oiu2ZYLA",
+      "title": "Die Sexual - Desire (Official Video)",
+      "thumb": "https://img.youtube.com/vi/DK8oiu2ZYLA/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 35
+    },
+    {
+      "id": "vid_1782464774814_tmxp",
+      "artistId": "artist_10",
+      "artistName": "Die Sexual",
+      "artistSlug": "die-sexual",
+      "url": "https://www.youtube.com/watch?v=s8dnuHc79Bs",
+      "title": "Die Sexual - Need To Sin (Visualizer)",
+      "thumb": "https://img.youtube.com/vi/s8dnuHc79Bs/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 36
+    },
+    {
+      "id": "vid_1782464774814_fvaj",
+      "artistId": "artist_10",
+      "artistName": "Die Sexual",
+      "artistSlug": "die-sexual",
+      "url": "https://www.youtube.com/watch?v=ZYE3A51NvGM",
+      "title": "Die Sexual On This Night (Encore) Live El Paso, Texas 10/17/25 Bye Bye Dear ",
+      "thumb": "https://img.youtube.com/vi/ZYE3A51NvGM/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 37
+    },
+    {
+      "id": "vid_1782464774814_vnjk",
+      "artistId": "artist_10",
+      "artistName": "Die Sexual",
+      "artistSlug": "die-sexual",
+      "url": "https://www.youtube.com/watch?v=PnXc2mJyios",
+      "title": "Die Sexual - Darkest Hour",
+      "thumb": "https://img.youtube.com/vi/PnXc2mJyios/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 38
+    },
+    {
+      "id": "vid_1782464932841_z362",
+      "artistId": "artist_11",
+      "artistName": "DONZII",
+      "artistSlug": "donzii",
+      "url": "https://www.youtube.com/watch?v=frE3t3dbSgk",
+      "title": "Donzii - \"Penetrate\" (Official Music Video directed by Trulee Hall)",
+      "thumb": "https://img.youtube.com/vi/frE3t3dbSgk/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 39
+    },
+    {
+      "id": "vid_1782464932841_k6ep",
+      "artistId": "artist_11",
+      "artistName": "DONZII",
+      "artistSlug": "donzii",
+      "url": "https://www.youtube.com/watch?v=tdrotNCVD7k",
+      "title": "Donzii - Rightway Highway (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/tdrotNCVD7k/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 40
+    },
+    {
+      "id": "vid_1782464932841_mxn6",
+      "artistId": "artist_11",
+      "artistName": "DONZII",
+      "artistSlug": "donzii",
+      "url": "https://www.youtube.com/watch?v=StxB3sVMXFA",
+      "title": "Donzii - \"Sand\" (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/StxB3sVMXFA/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 41
+    },
+    {
+      "id": "vid_1782464932841_t3lz",
+      "artistId": "artist_11",
+      "artistName": "DONZII",
+      "artistSlug": "donzii",
+      "url": "https://www.youtube.com/watch?v=UqeNcHzDDms",
+      "title": "Donzii - \"Mines\" (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/UqeNcHzDDms/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 42
+    },
+    {
+      "id": "vid_1782464932841_hx7p",
+      "artistId": "artist_11",
+      "artistName": "DONZII",
+      "artistSlug": "donzii",
+      "url": "https://www.youtube.com/watch?v=_UHPT6b1g34",
+      "title": "Donzii - \"Burn\" (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/_UHPT6b1g34/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 43
+    },
+    {
+      "id": "vid_1782465169247_1kna",
+      "artistId": "artist_12",
+      "artistName": "Jorge Elbrecht",
+      "artistSlug": "jorge-elbrecht",
+      "url": "https://www.youtube.com/watch?v=x_pxkpxk5UI",
+      "title": "Jorge Elbrecht / Galán - Brillante Color (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/x_pxkpxk5UI/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 44
+    },
+    {
+      "id": "vid_1782465169247_u2t0",
+      "artistId": "artist_12",
+      "artistName": "Jorge Elbrecht",
+      "artistSlug": "jorge-elbrecht",
+      "url": "https://www.youtube.com/watch?v=uaHmMCwHEzw",
+      "title": "Jorge Elbrecht - \"Cryptic Moon (feat. Molina)\" [Official Video]",
+      "thumb": "https://img.youtube.com/vi/uaHmMCwHEzw/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 45
+    },
+    {
+      "id": "vid_1782465169247_35uc",
+      "artistId": "artist_12",
+      "artistName": "Jorge Elbrecht",
+      "artistSlug": "jorge-elbrecht",
+      "url": "https://www.youtube.com/watch?v=03d1qVM1NXE",
+      "title": "Jorge Elbrecht / Galán - Sueños Y Colores (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/03d1qVM1NXE/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 46
+    },
+    {
+      "id": "vid_1782465169247_siem",
+      "artistId": "artist_12",
+      "artistName": "Jorge Elbrecht",
+      "artistSlug": "jorge-elbrecht",
+      "url": "https://www.youtube.com/watch?v=56-xtqCzp64",
+      "title": "Jorge Elbrecht - \"Perish (feat. Geneva Jacuzzi)\" [Official Video]",
+      "thumb": "https://img.youtube.com/vi/56-xtqCzp64/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 47
+    },
+    {
+      "id": "vid_1782465169247_2iug",
+      "artistId": "artist_12",
+      "artistName": "Jorge Elbrecht",
+      "artistSlug": "jorge-elbrecht",
+      "url": "https://www.youtube.com/watch?v=ZNtSmNhU98A",
+      "title": "Jorge Elbrecht / Galán - Si Tú No Existieras (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/ZNtSmNhU98A/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 48
+    },
+    {
+      "id": "vid_1782465337195_r5uy",
+      "artistId": "artist_13",
+      "artistName": "Light Asylum",
+      "artistSlug": "light-asylum",
+      "url": "https://www.youtube.com/watch?v=cUyv3HTjNRU",
+      "title": "LIGHT ASYLUM - Dark Allies [OFFICIAL VIDEO]",
+      "thumb": "https://img.youtube.com/vi/cUyv3HTjNRU/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 49
+    },
+    {
+      "id": "vid_1782465337195_qje4",
+      "artistId": "artist_13",
+      "artistName": "Light Asylum",
+      "artistSlug": "light-asylum",
+      "url": "https://www.youtube.com/watch?v=TTk3R--Heug",
+      "title": "LIGHT ASYLUM - Skull Fuct [OFFICIAL VIDEO]",
+      "thumb": "https://img.youtube.com/vi/TTk3R--Heug/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 50
+    },
+    {
+      "id": "vid_1782465337195_nfa1",
+      "artistId": "artist_13",
+      "artistName": "Light Asylum",
+      "artistSlug": "light-asylum",
+      "url": "https://www.youtube.com/watch?v=LYqsMXL6B08",
+      "title": "Light Asylum - Dark Allies (Fader Fort by Fiat 2011)",
+      "thumb": "https://img.youtube.com/vi/LYqsMXL6B08/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 51
+    },
+    {
+      "id": "vid_1782465337195_cbwd",
+      "artistId": "artist_13",
+      "artistName": "Light Asylum",
+      "artistSlug": "light-asylum",
+      "url": "https://www.youtube.com/watch?v=F3AVVvRMwU4",
+      "title": "Light Asylum - Full Performance (Live on KEXP)",
+      "thumb": "https://img.youtube.com/vi/F3AVVvRMwU4/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 52
+    },
+    {
+      "id": "vid_1782465337195_ihq7",
+      "artistId": "artist_13",
+      "artistName": "Light Asylum",
+      "artistSlug": "light-asylum",
+      "url": "https://www.youtube.com/watch?v=NqvBXuXJDuI",
+      "title": "Light Asylum - Dark Allies #friday #electronicmusic #music #goodvibes",
+      "thumb": "https://img.youtube.com/vi/NqvBXuXJDuI/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 53
+    },
+    {
+      "id": "vid_1782465534563_luva",
+      "artistId": "artist_14",
+      "artistName": "Male Tears",
+      "artistSlug": "male-tears",
+      "url": "https://www.youtube.com/watch?v=wUX1vbyCv_E",
+      "title": "MALE TEARS - MODEL CITIZEN (VIDEO)",
+      "thumb": "https://img.youtube.com/vi/wUX1vbyCv_E/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 54
+    },
+    {
+      "id": "vid_1782465534563_1rsq",
+      "artistId": "artist_14",
+      "artistName": "Male Tears",
+      "artistSlug": "male-tears",
+      "url": "https://www.youtube.com/watch?v=xlBikPOehEg",
+      "title": "Male Tears - Talk To Me (VIDEO)",
+      "thumb": "https://img.youtube.com/vi/xlBikPOehEg/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 55
+    },
+    {
+      "id": "vid_1782465534563_ufky",
+      "artistId": "artist_14",
+      "artistName": "Male Tears",
+      "artistSlug": "male-tears",
+      "url": "https://www.youtube.com/watch?v=aZIg-0YpupM",
+      "title": "MALE TEARS - HIT ME (VIDEO)",
+      "thumb": "https://img.youtube.com/vi/aZIg-0YpupM/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 56
+    },
+    {
+      "id": "vid_1782465534563_99rl",
+      "artistId": "artist_14",
+      "artistName": "Male Tears",
+      "artistSlug": "male-tears",
+      "url": "https://www.youtube.com/watch?v=Up__LwbtkBg",
+      "title": "Male Tears - Take My Picture (Official Video)",
+      "thumb": "https://img.youtube.com/vi/Up__LwbtkBg/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 57
+    },
+    {
+      "id": "vid_1782465534563_hvzm",
+      "artistId": "artist_14",
+      "artistName": "Male Tears",
+      "artistSlug": "male-tears",
+      "url": "https://www.youtube.com/watch?v=8qoEWc5NBeA",
+      "title": "Male Tears - Regret 4 Nothing (VIDEO)",
+      "thumb": "https://img.youtube.com/vi/8qoEWc5NBeA/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 58
+    },
+    {
+      "id": "vid_1782466066288_nys7",
+      "artistId": "artist_14",
+      "artistName": "Male Tears",
+      "artistSlug": "male-tears",
+      "url": "https://www.youtube.com/watch?v=JeN6bYqs8zA",
+      "title": "Male Tears - Good In The Dark (Official Video)",
+      "thumb": "https://img.youtube.com/vi/JeN6bYqs8zA/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 59
+    },
+    {
+      "id": "vid_1782466288527_8r2z",
+      "artistId": "artist_16",
+      "artistName": "Nox Novacula",
+      "artistSlug": "nox-novacula",
+      "url": "https://www.youtube.com/watch?v=7MsUfb3mPGY",
+      "title": "Nox Novacula- Last Will and Testament (Official Video)",
+      "thumb": "https://img.youtube.com/vi/7MsUfb3mPGY/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 60
+    },
+    {
+      "id": "vid_1782466288528_a4j8",
+      "artistId": "artist_16",
+      "artistName": "Nox Novacula",
+      "artistSlug": "nox-novacula",
+      "url": "https://www.youtube.com/watch?v=Y_k0rTujBvg",
+      "title": "Nox Novacula - Flood (official video)",
+      "thumb": "https://img.youtube.com/vi/Y_k0rTujBvg/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 61
+    },
+    {
+      "id": "vid_1782466288528_k0t0",
+      "artistId": "artist_16",
+      "artistName": "Nox Novacula",
+      "artistSlug": "nox-novacula",
+      "url": "https://www.youtube.com/watch?v=-vzXlARzjxk",
+      "title": "NOX NOVACULA - DRUG 7\" version  (official video)",
+      "thumb": "https://img.youtube.com/vi/-vzXlARzjxk/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 62
+    },
+    {
+      "id": "vid_1782466288528_iz4v",
+      "artistId": "artist_16",
+      "artistName": "Nox Novacula",
+      "artistSlug": "nox-novacula",
+      "url": "https://www.youtube.com/watch?v=09yTUKwJy4k",
+      "title": "Pray For Sleep (demo)",
+      "thumb": "https://img.youtube.com/vi/09yTUKwJy4k/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 63
+    },
+    {
+      "id": "vid_1782466288528_w75g",
+      "artistId": "artist_16",
+      "artistName": "Nox Novacula",
+      "artistSlug": "nox-novacula",
+      "url": "https://www.youtube.com/watch?v=DBTedpMBoQI",
+      "title": "Nox Novacula: The Path",
+      "thumb": "https://img.youtube.com/vi/DBTedpMBoQI/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 64
+    },
+    {
+      "id": "vid_1782466403039_o224",
+      "artistId": "artist_17",
+      "artistName": "Sacred Skin",
+      "artistSlug": "sacred-skin",
+      "url": "https://www.youtube.com/watch?v=x9-JTKWP9Lc",
+      "title": "SACRED SKIN: \"Insomnia\" feat. SRSQ- OFFICIAL VIDEO #ARTOFFACT #newwave #darkwave #synth",
+      "thumb": "https://img.youtube.com/vi/x9-JTKWP9Lc/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 65
+    },
+    {
+      "id": "vid_1782466403039_fqxn",
+      "artistId": "artist_17",
+      "artistName": "Sacred Skin",
+      "artistSlug": "sacred-skin",
+      "url": "https://www.youtube.com/watch?v=3C1y4RKLX5U",
+      "title": "SACRED SKIN: \"Waiting\" from Born in Fire OFFICIAL VIDEO #ARTOFFACT #newwave",
+      "thumb": "https://img.youtube.com/vi/3C1y4RKLX5U/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 67
+    },
+    {
+      "id": "vid_1782466403040_qqr1",
+      "artistId": "artist_17",
+      "artistName": "Sacred Skin",
+      "artistSlug": "sacred-skin",
+      "url": "https://www.youtube.com/watch?v=2NAQeyDt0kg",
+      "title": "Far Away",
+      "thumb": "https://img.youtube.com/vi/2NAQeyDt0kg/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 68
+    },
+    {
+      "id": "vid_1782466403040_bsne",
+      "artistId": "artist_17",
+      "artistName": "Sacred Skin",
+      "artistSlug": "sacred-skin",
+      "url": "https://www.youtube.com/watch?v=Wi1MxoxXRZ0",
+      "title": "Sacred Skin - Far Away (Music Video)",
+      "thumb": "https://img.youtube.com/vi/Wi1MxoxXRZ0/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 69
+    },
+    {
+      "id": "vid_1782466570282_pk9m",
+      "artistId": "artist_15",
+      "artistName": "Mellow Code",
+      "artistSlug": "mellow-code",
+      "url": "https://www.youtube.com/watch?v=Oq1teH_siBA",
+      "title": "MELLOW CODE - FACE IT (Official Video)",
+      "thumb": "https://img.youtube.com/vi/Oq1teH_siBA/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 70
+    },
+    {
+      "id": "vid_1782466570282_qcot",
+      "artistId": "artist_15",
+      "artistName": "Mellow Code",
+      "artistSlug": "mellow-code",
+      "url": "https://www.youtube.com/watch?v=lx7H_j4Vktc",
+      "title": "MELLOW CODE & SKM/LKR - KNIVES (OFFICIAL VIDEO)",
+      "thumb": "https://img.youtube.com/vi/lx7H_j4Vktc/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 71
+    },
+    {
+      "id": "vid_1782466570282_j2up",
+      "artistId": "artist_15",
+      "artistName": "Mellow Code",
+      "artistSlug": "mellow-code",
+      "url": "https://www.youtube.com/watch?v=yAn965YGqgo",
+      "title": "Communion After Dark feat. Mellow Code - New Dark Electro, Industrial, EBM, Gothic, Synthpop",
+      "thumb": "https://img.youtube.com/vi/yAn965YGqgo/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 72
+    },
+    {
+      "id": "vid_1782466570282_7mlo",
+      "artistId": "artist_15",
+      "artistName": "Mellow Code",
+      "artistSlug": "mellow-code",
+      "url": "https://www.youtube.com/watch?v=WpSsEOJXUtk",
+      "title": "Mellow Code * Face It",
+      "thumb": "https://img.youtube.com/vi/WpSsEOJXUtk/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 73
+    },
+    {
+      "id": "vid_1782466763407_b3yv",
+      "artistId": "artist_18",
+      "artistName": "Secret Attraction",
+      "artistSlug": "secret-attraction",
+      "url": "https://www.youtube.com/watch?v=HDsZ-Nmowjc",
+      "title": "Secret Attraction - Strawberry (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/HDsZ-Nmowjc/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 74
+    },
+    {
+      "id": "vid_1782466763407_tvq0",
+      "artistId": "artist_18",
+      "artistName": "Secret Attraction",
+      "artistSlug": "secret-attraction",
+      "url": "https://www.youtube.com/watch?v=3BOMNhMSt_I",
+      "title": "Secret Attraction - Next To You (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/3BOMNhMSt_I/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 75
+    },
+    {
+      "id": "vid_1782466763407_mkz0",
+      "artistId": "artist_18",
+      "artistName": "Secret Attraction",
+      "artistSlug": "secret-attraction",
+      "url": "https://www.youtube.com/watch?v=PQrniXkAim0",
+      "title": "Secret Attraction - True Love (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/PQrniXkAim0/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 76
+    },
+    {
+      "id": "vid_1782466763407_p78d",
+      "artistId": "artist_18",
+      "artistName": "Secret Attraction",
+      "artistSlug": "secret-attraction",
+      "url": "https://www.youtube.com/watch?v=H6pewxVg7Ts",
+      "title": "Secret Attraction - You",
+      "thumb": "https://img.youtube.com/vi/H6pewxVg7Ts/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 77
+    },
+    {
+      "id": "vid_1782466763407_qdea",
+      "artistId": "artist_18",
+      "artistName": "Secret Attraction",
+      "artistSlug": "secret-attraction",
+      "url": "https://www.youtube.com/watch?v=DFRNc0VKDeA",
+      "title": "Secret Attraction - All Night",
+      "thumb": "https://img.youtube.com/vi/DFRNc0VKDeA/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 78
+    },
+    {
+      "id": "vid_1782466996909_xf0k",
+      "artistId": "artist_19",
+      "artistName": "Sleek Teeth",
+      "artistSlug": "sleek-teeth",
+      "url": "https://www.youtube.com/watch?v=Hht-7g-jsoI",
+      "title": "Sleek Teeth - Operating (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/Hht-7g-jsoI/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 79
+    },
+    {
+      "id": "vid_1782466996909_h37d",
+      "artistId": "artist_19",
+      "artistName": "Sleek Teeth",
+      "artistSlug": "sleek-teeth",
+      "url": "https://www.youtube.com/watch?v=B3BKTtkH_F4",
+      "title": "Sleek Teeth - Same (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/B3BKTtkH_F4/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 80
+    },
+    {
+      "id": "vid_1782466996909_cawq",
+      "artistId": "artist_19",
+      "artistName": "Sleek Teeth",
+      "artistSlug": "sleek-teeth",
+      "url": "https://www.youtube.com/watch?v=Rc6Y_mkRdPM",
+      "title": "Sleek Teeth - Gone (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/Rc6Y_mkRdPM/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 81
+    },
+    {
+      "id": "vid_1782466996909_0j0v",
+      "artistId": "artist_19",
+      "artistName": "Sleek Teeth",
+      "artistSlug": "sleek-teeth",
+      "url": "https://www.youtube.com/watch?v=FiDTAJy5MA8",
+      "title": "Sleek Teeth - Endless (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/FiDTAJy5MA8/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 82
+    },
+    {
+      "id": "vid_1782467223662_0x8z",
+      "artistId": "artist_20",
+      "artistName": "Some Ember",
+      "artistSlug": "some-ember",
+      "url": "https://www.youtube.com/watch?v=j2qAgncjPfs",
+      "title": "Some Ember - Rift (Official Video)",
+      "thumb": "https://img.youtube.com/vi/j2qAgncjPfs/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 83
+    },
+    {
+      "id": "vid_1782467223662_i4vq",
+      "artistId": "artist_20",
+      "artistName": "Some Ember",
+      "artistSlug": "some-ember",
+      "url": "https://www.youtube.com/watch?v=WAxuRjSD4R4",
+      "title": "Some Ember - Excavate (Official Video)",
+      "thumb": "https://img.youtube.com/vi/WAxuRjSD4R4/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 84
+    },
+    {
+      "id": "vid_1782467223662_x931",
+      "artistId": "artist_20",
+      "artistName": "Some Ember",
+      "artistSlug": "some-ember",
+      "url": "https://www.youtube.com/watch?v=nmaEDHpCOA0",
+      "title": "Some Ember - Love Comes Quickly (Official Video)",
+      "thumb": "https://img.youtube.com/vi/nmaEDHpCOA0/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 85
+    },
+    {
+      "id": "vid_1782467223662_49ja",
+      "artistId": "artist_20",
+      "artistName": "Some Ember",
+      "artistSlug": "some-ember",
+      "url": "https://www.youtube.com/watch?v=JR9pylnvY_0",
+      "title": "Some Ember - Towed (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/JR9pylnvY_0/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 86
+    },
+    {
+      "id": "vid_1782467223662_4bpl",
+      "artistId": "artist_20",
+      "artistName": "Some Ember",
+      "artistSlug": "some-ember",
+      "url": "https://www.youtube.com/watch?v=4hh_CYCvYNo",
+      "title": "Some Ember - Meaning Is Deprecated (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/4hh_CYCvYNo/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 87
+    },
+    {
+      "id": "vid_1782467384579_5i0n",
+      "artistId": "artist_21",
+      "artistName": "Street Fever",
+      "artistSlug": "street-fever",
+      "url": "https://www.youtube.com/watch?v=rrjk6elYSHI",
+      "title": "Street Fever - La Corde (video)",
+      "thumb": "https://img.youtube.com/vi/rrjk6elYSHI/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 88
+    },
+    {
+      "id": "vid_1782467384579_ntv0",
+      "artistId": "artist_21",
+      "artistName": "Street Fever",
+      "artistSlug": "street-fever",
+      "url": "https://www.youtube.com/watch?v=gh8nE8UYeaQ",
+      "title": "Street Fever - Fate (Official Video)",
+      "thumb": "https://img.youtube.com/vi/gh8nE8UYeaQ/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 89
+    },
+    {
+      "id": "vid_1782467384579_8vnz",
+      "artistId": "artist_21",
+      "artistName": "Street Fever",
+      "artistSlug": "street-fever",
+      "url": "https://www.youtube.com/watch?v=gpV_Ncaln8s",
+      "title": "Street Fever - \"Sinner\" Official Music Video",
+      "thumb": "https://img.youtube.com/vi/gpV_Ncaln8s/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 90
+    },
+    {
+      "id": "vid_1782467384579_4sb1",
+      "artistId": "artist_21",
+      "artistName": "Street Fever",
+      "artistSlug": "street-fever",
+      "url": "https://www.youtube.com/watch?v=EDHULcbd4dI",
+      "title": "Street Fever 🔥 | Official Music Video 2026 ",
+      "thumb": "https://img.youtube.com/vi/EDHULcbd4dI/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 91
+    },
+    {
+      "id": "vid_1782467384579_vb4a",
+      "artistId": "artist_21",
+      "artistName": "Street Fever",
+      "artistSlug": "street-fever",
+      "url": "https://www.youtube.com/watch?v=Ut62GatRbk0",
+      "title": "Street Fever Live",
+      "thumb": "https://img.youtube.com/vi/Ut62GatRbk0/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 92
+    },
+    {
+      "id": "vid_1782467583903_nuq4",
+      "artistId": "artist_22",
+      "artistName": "Topographies",
+      "artistSlug": "topographies",
+      "url": "https://www.youtube.com/watch?v=w9y9hvJrpnA",
+      "title": "Topographies \"False Desire\" [Official Video]",
+      "thumb": "https://img.youtube.com/vi/w9y9hvJrpnA/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 93
+    },
+    {
+      "id": "vid_1782467583904_ueii",
+      "artistId": "artist_22",
+      "artistName": "Topographies",
+      "artistSlug": "topographies",
+      "url": "https://www.youtube.com/watch?v=E71a0Y3je_Y",
+      "title": "topographies - pink thoughts (Official Video)",
+      "thumb": "https://img.youtube.com/vi/E71a0Y3je_Y/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 94
+    },
+    {
+      "id": "vid_1782467583904_j8z8",
+      "artistId": "artist_22",
+      "artistName": "Topographies",
+      "artistSlug": "topographies",
+      "url": "https://www.youtube.com/watch?v=4doVXWHJQrw",
+      "title": "topographies - roman figure (Official Video)",
+      "thumb": "https://img.youtube.com/vi/4doVXWHJQrw/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 95
+    },
+    {
+      "id": "vid_1782467583904_fe8j",
+      "artistId": "artist_22",
+      "artistName": "Topographies",
+      "artistSlug": "topographies",
+      "url": "https://www.youtube.com/watch?v=ww9q_0d-ywM",
+      "title": "Topographies - Rose Of Sharon (vídeo)",
+      "thumb": "https://img.youtube.com/vi/ww9q_0d-ywM/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 96
+    },
+    {
+      "id": "vid_1782467583904_qywd",
+      "artistId": "artist_22",
+      "artistName": "Topographies",
+      "artistSlug": "topographies",
+      "url": "https://www.youtube.com/watch?v=0uWO9zzKY00",
+      "title": "topographies - Rose of Sharon (Music Video)",
+      "thumb": "https://img.youtube.com/vi/0uWO9zzKY00/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 97
+    },
+    {
+      "id": "vid_1782467713053_vee7",
+      "artistId": "artist_23",
+      "artistName": "XTR Human",
+      "artistSlug": "xtr-human",
+      "url": "https://www.youtube.com/watch?v=7Y0blxOf4CM",
+      "title": "XTR HUMAN - Reflections [Official Video]",
+      "thumb": "https://img.youtube.com/vi/7Y0blxOf4CM/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 98
+    },
+    {
+      "id": "vid_1782467713053_ui5t",
+      "artistId": "artist_23",
+      "artistName": "XTR Human",
+      "artistSlug": "xtr-human",
+      "url": "https://www.youtube.com/watch?v=IwLkzGQf15w",
+      "title": "XTR HUMAN // Monitor [Offical Video]",
+      "thumb": "https://img.youtube.com/vi/IwLkzGQf15w/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 99
+    },
+    {
+      "id": "vid_1782467713053_s263",
+      "artistId": "artist_23",
+      "artistName": "XTR Human",
+      "artistSlug": "xtr-human",
+      "url": "https://www.youtube.com/watch?v=OuXn-Ysp9HM",
+      "title": "XTR HUMAN -  I WANT MORE (Official Video)",
+      "thumb": "https://img.youtube.com/vi/OuXn-Ysp9HM/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 100
+    },
+    {
+      "id": "vid_1782467713053_pncw",
+      "artistId": "artist_23",
+      "artistName": "XTR Human",
+      "artistSlug": "xtr-human",
+      "url": "https://www.youtube.com/watch?v=_9f1bHHIcNk",
+      "title": "XTR HUMAN // Monospace [Official Video]",
+      "thumb": "https://img.youtube.com/vi/_9f1bHHIcNk/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 101
+    },
+    {
+      "id": "vid_1782467713053_62iv",
+      "artistId": "artist_23",
+      "artistName": "XTR Human",
+      "artistSlug": "xtr-human",
+      "url": "https://www.youtube.com/watch?v=OwK2B_LorgI",
+      "title": "XTR HUMAN - ABGRUND (Official Video)",
+      "thumb": "https://img.youtube.com/vi/OwK2B_LorgI/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 102
+    },
+    {
+      "id": "vid_1782467913987_l7ft",
+      "artistId": "artist_24",
+      "artistName": "Yama Uba",
+      "artistSlug": "yama-uba",
+      "url": "https://www.youtube.com/watch?v=vy1PgyM22rw",
+      "title": "Yama Uba - Isolation (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/vy1PgyM22rw/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 103
+    },
+    {
+      "id": "vid_1782467913987_vlj9",
+      "artistId": "artist_24",
+      "artistName": "Yama Uba",
+      "artistSlug": "yama-uba",
+      "url": "https://www.youtube.com/watch?v=N5s2OgLd5lE",
+      "title": "Yama Uba - Shapes (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/N5s2OgLd5lE/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 104
+    },
+    {
+      "id": "vid_1782467913987_yef7",
+      "artistId": "artist_24",
+      "artistName": "Yama Uba",
+      "artistSlug": "yama-uba",
+      "url": "https://www.youtube.com/watch?v=qR013LMNfOI",
+      "title": "Yama Uba - Phantom World (Music Video) HD",
+      "thumb": "https://img.youtube.com/vi/qR013LMNfOI/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 106
+    },
+    {
+      "id": "vid_1782467913987_r6li",
+      "artistId": "artist_24",
+      "artistName": "Yama Uba",
+      "artistSlug": "yama-uba",
+      "url": "https://www.youtube.com/watch?v=e-jFnKO621g",
+      "title": "Yama Uba - I'm in Love with a German Film Star (The Passions Cover) (Official Audio)",
+      "thumb": "https://img.youtube.com/vi/e-jFnKO621g/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 107
+    },
+    {
+      "id": "vid_1782469461584_qf5w",
+      "artistId": "artist_25",
+      "artistName": "Zanias",
+      "artistSlug": "zanias",
+      "url": "https://www.youtube.com/watch?v=e7Tc5Nk_n4M",
+      "title": "Zanias - Follow the Body (Official Video)",
+      "thumb": "https://img.youtube.com/vi/e7Tc5Nk_n4M/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 108
+    },
+    {
+      "id": "vid_1782469461584_2z4a",
+      "artistId": "artist_25",
+      "artistName": "Zanias",
+      "artistSlug": "zanias",
+      "url": "https://www.youtube.com/watch?v=vDo4PFZrxow",
+      "title": "Zanias - Cataclysm (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/vDo4PFZrxow/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 109
+    },
+    {
+      "id": "vid_1782469461584_clpy",
+      "artistId": "artist_25",
+      "artistName": "Zanias",
+      "artistSlug": "zanias",
+      "url": "https://www.youtube.com/watch?v=Q-_qBnO_PQc",
+      "title": "Zanias - Untethered (Official Video)",
+      "thumb": "https://img.youtube.com/vi/Q-_qBnO_PQc/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 110
+    },
+    {
+      "id": "vid_1782469461584_jmza",
+      "artistId": "artist_25",
+      "artistName": "Zanias",
+      "artistSlug": "zanias",
+      "url": "https://www.youtube.com/watch?v=QknrDYYfsJ4",
+      "title": "Zanias - Dawn (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/QknrDYYfsJ4/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 111
+    },
+    {
+      "id": "vid_1782469461584_vo3i",
+      "artistId": "artist_25",
+      "artistName": "Zanias",
+      "artistSlug": "zanias",
+      "url": "https://www.youtube.com/watch?v=AsQfcuL2z2g",
+      "title": "Zanias - Serpentsmile (Official Music Video)",
+      "thumb": "https://img.youtube.com/vi/AsQfcuL2z2g/mqdefault.jpg",
+      "category": "Music Video",
+      "featured": false,
+      "description": "",
+      "order": 112
     }
   ]
 };
