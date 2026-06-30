@@ -1,442 +1,212 @@
-/**
- * Melankolia Tour Planner — AI Tour Intelligence v2
- * Deep booking-agent knowledge baked in.
- * Models: gemini-3.1-pro-preview (routing) | gemini-3.5-flash (fast)
- * Gemini 2.x is strictly forbidden.
- */
+const { json, listDocs } = require('./_firebase');
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+// Keep this inside Netlify functions. No frontend API keys.
+const FAST = process.env.GEMINI_FAST_MODEL || 'gemini-3.1-flash-lite';
+const ROUTE = process.env.GEMINI_ROUTE_FAST_MODEL || process.env.GEMINI_ROUTE_MODEL_FAST || FAST;
+const CTX = `You are Melankolia Agency's senior underground booking strategist for darkwave, EBM, industrial, post-punk, synth, goth, and adjacent touring. Return strict JSON only. Do not write markdown.
 
-const MODELS = {
-  PRO: 'gemini-3.1-pro-preview',
-  FLASH: 'gemini-3.5-flash'
-};
+Real workflow model:
+- A route is not automatically booked. It develops as a booking funnel: prospect -> contacted -> hold -> offer -> negotiating -> deal_made -> confirmed -> advanced -> settled.
+- Routing starts from anchors/holds/confirmed dates, then fills gaps with realistic markets and candidate venues.
+- Good routing balances drive time, recovery, draw, venue fit, rate, deal structure, routing logic, buyer reliability, hotels, flights/trains/vans, gear weight, backline, border crossings, and whether back-to-back shows are physically possible.
+- Holds need deadlines and context. Confirmed/locked stops need advancing details. Every stop should expose venue info, rate target, offer, deal status, travel feasibility, hotel responsibility, gear/backline needs, and next action.
+- Avoid pretending unknown data is confirmed.`;
 
-async function callGemini(model, prompt) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.9, maxOutputTokens: 8192 }
-    })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-}
-
-// ---- DEEP BOOKING CONTEXT ----
-const BOOKING_CONTEXT = `
-You are an experienced music booking agent at Melankolia Agency, a specialist agency for dark/underground music:
-darkwave, EBM, post-punk, industrial, coldwave, synthpop, minimal wave, goth.
-
-Roster: Automelodi, Bestial Mouths, Bootblacks, Zanias, Blood Handsome, Blood Rave, CD Ghost,
-Corbeau Hangs, Creux Lies, Dame Area, Daniel Myer, Die Sexual, Donzii, Jorge Elbrecht,
-Light Asylum, Male Tears, Mellow Code, Nox Novacula, Sacred Skin, Secret Attraction, Sleek Teeth,
-Some Ember, Street Fever, Topographies, XTR Human, Yama Uba.
-
-=== HOW PROFESSIONAL BOOKING AGENTS PLAN TOURS ===
-
-PHASE 1 — STRATEGY & ANCHORS
-- Identify the TOUR WINDOW: spring (Mar-May), fall (Sept-Nov) are peak. Avoid December/January for underground acts.
-- Anchor shows are the foundation. An anchor is a confirmed, high-value show in a major market — a festival slot, a well-known venue, a promoter relationship. Not every tour has an anchor, but when you have one, you build the route around it.
-- Anchor rules: 1-3 anchors per 10-14 day leg. Anchors should be on Fri or Sat. Never put an anchor on a Monday.
-- Without anchors: identify the 2-3 strongest markets for this artist (where streaming/social data shows audience density) and treat those as pseudo-anchors.
-
-PHASE 2 — ROUTING LOGIC
-- Route as a line or a regional loop — never zigzag. Geography first, always.
-- Optimal drive between shows: 2-5 hours / 150-400 km. Hard cap: 6 hours / 500 km without a rest day after.
-- Show spacing: 5-7 shows per week maximum for underground acts (they often travel without crew).
-- Day-of-week priority: Fri/Sat anchor shows, Thu as strong support, Wed/Sun as acceptable, Mon/Tue for strong markets only or travel days.
-- Dead days (no show, no meaningful travel) are a budget drain — minimize them but don't eliminate them. 1 dead day per 7 is healthy for rest.
-- Always include 1 routing show before any anchor to warm up.
-- End the tour in a major market or near the artist's home city to minimize final travel costs.
-
-PHASE 3 — MARKET TIERS
-USA Tier 1 (strongest underground markets): NYC, LA, Chicago, SF/Oakland, Seattle, Portland
-USA Tier 2: Denver, Austin, Dallas, Atlanta, Miami, Boston, Philadelphia, Detroit, Minneapolis, New Orleans
-USA Tier 3 (test markets): Nashville, Phoenix, Kansas City, Baltimore, Pittsburgh, Raleigh, Columbus
-Europe Tier 1: Berlin, London, Amsterdam, Paris, Brussels
-Europe Tier 2: Hamburg, Cologne, Vienna, Prague, Warsaw, Barcelona, Madrid, Zurich, Stockholm, Copenhagen, Ghent
-Europe Tier 3: Leipzig, Düsseldorf, Antwerp, Rotterdam, Lyon, Bordeaux, Porto, Wrocław, Bratislava
-
-PHASE 4 — DEAL STRUCTURES
-- Guarantee: flat fee regardless of attendance. Use for markets where artist has draw. Typical range $500-$3000 USD / €400-€2500 EUR.
-- Door deal (split): artist takes 70-80% of door after venue expenses. Use for new markets.
-- Guarantee vs. door (best of): ideal — artist gets the higher of the two. Push for this in mid-tier markets.
-- Festival offers: flat fee, often includes travel/hotel. Accept $1500+ for underground acts in Europe, $2500+ in USA.
-- Never accept a show with no deal structure in writing. Even an email confirmation is acceptable.
-
-PHASE 5 — ADVANCING & LOGISTICS
-- Start advancing (contacting venues for tech specs, guest lists, settlement) 4-6 weeks before show date.
-- Confirm hotel/accommodation for every date 3 weeks out.
-- Build a "day sheet" per show: load-in time, soundcheck, doors, show, settlement.
-- Day sheet timeline: Load-in 4-5pm, Soundcheck 5-7pm, Doors 8-9pm, Show 10pm, Settlement at the bar after headliner set.
-- Local support acts: always have one. They bring their own audience and reduce load on the headliner.
-
-PHASE 6 — FINANCIAL REALITIES
-- Underground acts touring USA on a 10-day run, 3-4 people: budget $8,000-$15,000 in expenses.
-- Europe on a 10-day run: budget €5,000-€10,000 expenses.
-- Merch is critical: 10-20% of door revenue in merch sales is a realistic target. Merch often covers lodging.
-- Break-even: need average guarantee ≥ total expenses ÷ number of shows.
-- Tour support: labels sometimes offer $1,000-$5,000 for tour support on releases. Factor this in.
-
-=== UNDERGROUND CIRCUIT KNOWLEDGE ===
-USA underground venues (darkwave/EBM/post-punk):
-- NYC: TV Eye, Market Hotel, Baby's All Right, Berlin, C'mon Everybody, Trans-Pecos
-- LA: The Smell, Zebulon, Troubadour (for bigger acts), Lodge Room
-- Chicago: Empty Bottle, Sleeping Village, Schubas
-- SF: The Independent, Bottom of the Hill, 1015 Folsom (for EBM), Great American Music Hall
-- Seattle: Chop Suey, Neumos, Barboza
-- Portland: Mississippi Studios, Doug Fir, Star Theater
-- Austin: Mohawk (inside), Parish, Hole in the Wall
-- Denver: Bluebird Theater, Larimer Lounge
-Europe underground venues:
-- Berlin: Musik & Frieden, Badehaus, Berghain Kantine (for EBM), SO36, Frannz Club
-- London: Moth Club, Corsica Studios, EartH, Bush Hall
-- Amsterdam: Paradiso small hall, Occii, De School alumni venues, Shelter
-- Brussels: Botanique, Ancienne Belgique, Magasin 4
-- Paris: La Maroquinerie, Supersonic, Le Glazart, Nouveau Casino
-- Hamburg: Molotow, Knust, Uebel & Gefährlich
-- Vienna: Arena, B72, Fluc
-- Prague: Ankali, Cross Club
-`;
-
-// ---- HELPERS ----
-function extractJSON(text, type = 'object') {
-  const patterns = type === 'array'
-    ? [/```json\s*(\[[\s\S]*?\])\s*```/, /(\[[\s\S]*\])/]
-    : [/```json\s*(\{[\s\S]*?\})\s*```/, /(\{[\s\S]*\})/];
-  for (const pat of patterns) {
-    const m = text.match(pat);
-    if (m) {
-      try { return JSON.parse(m[1]); } catch {}
-    }
-  }
-  throw new Error('AI did not return valid JSON. Raw: ' + text.slice(0, 300));
-}
-
-// ---- HANDLER ----
 exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' }, body: '' };
-  }
-  if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
+  if (event.httpMethod === 'OPTIONS') return json(204, {});
+  if (event.httpMethod !== 'POST') return json(405, { success:false, error:'POST only' });
 
-  const headers = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
+  const key = process.env.GEMINI_API_KEY_V2 || process.env.GEMINI_API_KEY;
+  if (!key) return json(500, { success:false, error:'GEMINI key missing' });
 
-  let body;
-  try { body = JSON.parse(event.body); }
-  catch { return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }), headers }; }
+  let body = {};
+  try { body = JSON.parse(event.body || '{}'); } catch { return json(400, { success:false, error:'Invalid request JSON' }); }
 
-  const { action, data } = body;
+  const action = body.action || 'chat';
+  const data = body.data || {};
+  const model = body.model || ROUTE;
 
   try {
-    let result;
-
-    switch (action) {
-
-      // ---- GENERATE FULL TOUR PLAN ----
-      case 'generate_tour': {
-        const { artist, region, startCity, endCity, startDate, endDate, budget, numShows, preferences, anchorShows, dealType } = data;
-
-        const anchorText = anchorShows?.length
-          ? `CONFIRMED ANCHORS (build route around these):\n${anchorShows.map(a => `  - ${a.city} on ${a.date} at ${a.venue || 'TBD'} (${a.deal || 'deal TBD'})`).join('\n')}`
-          : 'No confirmed anchors yet — identify the strongest markets as pseudo-anchors and schedule them Fri/Sat.';
-
-        const prompt = `${BOOKING_CONTEXT}
-
-TOUR BRIEF:
-- Artist: ${artist}
-- Region: ${region}
-- Start: ${startCity} on ${startDate}
-- End: ${endCity || 'loop back near start'} by ${endDate}
-- Target shows: ${numShows || 'as many as geography allows without over-touring'}
-- Deal type preference: ${dealType || 'guarantee or best-of'}
-- Budget per show: ${budget || 'market rate'}
-- Special notes: ${preferences || 'none'}
-${anchorText}
-
-As the booking agent, produce a complete, realistic tour itinerary following professional routing principles.
-Apply all rules: max 500km between consecutive show days, rest days after hard travel, Fri/Sat for best markets, anchor shows positioned correctly.
-
-Return ONLY a valid JSON object (no markdown, no code fences, no commentary):
-{
-  "tour_name": "string — evocative tour name",
-  "routing_strategy": "linear|regional_loop|hub_spoke",
-  "summary": "2-3 sentences describing the routing logic and strategy",
-  "total_days": number,
-  "total_shows": number,
-  "total_rest_days": number,
-  "estimated_total_km": number,
-  "avg_guarantee_target_usd": number,
-  "projected_gross_usd": number,
-  "legs": [
-    {
-      "day": number,
-      "date": "YYYY-MM-DD",
-      "city": "string",
-      "country": "string",
-      "venue_type": "club|festival|art_space|theatre|diy|bar",
-      "suggested_venue": "specific venue name if known",
-      "suggested_venue_search": "search query to find venues",
-      "drive_from_previous_km": number,
-      "drive_hours": number,
-      "is_anchor_show": true|false,
-      "is_routing_show": true|false,
-      "day_off": true|false,
-      "day_type": "anchor|routing|day_off|travel",
-      "day_of_week": "Mon|Tue|Wed|Thu|Fri|Sat|Sun",
-      "deal_suggestion": "guarantee|door|best_of|festival",
-      "suggested_guarantee_usd": number or null,
-      "local_support_needed": true|false,
-      "notes": "routing rationale and practical notes",
-      "advancing_notes": "what to confirm 4-6 weeks out"
-    }
-  ],
-  "anchor_strategy": "explanation of how anchors were placed and why",
-  "routing_notes": "key decisions made in the routing",
-  "fill_gaps": ["cities worth adding if a date opens up"],
-  "warnings": ["routing issues, tight drives, risky dates"],
-  "advancing_checklist": ["5-7 items to advance before departure"],
-  "ai_tips": ["4-6 specific, actionable tips for this artist on this specific route"]
-}`;
-
-        const text = await callGemini(MODELS.PRO, prompt);
-        result = extractJSON(text, 'object');
-        break;
-      }
-
-      // ---- ANALYZE ANCHORS & SUGGEST ROUTING ----
-      case 'analyze_anchors': {
-        const { artist, anchors, region, tourWindow } = data;
-
-        const prompt = `${BOOKING_CONTEXT}
-
-Artist: ${artist}
-Region: ${region}
-Tour window: ${tourWindow || 'flexible'}
-Confirmed or potential anchor shows:
-${anchors.map(a => `- ${a.city} ${a.date ? 'on ' + a.date : '(date TBD)'} ${a.venue ? 'at ' + a.venue : ''}`).join('\n')}
-
-As a booking agent, analyze these anchors and advise on:
-1. Are the anchors well-placed for routing?
-2. What routing shows should fill the gaps between them?
-3. Which markets are missing that are geographically logical?
-4. What deal structure should each anchor pursue?
-
-Return ONLY valid JSON (no markdown):
-{
-  "anchor_assessment": [
-    {
-      "city": "string",
-      "date": "string",
-      "assessment": "strong|acceptable|problematic",
-      "day_of_week_ok": true|false,
-      "note": "string"
-    }
-  ],
-  "routing_gaps": [
-    {
-      "between": "City A → City B",
-      "gap_km": number,
-      "suggested_fills": ["city1", "city2"],
-      "urgency": "must_fill|nice_to_have"
-    }
-  ],
-  "missing_markets": ["city1", "city2"],
-  "deal_suggestions": [
-    { "city": "string", "deal_type": "guarantee|door|best_of", "target_usd": number, "reasoning": "string" }
-  ],
-  "overall_verdict": "strong|needs_work|problematic",
-  "verdict_summary": "2-3 sentence honest assessment"
-}`;
-
-        const text = await callGemini(MODELS.FLASH, prompt);
-        result = extractJSON(text, 'object');
-        break;
-      }
-
-      // ---- OPTIMIZE ROUTE ORDER ----
-      case 'optimize_route': {
-        const { cities, startDate, artist, region } = data;
-
-        const prompt = `${BOOKING_CONTEXT}
-
-Artist: ${artist || 'artist on roster'}
-Region: ${region || 'USA'}
-Starting date: ${startDate}
-Cities to visit (in no particular order): ${cities.join(', ')}
-
-Apply professional routing logic: minimize total km, respect day-of-week show quality, avoid backtracking, identify the best anchor cities.
-
-Return ONLY valid JSON (no markdown):
-{
-  "optimized_order": ["city1", "city2"],
-  "routing_strategy": "string",
-  "total_km_optimized": number,
-  "total_km_naive": number,
-  "savings_km": number,
-  "anchor_recommendations": ["which cities should be Fri/Sat and why"],
-  "problem_legs": [{ "from": "city", "to": "city", "km": number, "issue": "string" }],
-  "suggested_additions": [{ "city": "string", "between": "City A and City B", "reason": "string" }],
-  "day_by_day": [
-    { "day": number, "city": "string", "drive_km": number, "day_of_week": "string", "note": "string" }
-  ]
-}`;
-
-        const text = await callGemini(MODELS.PRO, prompt);
-        result = extractJSON(text, 'object');
-        break;
-      }
-
-      // ---- BUDGET ESTIMATE ----
-      case 'estimate_budget': {
-        const { cities, numPeople, numDays, numShows, region, vanRental, avgGuarantee, tourSupport } = data;
-
-        const prompt = `${BOOKING_CONTEXT}
-
-Tour parameters:
-- Region: ${region}
-- Cities: ${(cities || []).join(', ') || 'not specified'}
-- People on tour: ${numPeople || 4}
-- Tour days: ${numDays}
-- Number of shows: ${numShows || Math.round(numDays * 0.7)}
-- Average guarantee per show: $${avgGuarantee || 800} USD
-- Van/vehicle rental needed: ${vanRental ? 'yes' : 'no — band has own vehicle'}
-- Tour support from label: $${tourSupport || 0}
-
-Build a realistic, itemized tour budget based on the underground circuit for this genre.
-
-Return ONLY valid JSON (no markdown):
-{
-  "summary": "string",
-  "revenue": {
-    "show_guarantees_total": number,
-    "merch_estimate": number,
-    "tour_support": number,
-    "total_projected_revenue": number
-  },
-  "expenses": {
-    "fuel_total": number,
-    "van_rental_total": number or null,
-    "lodging_total": number,
-    "food_per_diem_total": number,
-    "agent_commission": number,
-    "miscellaneous": number,
-    "total_expenses": number
-  },
-  "daily_breakdown": {
-    "fuel_per_day": number,
-    "lodging_per_person_per_day": number,
-    "food_per_person_per_day": number,
-    "van_rental_per_day": number or null
-  },
-  "net_profit_loss": number,
-  "break_even_guarantee_per_show": number,
-  "is_viable": true|false,
-  "viability_note": "string",
-  "merch_target_per_show": number,
-  "savings_tips": ["3-4 specific tips"]
-}`;
-
-        const text = await callGemini(MODELS.FLASH, prompt);
-        result = extractJSON(text, 'object');
-        break;
-      }
-
-      // ---- VENUE SUGGESTIONS ----
-      case 'suggest_venues': {
-        const { city, country, genre, capacity } = data;
-
-        const prompt = `${BOOKING_CONTEXT}
-
-Find the best underground/dark music venues in ${city}, ${country || ''} for ${genre || 'darkwave/EBM/post-punk'} acts, capacity ~${capacity || '200-500'}.
-Prioritize venues with history of booking this genre. Be specific and realistic — only name venues that actually exist or are well-known in the circuit.
-
-Return ONLY a valid JSON array (no markdown):
-[
-  {
-    "name": "string",
-    "address": "neighborhood or street",
-    "capacity": number or null,
-    "type": "club|bar|art_space|theatre|festival_stage|diy",
-    "known_for": "string — genre/acts typically booked here",
-    "notes": "why this suits the genre",
-    "booking_contact_tip": "how to reach the talent buyer",
-    "deal_type_typical": "guarantee|door|best_of",
-    "tier": "primary|secondary"
-  }
-]`;
-
-        const text = await callGemini(MODELS.FLASH, prompt);
-        result = extractJSON(text, 'array');
-        break;
-      }
-
-      // ---- DEAL NEGOTIATION ADVISOR ----
-      case 'advise_deal': {
-        const { artist, city, venue, capacity, artistDraw, offerType, offerAmount } = data;
-
-        const prompt = `${BOOKING_CONTEXT}
-
-Deal to evaluate:
-- Artist: ${artist}
-- City: ${city}
-- Venue: ${venue || 'unknown venue'}
-- Venue capacity: ${capacity || 'unknown'}
-- Artist expected draw in this market: ${artistDraw || 'unknown'}
-- Offer type: ${offerType || 'guarantee'}
-- Offer amount: $${offerAmount || 0}
-
-As a booking agent, evaluate this offer and advise on negotiation.
-
-Return ONLY valid JSON (no markdown):
-{
-  "offer_assessment": "strong|fair|low|insulting",
-  "market_rate_range": "e.g. $800-$1500",
-  "counter_suggestion": number,
-  "negotiation_points": ["point 1", "point 2"],
-  "accept_if": "conditions under which to accept as-is",
-  "walk_away_if": "conditions under which to pass",
-  "deal_structure_recommendation": "guarantee|door|best_of — and why",
-  "additional_asks": ["merch split", "hotel", "backline", etc]
-}`;
-
-        const text = await callGemini(MODELS.FLASH, prompt);
-        result = extractJSON(text, 'object');
-        break;
-      }
-
-      // ---- FREE CHAT ----
-      case 'chat': {
-        const { message, context } = data;
-
-        const prompt = `${BOOKING_CONTEXT}
-
-Current context: ${context || 'no active tour'}
-
-User message: "${message}"
-
-Reply as an expert booking agent at Melankolia Agency. Be direct, specific, and practical.
-Reference actual venues, cities, deals, or routing principles when relevant.
-Keep it concise — 2-4 sentences unless a longer answer is clearly needed.
-Plain text only.`;
-
-        result = { reply: await callGemini(MODELS.FLASH, prompt) };
-        break;
-      }
-
-      default:
-        return { statusCode: 400, headers, body: JSON.stringify({ error: `Unknown action: ${action}` }) };
-    }
-
-    return { statusCode: 200, headers, body: JSON.stringify({ success: true, data: result }) };
-
+    const p = await prompt(action, data);
+    const maxOutputTokens = action === 'generate_tour' ? 8192 : (action === 'assistant_edit_route' ? 4096 : 3072);
+    const out = await gem(key, model, p, maxOutputTokens, action === 'generate_tour' ? 14500 : 24000);
+    let dataOut = parse(out, action);
+    if (action === 'generate_tour') dataOut = await enforceRouteContract(key, model, data, hydrateTourDefaults(dataOut, data), out);
+    if (action === 'review_route') dataOut = hardenReview(dataOut, data);
+    return json(200, { success:true, data:dataOut, raw:out, model });
   } catch (err) {
-    console.error('[ai-tour error]', err.message);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    // Always return JSON so the frontend never sees "Invalid JSON response" for backend failure.
+    return json(200, { success:false, error:err.name === 'AbortError' ? 'AI route generation timed out. Try fewer target shows or more specific anchors.' : err.message, model });
   }
 };
+
+async function prompt(action, d) {
+  if (action === 'generate_tour') {
+    const crm = await crmVenueContext(d);
+    return `${CTX}
+Generate a practical compact route draft as STRICT MINIFIED JSON. HARD REQUIREMENTS:
+- Requested numShows=N means EXACTLY N non-day_off show legs. Never return fewer.
+- Humans are on a real schedule and may have taken off work: keep the tour manageable but as tight as possible. Avoid giant dead gaps.
+- Independent touring limit: target max consecutive drive is 300 miles / 480 km or 4–5 hours. Anything above this must be marked risky and should create a day_off/travel day unless the date range makes it impossible.
+- Europe/EU tachograph discipline: max 9 hours daily driving, mandatory 45-minute break after 4.5 hours, and strict 11-hour daily rest. Do not stack impossible drives.
+- total_shows must equal requested numShows.
+- Every show leg must include at least 5 candidate_venues ranked strongest to weakest. Keep each compact.
+- CRM VENUE PRIORITY: proprietary CRM venues below are first-class contacts. For each city/region/capacity match, put CRM venues at the top of candidate_venues and set crm_source:true, relationship_status, and crm_id when available. Only use external/unverified venue discovery when no logical CRM match exists.
+- Candidate venues are outreach targets/prospects, not confirmations unless supplied as anchors.
+
+PROPRIETARY CRM VENUE CONTEXT (prioritize these over generic venues):
+${crm || 'No CRM venues available yet. Use external venue candidates, clearly unverified.'}
+
+Return only this compact shape; omit extra prose:
+{"tour_name":"","name":"","artist":"","region":"","startDate":"","endDate":"","routing_strategy":"","anchor_strategy":"","summary":"","travel_strategy":"","total_days":0,"total_shows":0,"estimated_total_km":0,"legs":[{"date":"YYYY-MM-DD","city":"","country":"","day":1,"day_of_week":"","is_anchor_show":false,"day_off":false,"suggested_venue":"","candidate_venues":[{"name":"","capacity":"","booking_method":"unknown","website":null,"fit_reason":"","outreach_angle":"","crm_source":false,"crm_id":null,"relationship_status":""}],"booking_status":"prospect","deal_status":"not_started","drive_hours":0,"drive_from_previous_km":0,"travel_feasibility":"possible","travel_feasibility_reason":"","hotel_responsibility":"agency","backline_needed":"partial","deal_suggestion":"","next_action":"","notes":""}]}
+Inputs: ${JSON.stringify(d).slice(0, 10000)}`;
+  }
+
+  if (action === 'analyze_anchors') return `${CTX}\nAnalyze anchors/holds/confirmed stops. Return JSON {overall_verdict, verdict_summary, gap_analysis:[{between,issue,opportunity,fill_cities,next_action}], weak_holds:[{city,date,reason,deadline_recommendation}], missing_markets:[], routing_risks:[], recommended_next_actions:[]}. Inputs: ${JSON.stringify(d).slice(0, 10000)}`;
+  if (action === 'review_route') return `${CTX}\nAct as a second-pass tour director reviewing a generated plan before the agency sends emails. Decide whether the plan is reasonable for real humans on a schedule. Return JSON {verdict:'greenlight|needs_changes|risky|reject',score:0-100,summary:'',show_count_check:{requested,actual,passes},schedule_pressure:'tight|reasonable|loose|bad',major_risks:[{severity:'low|medium|high',leg_index,city,issue,fix}],unrealistic_gaps:[],venue_readiness:{all_stops_have_5_targets:true,missing:[]},recommended_changes:[{label,reason,action,leg_index,payload}],suggested_actions:[{label,action,leg_index,payload}]}. Supported action values: insert_blank_day, optimize_route, estimate_budget, research_venues_all, venue_finder_stop, open_stop, generate_email_stop, analyze_anchors, save_tour. Make every major risk actionable. If schedule pressure is tight/bad, include a suggested_action {label:'Add recovery day after [city/event]', action:'insert_blank_day', leg_index:<stop before new rest day>, payload:{reason:'...', city:'optional', date:'optional'}}. If venues are missing, include venue_finder_stop actions for those leg indices. If holds are missing, include open_stop or generate_email_stop actions. Inputs: ${JSON.stringify(d).slice(0, 14000)}`;
+  if (action === 'optimize_route') return `${CTX}\nOptimize route order and stop pipeline without losing booking status. Return {optimized_legs,routing_notes,total_km_estimate,tradeoffs,next_actions,suggested_actions:[{label,action,leg_index,payload}]}. Supported action values: estimate_budget, research_venues_all, venue_finder_stop, open_stop, generate_email_stop, analyze_anchors. Inputs: ${JSON.stringify(d).slice(0, 12000)}`;
+  if (action === 'estimate_budget') return `${CTX}\nEstimate budget from route, deal pipeline, hotels, flights/trains/vans, airport transfers, gear/backline needs, and promoter-covered costs. Return JSON {revenue:{},expenses:{},net_profit_loss,break_even_guarantee_per_show,is_viable,high_risk_stops:[],savings_tips:[],deal_notes:[],suggested_actions:[{label,action,leg_index,payload}]}. Supported action values: advise_deal, open_stop, research_venues_all, optimize_route. Inputs: ${JSON.stringify(d).slice(0, 12000)}`;
+  if (action === 'suggest_venues') return `${CTX}\nSuggest underground venue/promoter options for this city. Return {venues:[{name,capacity,type,known_for,booking_method,booking_contact_tip,deal_type_typical,tier,fit_reason,next_action}]}. Inputs: ${JSON.stringify(d).slice(0, 10000)}`;
+  if (action === 'advise_deal') return `${CTX}\nEvaluate the deal/offer. Return {offer_assessment, market_rate_range, counter_suggestion, negotiation_points, additional_asks, accept_if, walk_away_if, next_action}. Inputs: ${JSON.stringify(d).slice(0, 10000)}`;
+  if (action === 'assistant_edit_route') return `${CTX}
+You are the always-available Route Planner copilot. Read the entire active route/show context and the user's request. If the request is advisory, answer normally. If the request asks to change the tour, return a conservative proposed patch ONLY; never invent confirmations. The frontend will require the user to click Apply before saving.
+Return strict JSON {answer:'', summary:'', route_patch:{tour_updates:{}, leg_updates:[{leg_index:0, updates:{}}], add_candidate_venues:[{leg_index:0, venue:{name:'', address:'', capacity:'', booking_method:'', website:'', email:'', fit_reason:'', outreach_angle:'manual/ai assistant'}}], add_legs:[{date:'YYYY-MM-DD', city:'', country:'', day_off:false, suggested_venue:'', booking_status:'prospect', deal_status:'not_started', candidate_venues:[]}], delete_leg_indices:[]}, suggested_actions:[{label:'',action:'insert_blank_day|optimize_route|estimate_budget|research_venues_all|venue_finder_stop|open_stop|generate_email_stop|analyze_anchors|save_tour',leg_index:null,payload:{}}], warnings:[]}.
+Rules: leg_index is zero-based. Only include fields that should change. For venue additions prefer add_candidate_venues unless user explicitly says set/select as main venue. Do not change protected ids. Inputs: ${JSON.stringify(d).slice(0, 16000)}`;
+  if (action === 'chat') return `${CTX}\nAnswer as a booking strategist, but make useful suggestions actionable. Return JSON {answer:'',recommended_next_actions:[''],suggested_actions:[{label:'',action:'insert_blank_day|optimize_route|estimate_budget|research_venues_all|venue_finder_stop|open_stop|generate_email_stop|analyze_anchors|save_tour',leg_index:null,payload:{}}]}. Only include actions that map to a real next click; if no tool applies, use recommended_next_actions only. Inputs: ${JSON.stringify(d).slice(0, 12000)}`;
+  return `${CTX}\nAction ${action}. Return useful JSON. Inputs: ${JSON.stringify(d).slice(0, 10000)}`;
+}
+
+async function gem(key, model, prompt, maxOutputTokens, timeoutMs) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, signal:ctrl.signal,
+      body:JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.18,maxOutputTokens} })
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw Error(j.error?.message || `Gemini ${model} failed ${r.status}`);
+    return (j.candidates?.[0]?.content?.parts || []).map(x => x.text || '').join('\n').trim();
+  } finally { clearTimeout(timer); }
+}
+
+
+async function crmVenueContext(request={}) {
+  try {
+    const venues = (await listDocs('route_planner_crm_venues', { orderBy:'updated_at desc', pageSize:180 })).filter(v => !v.deleted_at);
+    if (!venues.length) return '';
+    const q = [request.artist, request.region, request.city, request.startCity, request.endCity, request.genres, request.genre, request.preferences, request.capacity].filter(Boolean).join(' ');
+    const terms = new Set(String(q||'').toLowerCase().replace(/[^a-z0-9\s-]/g,' ').split(/\s+/).filter(w=>w.length>2));
+    const scored = venues.map(v => {
+      const text = [v.name,v.city,v.country,v.region,v.capacity,Array.isArray(v.genre_affinity)?v.genre_affinity.join(' '):v.genre_affinity,v.relationship_status,v.notes,v.booking_email,v.booking_method].filter(Boolean).join(' ').toLowerCase();
+      let score = 0; terms.forEach(t => { if (text.includes(t)) score += 1; });
+      if (/confirmed|friendly|warm|known|strong|preferred|trusted/i.test(v.relationship_status||'')) score += 2;
+      if (/bad|avoid/i.test(v.relationship_status||'')) score -= 3;
+      return { v, score };
+    }).sort((a,b)=>b.score-a.score).slice(0, 18).map(x=>x.v);
+    return scored.map((v,i)=>`${i+1}. ${v.name} (${v.id||''}) — ${[v.city,v.country].filter(Boolean).join(', ')}; cap ${v.capacity||'unknown'}; genre ${(Array.isArray(v.genre_affinity)?v.genre_affinity.join(', '):v.genre_affinity)||'unknown'}; relationship ${v.relationship_status||'unknown'}; booking ${v.booking_email||v.booking_method||'unknown'}; notes ${String(v.notes||'').slice(0,80)}`).join('\n');
+  } catch(e) { return ''; }
+}
+function routeViolations(t, request={}) {
+  const legs = Array.isArray(t?.legs) ? t.legs : [];
+  const showLegs = legs.filter(l=>!l.day_off);
+  const target = Number(request.numShows || request.targetShows || 0);
+  const violations=[];
+  if (target && showLegs.length !== target) violations.push(`show_count ${showLegs.length} != requested ${target}`);
+  showLegs.forEach((l,i)=>{
+    const km=Number(l.drive_from_previous_km||0), hrs=Number(l.drive_hours||0);
+    if (km > 480 || hrs > 5) violations.push(`leg ${i+1} ${l.city||''}: drive exceeds independent target (${km}km/${hrs}h)`);
+    const eu = /europe|eu|germany|france|spain|italy|netherlands|belgium|poland|austria|czech|switzerland|denmark|sweden|norway|portugal/i.test([request.region,l.country].join(' '));
+    if (eu && hrs > 9) violations.push(`leg ${i+1} ${l.city||''}: exceeds EU 9h daily driving limit (${hrs}h)`);
+    if (!Array.isArray(l.candidate_venues) || l.candidate_venues.length < 5) violations.push(`leg ${i+1} ${l.city||''}: fewer than 5 venue candidates`);
+  });
+  return violations;
+}
+
+function hydrateTourDefaults(t, request={}) {
+  if (!t || !Array.isArray(t.legs)) return t;
+  t.artist = t.artist || request.artist || '';
+  t.region = t.region || request.region || '';
+  t.startDate = t.startDate || request.startDate || '';
+  t.endDate = t.endDate || request.endDate || '';
+  t.legs = t.legs.map((l, idx) => ({
+    date:l.date || '', city:l.city || '', country:l.country || '', day:l.day || idx+1, day_of_week:l.day_of_week || '',
+    is_anchor_show:!!l.is_anchor_show, day_off:!!l.day_off,
+    suggested_venue:l.suggested_venue || l.venue || l.candidate_venues?.[0]?.name || '',
+    candidate_venues:Array.isArray(l.candidate_venues) ? l.candidate_venues.slice(0, 8).map(v => ({name:v.name||v.venue||'',capacity:v.capacity||'',booking_method:v.booking_method||'unknown',website:v.website||null,fit_reason:v.fit_reason||v.reason||'',outreach_angle:v.outreach_angle||v.fit_reason||'',crm_source:!!v.crm_source,crm_id:v.crm_id||v.id||null,relationship_status:v.relationship_status||''})) : [],
+    booking_status:l.booking_status || (l.is_anchor_show ? 'hold' : 'prospect'), deal_status:l.deal_status || 'not_started', locked:!!l.locked,
+    rate_target_usd:l.rate_target_usd || l.suggested_guarantee_usd || 0, rate_offer_usd:l.rate_offer_usd || null, rate_confirmed_usd:l.rate_confirmed_usd || null,
+    deal_suggestion:l.deal_suggestion || '', hold_deadline:l.hold_deadline || '', contact_status:l.contact_status || 'not_contacted', next_action:l.next_action || 'Send branded routing inquiry to top venue targets.',
+    drive_from_previous_km:l.drive_from_previous_km || 0, drive_hours:l.drive_hours || 0,
+    travel_mode_recommendation:l.travel_mode_recommendation || request.travelPreference || 'drive', travel_feasibility:l.travel_feasibility || 'possible', travel_feasibility_reason:l.travel_feasibility_reason || '',
+    can_make_next_show:l.can_make_next_show !== false, monday_tuesday_risk:l.monday_tuesday_risk || '',
+    hotel_required:l.hotel_required !== false, hotel_nights:l.hotel_nights || 1, hotel_responsibility:l.hotel_responsibility || 'agency', hotel_notes:l.hotel_notes || '',
+    airport_transfer_required:!!l.airport_transfer_required, local_transport_required:l.local_transport_required !== false, transport_responsibility:l.transport_responsibility || 'agency',
+    gear:l.gear || { traveling_with_gear:request.travelingWithGear !== false, gear_weight_kg:request.gearWeightKg || 0, gear_notes:'' },
+    backline_needed:l.backline_needed || 'partial', backline:l.backline || { drums:false,bass_amp:false,guitar_amp:false,keys_stand:true,di_boxes:true,notes:'' },
+    advancing_requirements:l.advancing_requirements || {contacts:true,venue:true,schedule:true,technical:true,backline:true,guest_list:true,merch:true,hotel:true,transportation:true,settlement:true,hospitality:true,wifi:true,notes:true},
+    notes:l.notes || '', advancing_notes:l.advancing_notes || l.notes || ''
+  }));
+  t.total_shows = t.legs.filter(l => !l.day_off).length;
+  t.total_days = t.total_days || t.legs.length;
+  return t;
+}
+
+async function enforceRouteContract(key, model, request, parsed, raw) {
+  const target = Math.max(1, Math.min(40, Number(request.numShows || request.total_shows || 0) || 0));
+  if (!target || !parsed) return parsed;
+  if (!Array.isArray(parsed.legs)) {
+    parsed = { _malformed_first_pass:true, _first_pass_text: String(parsed.text || raw || '').slice(0, 12000), legs: [] };
+  }
+  const showCount = parsed.legs.filter(l => !l.day_off).length;
+  const weakVenues = parsed.legs.filter(l => !l.day_off).some(l => !Array.isArray(l.candidate_venues) || l.candidate_venues.length < 5);
+  const giantGap = hasGiantGap(parsed.legs);
+  const violations = routeViolations(parsed, request);
+  const blockingViolations = violations.filter(v => !/fewer than 5 venue candidates/i.test(v));
+  if (showCount === target && !giantGap && !blockingViolations.length) {
+    if (weakVenues) parsed._contract_warning = 'Some stops returned fewer than 5 venue candidates; use the Venue Board / Research All Cities to hydrate additional grounded options.';
+    return parsed;
+  }
+
+  const repairPrompt = `${CTX}\nRepair this generated tour so it satisfies the hard contract. Return strict JSON only.\n\nREQUESTED SHOW COUNT: ${target}\nDATE RANGE: ${request.startDate || ''} to ${request.endDate || ''}\nRULES:\n1. Return EXACTLY ${target} non-day_off show legs.\n2. Keep routing tight and human-realistic; avoid huge unexplained gaps. If back-to-back is tight, mark travel_feasibility as tight/risky but still create the requested number of dates.\n3. Preserve supplied anchors/holds.\n4. Every non-day_off leg must include at least 5 ranked candidate_venues. Keep each venue compact: name, capacity, fit_reason under 12 words, booking_method, website/null, outreach_angle under 12 words.\n5. Enforce sustainable drive limits: target <=480km/5h between shows; for Europe never exceed 9h daily driving and include 45-minute breaks + 11h rest in feasibility notes.\n6. Prioritize CRM venues already present in the request/context before generic external venues.\n7. Do not invent confirmations; use prospect/hold/offer status appropriately.\n\nValidation errors to fix:\n${violations.join('; ')}\n\nOriginal request:\n${JSON.stringify(request).slice(0, 12000)}\n\nDeficient output to repair:\n${JSON.stringify(parsed).slice(0, 20000)}`;
+  try {
+    const fixedRaw = await gem(key, model, repairPrompt, 6500, 8500);
+    const fixed = parse(fixedRaw, 'generate_tour');
+    if (fixed && Array.isArray(fixed.legs)) {
+      const hydratedFixed = hydrateTourDefaults(fixed, request);
+      hydratedFixed._contract_repaired = true;
+      hydratedFixed._contract_note = `Repaired route to target ${target} requested show dates with 5+ venue targets per show and drive-constraint validation.`;
+      return hydratedFixed;
+    }
+  } catch (e) {
+    parsed._contract_warning = `Route contract repair failed: ${e.message}`;
+  }
+  parsed._contract_warning = parsed._contract_warning || `Requested ${target} shows, generated ${showCount}. Validation issues: ${violations.join('; ') || 'unknown'}. Try narrowing the region/date range or regenerating.`;
+  return parsed;
+}
+
+function hasGiantGap(legs) {
+  const dates = (legs || []).filter(l => !l.day_off && l.date).map(l => new Date(l.date + 'T12:00:00')).filter(d => !isNaN(d));
+  for (let i=1;i<dates.length;i++) {
+    const gap = Math.round((dates[i]-dates[i-1]) / 86400000);
+    if (gap > 4) return true;
+  }
+  return false;
+}
+
+
+function hardenReview(review={}, input={}) {
+  const legs = Array.isArray(input.legs) ? input.legs : (Array.isArray(input.tour?.legs) ? input.tour.legs : []);
+  const actual = legs.filter(l => !l?.day_off).length;
+  const requested = Number(input.requested_shows || input.tour?.requested_shows || input.tour?.total_shows || actual) || actual;
+  review.show_count_check = { ...(review.show_count_check || {}), requested, actual, passes: requested === actual };
+  return review;
+}
+
+function parse(text, action) {
+  let c = String(text || '').replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```$/,'').trim();
+  try { return JSON.parse(c); } catch {}
+  const m = c.match(/\{[\s\S]*\}/);
+  if (m) try { return JSON.parse(m[0]); } catch {}
+  return action === 'chat' ? { answer:c, recommended_next_actions:[] } : { text:c };
+}

@@ -1,262 +1,161 @@
-/**
- * Melankolia Agency — Pitch Email Generator
- * Generates HTML pitch emails for venue outreach.
- * Model: gemini-3.5-flash (fast, this is a writing task)
- * Gemini 2.x strictly forbidden.
- */
+const { json } = require('./_firebase');
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const MODEL = 'gemini-3.5-flash';
-
-async function callGemini(prompt) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.85, maxOutputTokens: 4096 }
-    })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+function esc(v='') { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function clean(v='') { return String(v ?? '').replace(/\s+/g, ' ').trim(); }
+function line(parts) { return parts.filter(Boolean).join(' · '); }
+function arr(v) { return Array.isArray(v) ? v.filter(Boolean) : []; }
+function first(v, n=1) { return arr(v).slice(0,n); }
+function monthYear(date='') {
+  const s = clean(date);
+  if (!s) return '';
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    const d = new Date(`${m[1]}-${m[2]}-${m[3]}T12:00:00Z`);
+    return d.toLocaleDateString('en-US', { month:'long', year:'numeric', timeZone:'UTC' });
+  }
+  return s;
 }
-
-const AGENCY_CONTEXT = `
-Melankolia Agency is a specialist booking agency for dark/underground music: darkwave, EBM, post-punk, industrial, coldwave, synthpop, minimal wave, goth.
-Agency email: booking@melankoliaagency.com
-Agency website: melankoliaagency.com
-Agency tone: professional but scene-literate. Not corporate. Not fan-girly. Direct, knowledgeable, respectful of the talent buyer's time.
-The agency has been working in this niche for years and knows the circuit — reference this credibility subtly.
-Never use exclamation marks. Never say "hope this finds you well." Never say "I'm reaching out because." Never use "amazing" or "awesome."
-Subject lines should be specific: artist name + city + approximate date. Not vague "booking inquiry."
-Emails should be under 200 words in the body. Talent buyers are busy.
-`;
+function yearNum(v){ const m=String(v||'').match(/(20\d{2}|19\d{2})/); return m?Number(m[1]):0; }
+function recentReleaseRows(discography=[]) {
+  const cutoff = new Date().getFullYear() - 2;
+  return arr(discography).filter(r=>r&&r.title).map(r=>({...r, _year:yearNum(r.year||r.date||r.release_date)})).filter(r=>!r._year || r._year>=cutoff).sort((a,b)=>(b._year||0)-(a._year||0)).slice(0,4);
+}
+function cleanPublicNote(v='') {
+  const s=clean(v);
+  if(!s) return '';
+  if(/send branded|routing inquiry|top venue targets|research venues|next action|availability inquiry|internal|pipeline|kanban|venue finder/i.test(s)) return '';
+  return s.length>220 ? s.slice(0,217)+'…' : s;
+}
+function genreText(g) {
+  if (Array.isArray(g)) return g.filter(Boolean).slice(0,3).join(' / ');
+  return clean(g);
+}
+function descriptor(artistData={}) {
+  const g = genreText(artistData.genres).toLowerCase();
+  const b = clean(`${artistData.shortBio || ''} ${artistData.bio || ''}`).toLowerCase();
+  const src = `${g} ${b}`;
+  if (src.includes('ebm')) return 'EBM / dark electronic act';
+  if (src.includes('darkwave')) return 'darkwave act';
+  if (src.includes('synth-pop') || src.includes('synth pop')) return 'synth-pop act';
+  if (src.includes('post-punk')) return 'post-punk / darkwave act';
+  if (src.includes('coldwave') || src.includes('post-industrial')) return 'dark pop artist';
+  if (src.includes('industrial') || src.includes('electronic')) return 'dark electronic artist';
+  if (src.includes('pop')) return 'dark pop artist';
+  return genreText(artistData.genres) ? `${genreText(artistData.genres)} artist` : 'artist';
+}
+function sentenceSplit(txt='') {
+  const seen = new Set();
+  return clean(txt).replace(/…/g,'.').split(/(?<=[.!?])\s+/).map(clean).filter(s => {
+    if (s.length <= 40) return false;
+    const key = s.toLowerCase().replace(/[^a-z0-9]+/g,' ').slice(0,140);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+function releaseItems(discography=[]) {
+  return recentReleaseRows(discography).map(r => `${r.title}${r._year ? ` (${r._year})` : ''}${r.type ? ` — ${r.type}` : ''}`);
+}
+function releaseLine(discography=[]) {
+  const pick = releaseItems(discography).slice(0,3);
+  if (!pick.length) return '';
+  return `Recent/upcoming releases include ${pick.join(', ')}.`;
+}
+function credibilityParagraphs(artistData={}) {
+  const shortBio = clean(artistData.shortBio || '');
+  const fullBio = clean(artistData.bio || '');
+  const bio = fullBio && shortBio && fullBio.toLowerCase().startsWith(shortBio.toLowerCase().replace(/…$/,'')) ? fullBio : `${shortBio} ${fullBio}`;
+  const cutoff = new Date().getFullYear() - 2;
+  const sentences = sentenceSplit(bio);
+  const recent = sentences.filter(s => {
+    const y = yearNum(s);
+    return y >= cutoff || /upcoming|latest|new album|new ep|recent|forthcoming|set to be out|released on/i.test(s);
+  }).slice(0,2);
+  const intro = shortBio ? sentenceSplit(shortBio)[0] || shortBio : sentences[0] || '';
+  const picked = [];
+  if(intro) picked.push(intro.replace(/\s+/g,' ').trim());
+  recent.forEach(s=>{ if(s && !picked.includes(s)) picked.push(s); });
+  const rel = releaseLine(artistData.discography);
+  if (rel && !picked.some(p => /recent\/upcoming releases/i.test(p))) picked.push(rel);
+  return picked.slice(0,3);
+}
+function linkMap(artistData={}) {
+  const social = artistData.social_links || artistData.socials || artistData.links || {};
+  const videos = arr(artistData.videos || artistData.music_videos);
+  const video = videos.find(v => v && (v.url || v.link)) || {};
+  return [
+    ['Spotify', social.spotify || artistData.spotify || artistData.spotify_url],
+    ['Instagram', social.instagram || artistData.instagram || artistData.instagram_url],
+    ['Bandcamp', social.bandcamp || artistData.bandcamp || artistData.bandcamp_url],
+    ['Music video', video.url || video.link],
+    ['EPK', artistData.epkUrl || (artistData.slug ? `https://melankoliaagency.com/epk/${artistData.slug}` : '')]
+  ].filter(([,url]) => clean(url));
+}
+function textLinks(links) { return links.map(([label,url]) => `${label}: ${url}`).join('\n'); }
+function htmlLinks(links) { return links.map(([label,url]) => `<li><a href="${esc(url)}" style="color:#c8a96e;text-decoration:none">${esc(label)}</a></li>`).join(''); }
+function greeting(d={}) {
+  const contact = clean(d.contactName || d.venueData?.contact_name || d.venueData?.booker_name || d.venueData?.booking_contact);
+  if (contact && !/@/.test(contact)) return `Hello ${contact},`;
+  const venue = clean(d.venue || d.venue_name || d.venueData?.name);
+  if (venue) return `Hello ${venue} booking,`;
+  return 'Hello,';
+}
 
 exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' }, body: '' };
-  }
-  if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
-  const headers = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
+  if (event.httpMethod === 'OPTIONS') return json(204, {});
+  if (event.httpMethod !== 'POST') return json(405, { success:false, error:'POST only' });
 
-  let body;
-  try { body = JSON.parse(event.body); } catch { return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }), headers }; }
+  let body = {};
+  try { body = JSON.parse(event.body || '{}'); } catch {}
+  const d = body.data || body;
 
-  const { emailType, data } = body;
+  const artistData = d.artistContext || d.artistData || {};
+  const artist = clean(artistData.name || d.artist) || 'Artist';
+  const city = clean(d.city) || 'your city';
+  const country = clean(d.country);
+  const venue = clean(d.venue || d.venue_name || d.venueData?.name);
+  const date = clean(d.date);
+  const deal = clean(d.deal || d.deal_suggestion || d.offer);
+  const notes = cleanPublicNote(d.public_notes || d.booking_context || d.context); // never use internal route notes/next_action in public email
+  const tourName = clean(d.tour?.name || d.tour?.tour_name || d.tourName);
+  const region = clean(d.tour?.region || d.region);
+  const datePhrase = monthYear(date) || clean(d.date_window || d.month) || 'an upcoming routing window';
+  const desc = clean(d.artistDescriptor || descriptor(artistData));
+  const location = clean(artistData.location);
+  const artistWithOrigin = `${artist}${location ? ` (${location})` : ''}`;
+  const links = linkMap(artistData);
+  const cred = credibilityParagraphs(artistData);
+  const hello = greeting(d);
 
-  try {
-    let subjectPrompt, bodyPrompt;
+  const subject = `Booking inquiry: ${desc} ${artistWithOrigin} to play ${venue || city} in ${datePhrase}`;
+  const routeSentence = tourName || region
+    ? `I wanted to reach out because we would love to bring ${artist} to ${city}${country ? `, ${country}` : ''} as part of ${line([tourName, region])}${date ? ` around ${date}` : ` in ${datePhrase}`}.`
+    : `I wanted to reach out because we would love to bring ${artist} to ${city}${country ? `, ${country}` : ''}${date ? ` on or around ${date}` : ` in ${datePhrase}`}.`;
+  const venueSentence = venue
+    ? `Would you have availability to host them at ${venue} then? They could also be added to an already existing event if you have something suitable around that date.`
+    : `Would you have availability to host them then? They could also be added to an already existing event if you have something suitable around that date.`;
+  const dealSentence = deal ? `The current deal target is ${deal}, but we are happy to discuss the structure that makes sense for the room and market.` : '';
+  const notesSentence = notes ? notes : '';
 
-    // ---- EMAIL TYPE ROUTING ----
-    if (emailType === 'cold_pitch') {
-      const { artist, artistGenre, artistBio, artistLinks, venueName, venueCity, targetDates, dealType, tourContext, pastPerformance } = data;
+  const releaseList = releaseItems(artistData.discography);
+  const highlightsText = cred.length ? `\n\nArtist highlights\n${cred.map(x=>`- ${x}`).join('\n')}` : '';
+  const releasesText = releaseList.length ? `\n\nNotable recent / upcoming releases\n${releaseList.map(x=>`- ${x}`).join('\n')}` : '';
+  const linksText = links.length ? `\n\nSocial / EPK links\n${textLinks(links)}` : '';
+  const logistics = [dealSentence, notesSentence].filter(Boolean).join('\n\n');
+  const text = `${hello}\n\nI hope all is well! ${routeSentence} ${venueSentence}${highlightsText}${releasesText}${linksText}${logistics ? `\n\n${logistics}` : ''}\n\nLet me know if you are interested in booking ${artist} and I would be happy to discuss the details.\n\nI look forward to hearing your thoughts!\n\nBest wishes,\n\nAnna-Maria`;
 
-      subjectPrompt = `${AGENCY_CONTEXT}
-Write a subject line for a cold pitch email from Melankolia Agency to the talent buyer at ${venueName} in ${venueCity}.
-Artist: ${artist}. Target date range: ${targetDates || 'flexible'}.
-Return ONLY the subject line text, no quotes, no label.`;
+  const sectionHeading = label => `<h3 style="margin:24px 0 10px;color:#c8a96e;font-size:11px;letter-spacing:.18em;text-transform:uppercase">${esc(label)}</h3>`;
+  const bulletList = items => `<ul style="margin:0 0 20px;padding-left:20px;color:#d7d7d7">${items.map(x=>`<li style="margin:0 0 7px">${esc(x)}</li>`).join('')}</ul>`;
+  const htmlBody = [
+    `<p style="margin:0 0 18px">${esc(`I hope all is well! ${routeSentence} ${venueSentence}`)}</p>`,
+    cred.length ? `${sectionHeading('Artist highlights')}${bulletList(cred)}` : '',
+    releaseList.length ? `${sectionHeading('Notable recent / upcoming releases')}${bulletList(releaseList)}` : '',
+    links.length ? `${sectionHeading('Social / EPK links')}<ul style="margin:0 0 22px;padding-left:20px;color:#d7d7d7">${htmlLinks(links)}</ul>` : '',
+    logistics ? `<p style="margin:0 0 18px">${esc(logistics)}</p>` : '',
+    `<p style="margin:0 0 18px">${esc(`Let me know if you are interested in booking ${artist} and I would be happy to discuss the details.`)}</p>`,
+    `<p style="margin:0 0 18px">I look forward to hearing your thoughts!</p>`
+  ].filter(Boolean).join('');
+  const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(subject)}</title></head><body style="margin:0;background:#050505;color:#d7d7d7;font-family:Helvetica,Arial,sans-serif;line-height:1.55"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#050505;padding:32px 16px"><tr><td align="center"><table role="presentation" width="100%" style="max-width:720px;border:1px solid #222;background:#0b0b0b" cellspacing="0" cellpadding="0"><tr><td style="padding:28px 30px;border-bottom:1px solid #202020"><img src="https://melankoliaagency.com/images/logo-mark-white.svg" alt="Melankolia" style="width:38px;height:auto;display:block;margin-bottom:22px"><div style="font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#c8a96e;font-weight:700">Melankolia Agency</div><h1 style="margin:8px 0 0;color:#fff;font-size:24px;line-height:1.15;font-weight:700">${esc(artist)} booking inquiry</h1><div style="margin-top:10px;color:#888;font-size:12px;letter-spacing:.08em;text-transform:uppercase">${esc(line([venue, city, country, date]))}</div></td></tr><tr><td style="padding:30px;color:#d7d7d7;font-size:15px"><p style="margin:0 0 18px">${esc(hello)}</p>${htmlBody}<p style="margin:28px 0 0;color:#aaa">Best wishes,<br><br><strong style="color:#fff">Anna-Maria</strong></p></td></tr></table></td></tr></table></body></html>`;
 
-      bodyPrompt = `${AGENCY_CONTEXT}
-Write the body of a cold pitch email from Melankolia Agency to the talent buyer at ${venueName} in ${venueCity}.
-Artist: ${artist}
-Genre: ${artistGenre || 'darkwave/EBM'}
-Artist bio/one-liner: ${artistBio || 'artist on the Melankolia roster'}
-Links: ${artistLinks || 'melankoliaagency.com'}
-Target dates: ${targetDates || 'flexible — touring the region in [MONTH]'}
-Preferred deal: ${dealType || 'guarantee or best of guarantee vs door'}
-Tour context: ${tourContext || 'regional tour'}
-Past performance in this market: ${pastPerformance || 'first time in this market'}
-
-Rules:
-- Under 180 words
-- No "hope this finds you well" / no exclamation marks / no filler
-- Mention the specific venue by name
-- Include a clear ask (specific date or window, deal structure)
-- End with a single CTA — reply or check the EPK link
-- Sign off as: [Your Name], Melankolia Agency | booking@melankoliaagency.com
-
-Return ONLY the email body text. No subject line. No HTML. Plain text, paragraph breaks with blank lines.`;
-
-    } else if (emailType === 'follow_up') {
-      const { artist, venueName, venueCity, originalDate, daysSince, dealType } = data;
-
-      subjectPrompt = `${AGENCY_CONTEXT}
-Write a follow-up subject line. Previous email was about booking ${artist} at ${venueName} in ${venueCity} around ${originalDate}.
-It's been ${daysSince || 10} days with no reply.
-Return ONLY the subject line. No quotes.`;
-
-      bodyPrompt = `${AGENCY_CONTEXT}
-Write a follow-up email body. This is a polite but direct nudge — not desperate, not aggressive.
-Artist: ${artist}. Venue: ${venueName}, ${venueCity}. Original inquiry: ~${daysSince || 10} days ago about ${originalDate}.
-Under 80 words. One paragraph. Reference the original inquiry briefly. Give them one more reason to respond (mention the route is filling in, or dates are limited).
-Sign off as: [Your Name], Melankolia Agency | booking@melankoliaagency.com
-Return ONLY the email body. Plain text.`;
-
-    } else if (emailType === 'counter_offer') {
-      const { artist, venueName, venueCity, theirOffer, ourCounter, dealType, reasoning } = data;
-
-      subjectPrompt = `${AGENCY_CONTEXT}
-Write a subject line for a counter-offer response about booking ${artist} at ${venueName} in ${venueCity}.
-Return ONLY the subject line. No quotes.`;
-
-      bodyPrompt = `${AGENCY_CONTEXT}
-Write a counter-offer email body.
-Artist: ${artist}. Venue: ${venueName}, ${venueCity}.
-Their offer: ${theirOffer}. Our counter: ${ourCounter}. Deal type: ${dealType || 'guarantee'}.
-Context/reasoning: ${reasoning || 'market rate for this artist in this tier market'}
-Under 120 words. Professional, direct, not apologetic. State the counter clearly. Leave room to accept if they hold firm on their offer with a small concession.
-Sign off as: [Your Name], Melankolia Agency | booking@melankoliaagency.com
-Return ONLY the body. Plain text.`;
-
-    } else if (emailType === 'advance') {
-      const { artist, venueName, venueCity, showDate, loadIn, soundcheck } = data;
-
-      subjectPrompt = `Advance — ${artist} / ${venueName} / ${showDate}`;
-
-      bodyPrompt = `${AGENCY_CONTEXT}
-Write a show advance email from Melankolia Agency to the venue.
-Artist: ${artist}. Venue: ${venueName}, ${venueCity}. Show date: ${showDate}.
-Load-in: ${loadIn || 'TBD'}. Soundcheck: ${soundcheck || 'TBD'}.
-
-This email should request confirmation of:
-- Load-in time, soundcheck time, doors, showtime
-- Sound engineer on site
-- Backline available (bass amp, guitar amp, drum kit)
-- Guest list process (how many spots, when to submit)
-- Merch setup (table available, venue cut if any)
-- Settlement process (cash or bank transfer, who to collect from)
-- Parking for vehicle/van
-- Hotel or accommodation (if part of deal)
-
-Under 200 words. Bulleted list format for the requests. Professional.
-Sign off as: [Your Name], Melankolia Agency | booking@melankoliaagency.com
-Return ONLY the body. Plain text.`;
-
-    } else {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: `Unknown emailType: ${emailType}` }) };
-    }
-
-    // Generate subject + body in parallel
-    const [subject, bodyText] = await Promise.all([
-      emailType === 'advance' ? Promise.resolve(subjectPrompt) : callGemini(subjectPrompt),
-      callGemini(bodyPrompt)
-    ]);
-
-    // Build HTML email
-    const htmlEmail = buildHTMLEmail(subject.trim(), bodyText.trim(), data);
-
-    return {
-      statusCode: 200, headers,
-      body: JSON.stringify({ success: true, data: { subject: subject.trim(), body: bodyText.trim(), html: htmlEmail } })
-    };
-
-  } catch (err) {
-    console.error('[email-generator error]', err.message);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
-  }
+  return json(200, { success:true, data:{ subject, text, html, preview: line([artist, venue, city, date, deal]), artist_context_used: !!artistData.name, links_used: links.map(([label])=>label), credibility_count: cred.length } });
 };
-
-function buildHTMLEmail(subject, body, data) {
-  // Convert plain text paragraphs to HTML <p> tags
-  const paragraphs = body.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
-  const bodyHtml = paragraphs.map(p => {
-    // Handle bullet points
-    if (p.includes('\n-') || p.startsWith('-')) {
-      const items = p.split('\n').filter(l => l.trim());
-      return `<ul style="margin:8px 0;padding-left:20px;">${items.map(i => `<li style="margin-bottom:4px;">${i.replace(/^-\s*/, '')}</li>`).join('')}</ul>`;
-    }
-    return `<p style="margin:0 0 14px 0;line-height:1.65;">${p.replace(/\n/g, '<br>')}</p>`;
-  }).join('\n');
-
-  const artistName = data.artist || '';
-  const epkLink = `https://melankoliaagency.com/artists/${(artistName).toLowerCase().replace(/\s+/g, '-')}`;
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${subject}</title>
-</head>
-<body style="margin:0;padding:0;background:#f5f4f0;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f4f0;padding:32px 16px;">
-  <tr><td align="center">
-    <table width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid #e0ddd8;max-width:580px;width:100%;">
-
-      <!-- HEADER -->
-      <tr>
-        <td style="background:#080808;padding:24px 32px;text-align:center;border-bottom:2px solid #c8a96e;">
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="text-align:left;vertical-align:middle;">
-                <div style="font-family:'Courier New',monospace;font-size:10px;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:#c8a96e;margin-bottom:3px;">Melankolia Agency</div>
-                <div style="font-family:'Courier New',monospace;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#444;">melankoliaagency.com</div>
-              </td>
-              <td style="text-align:right;vertical-align:middle;">
-                <div style="font-family:'Courier New',monospace;font-size:8px;letter-spacing:0.15em;color:#555;line-height:1.6;">
-                  booking@melankoliaagency.com<br>
-                  darkwave · EBM · post-punk
-                </div>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-
-      <!-- ARTIST BANNER (if artist specified) -->
-      ${artistName ? `
-      <tr>
-        <td style="background:#111111;padding:12px 32px;border-bottom:1px solid #1e1e1e;">
-          <span style="font-family:'Courier New',monospace;font-size:9px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:#666;">Re: </span>
-          <span style="font-family:'Courier New',monospace;font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#c8a96e;">${artistName}</span>
-        </td>
-      </tr>` : ''}
-
-      <!-- BODY -->
-      <tr>
-        <td style="padding:32px 32px 24px;color:#222222;font-size:14px;line-height:1.65;">
-          ${bodyHtml}
-        </td>
-      </tr>
-
-      <!-- LINKS ROW -->
-      ${artistName ? `
-      <tr>
-        <td style="padding:0 32px 28px;">
-          <table cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="padding-right:12px;">
-                <a href="${epkLink}" style="display:inline-block;background:#080808;color:#c8a96e;text-decoration:none;font-family:'Courier New',monospace;font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;padding:8px 16px;border:1px solid #c8a96e;">EPK →</a>
-              </td>
-              <td>
-                <a href="https://melankoliaagency.com" style="display:inline-block;background:#f8f7f3;color:#444;text-decoration:none;font-family:'Courier New',monospace;font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;padding:8px 16px;border:1px solid #ddd;">Roster →</a>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>` : ''}
-
-      <!-- FOOTER -->
-      <tr>
-        <td style="background:#f0ede8;padding:16px 32px;border-top:1px solid #e0ddd8;">
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td>
-                <div style="font-family:'Courier New',monospace;font-size:8px;letter-spacing:0.12em;color:#888;line-height:1.7;text-transform:uppercase;">
-                  Melankolia Agency · booking@melankoliaagency.com · melankoliaagency.com<br>
-                  Specialist representation for dark &amp; underground music
-                </div>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-
-    </table>
-  </td></tr>
-</table>
-</body>
-</html>`;
-}

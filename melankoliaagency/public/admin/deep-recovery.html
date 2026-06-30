@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Melankolia Deep Data Recovery</title>
+<style>
+:root{--bg:#050505;--card:#101010;--line:#292929;--text:#f4f4f4;--muted:#9b9b9b;--gold:#c8a96e;--danger:#ff6b6b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;padding:28px;line-height:1.45}main{max-width:1180px;margin:0 auto}.card{background:var(--card);border:1px solid var(--line);padding:22px;margin:0 0 18px}h1{font-size:24px;margin:0 0 8px;letter-spacing:.08em;text-transform:uppercase}h2{font-size:15px;margin:0 0 12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}p{color:var(--muted)}button{background:#181818;color:var(--text);border:1px solid var(--line);padding:10px 14px;cursor:pointer;text-transform:uppercase;letter-spacing:.08em;font-size:12px}button.primary{background:var(--gold);color:#070707;border-color:var(--gold);font-weight:bold}button.danger{border-color:var(--danger);color:var(--danger)}button:disabled{opacity:.45;cursor:not-allowed}textarea{width:100%;min-height:220px;background:#080808;color:var(--text);border:1px solid var(--line);padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid var(--line);padding:9px;text-align:left;vertical-align:top}th{color:var(--gold);font-size:11px;text-transform:uppercase;letter-spacing:.08em}.pill{display:inline-block;border:1px solid var(--line);padding:3px 7px;margin:2px;background:#080808;color:var(--muted);font-size:11px}.good{color:#7ee787}.warn{color:#ffd166}.bad{color:var(--danger)}.rowbest{outline:1px solid var(--gold);background:rgba(200,169,110,.06)}.small{font-size:12px;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.stat{background:#080808;border:1px solid var(--line);padding:10px}.stat b{display:block;font-size:20px;color:var(--text)}.stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}body{padding:14px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <h1>Melankolia Deep Data Recovery</h1>
+    <p>This page reads the current browser origin’s localStorage, including <code>mk_backups</code>. Open it on the old Netlify domain first, then restore/copy the richest snapshot.</p>
+    <p class="small"><b>Current origin:</b> <span id="origin"></span></p>
+    <button class="primary" onclick="scan()">Rescan Local Data</button>
+    <button onclick="copyFullExport()">Copy Full Export Including Backups</button>
+    <button onclick="downloadFullExport()">Download Full Export</button>
+  </div>
+
+  <div class="card">
+    <h2>Current State</h2>
+    <div class="grid" id="currentStats"></div>
+  </div>
+
+  <div class="card">
+    <h2>Backup Snapshots</h2>
+    <p class="small">Score favors snapshots with discography, banners, non-default crop placements, extra photos, videos, and longer bios.</p>
+    <div id="backupTable"></div>
+  </div>
+
+  <div class="card">
+    <h2>Export Payload</h2>
+    <textarea id="out" readonly></textarea>
+  </div>
+</main>
+<script>
+const KEYS=['mk_artists','mk_videos','mk_data_version','mk_bookings','mk_backups'];
+function parseMaybe(v, fallback){try{return v?JSON.parse(v):fallback}catch{return fallback}}
+function arr(v){return Array.isArray(v)?v:[]}
+function artistsFrom(data){return arr(parseMaybe(data?.mk_artists,'[]'))}
+function videosFrom(data){return arr(parseMaybe(data?.mk_videos,'[]'))}
+function backups(){return arr(parseMaybe(localStorage.getItem('mk_backups'),'[]'))}
+function metrics(data){
+  const artists=artistsFrom(data), videos=videosFrom(data);
+  let disc=0,banners=0,nonDefaultCrop=0,photos=0,bioChars=0,withDisc=0;
+  artists.forEach(a=>{
+    const d=Array.isArray(a.discography)?a.discography:parseMaybe(a.discography,[]);
+    if(d.length){withDisc++;disc+=d.length}
+    if(a.banner) banners++;
+    if((+a.gridFocalX&&+a.gridFocalX!==50)||(+a.gridFocalY&&+a.gridFocalY!==50)||(+a.gridCropScale&&+a.gridCropScale!==1)||(+a.profileFocalX&&+a.profileFocalX!==50)||(+a.profileFocalY&&+a.profileFocalY!==50)||(+a.profileCropScale&&+a.profileCropScale!==1)||(+a.bannerFocalX&&+a.bannerFocalX!==50)||(+a.bannerFocalY&&+a.bannerFocalY!==50)||(+a.bannerCropScale&&+a.bannerCropScale!==1)) nonDefaultCrop++;
+    photos += Array.isArray(a.photos)?a.photos.length:0;
+    bioChars += (a.bio||'').length;
+  });
+  const score=disc*10 + withDisc*30 + banners*12 + nonDefaultCrop*10 + photos + videos.length*2 + Math.floor(bioChars/1000);
+  return {artists:artists.length,videos:videos.length,disc,withDisc,banners,nonDefaultCrop,photos,bioChars,score};
+}
+function statHTML(m){return Object.entries({Artists:m.artists,Videos:m.videos,Discography:m.disc,ArtistsWithDiscography:m.withDisc,Banners:m.banners,CustomCrops:m.nonDefaultCrop,Photos:m.photos,BioChars:m.bioChars,Score:m.score}).map(([k,v])=>`<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('')}
+function currentData(){const d={};KEYS.forEach(k=>d[k]=localStorage.getItem(k)||'');return d}
+function fullExport(){return {type:'melankolia-admin-deep-export',version:2,origin:location.origin,exportedAt:new Date().toISOString(),data:currentData()}}
+async function copyText(t){await navigator.clipboard.writeText(t);alert('Copied. Paste it back into chat or save it somewhere safe.');}
+function copyFullExport(){document.getElementById('out').value=JSON.stringify(fullExport(),null,2);copyText(document.getElementById('out').value)}
+function downloadFullExport(){const blob=new Blob([JSON.stringify(fullExport(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='melankolia-deep-export-'+Date.now()+'.json';a.click();URL.revokeObjectURL(a.href)}
+function restoreBackup(id){const b=backups().find(x=>x.id===id);if(!b)return alert('Backup not found');const m=metrics(b.data||{});if(!confirm(`Restore backup ${b.reason||id}?\n\nArtists: ${m.artists}\nDiscography items: ${m.disc}\nVideos: ${m.videos}\nScore: ${m.score}\n\nCurrent state will be saved as a new backup first.`))return;const before={id:'backup_'+Date.now(),date:new Date().toISOString(),reason:'Before deep recovery restore',data:currentData()};const bs=backups();bs.unshift(before);localStorage.setItem('mk_backups',JSON.stringify(bs.slice(0,20)));Object.entries(b.data||{}).forEach(([k,v])=>{if(v)localStorage.setItem(k,v);else localStorage.removeItem(k)});alert('Restored. Now open /admin/ or an artist page and refresh.');scan()}
+function copyBackup(id){const b=backups().find(x=>x.id===id);if(!b)return;copyText(JSON.stringify({type:'melankolia-backup-snapshot',origin:location.origin,exportedAt:new Date().toISOString(),backup:b},null,2))}
+function scan(){
+  document.getElementById('origin').textContent=location.origin;
+  const cur=currentData(), cm=metrics(cur);document.getElementById('currentStats').innerHTML=statHTML(cm);
+  const bs=backups().map(b=>({b,m:metrics(b.data||{})})).sort((a,b)=>b.m.score-a.m.score);
+  let html='';
+  if(!bs.length) html='<p>No mk_backups found on this origin.</p>';
+  else html='<table><thead><tr><th>Backup</th><th>Score</th><th>Contents</th><th>Actions</th></tr></thead><tbody>'+bs.map((x,i)=>`<tr class="${i===0?'rowbest':''}"><td><b>${x.b.reason||x.b.id}</b><br><span class="small">${new Date(x.b.date).toLocaleString()}<br>${x.b.id}</span></td><td><b class="${x.m.disc?'good':'bad'}">${x.m.score}</b></td><td><span class="pill">artists ${x.m.artists}</span><span class="pill">videos ${x.m.videos}</span><span class="pill">disc ${x.m.disc}</span><span class="pill">artists w/disc ${x.m.withDisc}</span><span class="pill">banners ${x.m.banners}</span><span class="pill">custom crops ${x.m.nonDefaultCrop}</span><span class="pill">photos ${x.m.photos}</span></td><td><button class="primary" onclick="restoreBackup('${x.b.id}')">Restore</button> <button onclick="copyBackup('${x.b.id}')">Copy Snapshot</button></td></tr>`).join('')+'</tbody></table>';
+  document.getElementById('backupTable').innerHTML=html;
+  document.getElementById('out').value=JSON.stringify(fullExport(),null,2);
+}
+scan();
+</script>
+</body>
+</html>

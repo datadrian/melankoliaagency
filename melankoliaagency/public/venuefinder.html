@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melankolia Agency | V12 Dossier</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <style>
+        :root { 
+            --bg: #050505; 
+            --panel: #111; 
+            --text: #ddd; 
+            --accent: #ff0055; 
+            --accent-dim: #990033;
+            --highlight: #00e5ff;
+            --border: #333; 
+        }
+
+        body { 
+            background: var(--bg); color: var(--text); 
+            font-family: 'Segoe UI', Roboto, monospace; 
+            margin: 0; padding: 20px; 
+            height: 100vh; box-sizing: border-box; overflow: hidden;
+        }
+
+        .container { 
+            width: 100%; height: 100%;
+            display: grid; 
+            grid-template-columns: 320px 1fr 450px; 
+            gap: 20px; 
+        }
+
+        /* --- COL 1: CONTROLS --- */
+        .panel { 
+            background: var(--panel); padding: 20px; 
+            border-radius: 6px; border: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h1 { 
+            color: var(--accent); font-size: 1.1rem; margin: 0 0 20px 0; 
+            text-transform: uppercase; letter-spacing: 2px; 
+            border-bottom: 1px solid var(--accent-dim); padding-bottom: 10px;
+        }
+
+        label { color: #888; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
+        
+        .input-row { display: flex; gap: 5px; margin-bottom: 15px; }
+        
+        input { 
+            width: 100%; padding: 12px; background: #000; border: 1px solid #444; 
+            color: white; border-radius: 4px; box-sizing: border-box;
+        }
+        input:focus { outline: none; border-color: var(--accent); }
+        input[readonly] { background: #0a0a0a; border-color: #222; cursor: default; }
+
+        .btn-detect {
+            padding: 0 15px; background: #220033; border: 1px solid #d236f9; 
+            color: #d236f9; cursor: pointer; font-weight: bold; border-radius: 4px;
+            font-size: 1.2rem; transition: 0.2s;
+        }
+        .btn-detect:hover { background: #d236f9; color: white; }
+
+        .main-btn { 
+            width: 100%; padding: 15px; background: var(--accent-dim); 
+            color: white; border: none; font-weight: 800; cursor: pointer; 
+            text-transform: uppercase; letter-spacing: 1px; border-radius: 4px; 
+            transition: 0.2s;
+        }
+        .main-btn:hover { background: var(--accent); }
+        .main-btn:disabled { background: #333; color: #555; cursor: not-allowed; }
+
+        .mission-box {
+            margin-top: 20px; padding: 15px;
+            background: rgba(255, 0, 85, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 4px; display: none;
+        }
+        .mission-text { font-size: 0.9rem; color: #fff; line-height: 1.4; }
+
+        /* --- COL 2: MAP & LIST --- */
+        .col-center { display: flex; flex-direction: column; gap: 0; height: 100%; }
+        
+        #map { 
+            height: 40%; width: 100%; 
+            border-radius: 6px; border: 1px solid var(--border);
+            z-index: 1; margin-bottom: 10px;
+        }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 5px; }
+        .tab-btn {
+            flex: 1; padding: 10px; background: #1a1a1a;
+            border: 1px solid var(--border); color: #888; cursor: pointer;
+            text-transform: uppercase; font-weight: bold; font-size: 0.8rem;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .list-container { 
+            flex-grow: 1; overflow-y: auto; padding-right: 5px; 
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: 4px; padding: 10px;
+        }
+
+        .intel-card {
+            background: #181818; border: 1px solid #333;
+            padding: 15px; margin-bottom: 8px; border-radius: 4px; cursor: pointer;
+            transition: 0.2s; border-left: 4px solid transparent; position: relative;
+        }
+        .intel-card:hover { border-color: var(--accent); background: #222; }
+        .intel-card.active { border-left: 4px solid var(--accent); background: #2a2a2a; }
+        
+        .card-title { font-size: 1rem; font-weight: bold; color: white; display: block; }
+        .card-meta { font-size: 0.8rem; color: #888; display: flex; justify-content: space-between; margin-top:5px; }
+
+        /* --- COL 3: DOSSIER PANEL --- */
+        .dossier-header { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .dossier-title { font-size: 1.5rem; color: var(--highlight); font-weight: bold; margin: 0; line-height: 1.2; }
+        .dossier-sub { color: #888; font-size: 0.9rem; margin-top: 5px; }
+
+        /* Action Bar */
+        .action-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .action-btn { 
+            flex: 1; padding: 10px; background: #222; color: #ccc; 
+            border: 1px solid #444; text-align: center; text-decoration: none; 
+            font-size: 0.8rem; border-radius: 4px; font-weight: bold;
+        }
+        .action-btn:hover { background: #333; color: white; border-color: #666; }
+        .action-btn.disabled { opacity: 0.3; pointer-events: none; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-box { background: #1a1a1a; padding: 10px; border-radius: 4px; border: 1px solid #333; }
+        .stat-label { font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; margin-bottom: 3px; }
+        .stat-val { font-size: 1rem; color: #fff; font-weight: bold; }
+
+        /* Sections */
+        .dossier-section { margin-bottom: 20px; }
+        .sec-title { font-size: 0.8rem; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid #333; margin-bottom: 10px; padding-bottom: 5px; letter-spacing: 1px; }
+        .sec-content { font-size: 0.9rem; color: #ccc; line-height: 1.6; }
+        
+        .tag-cloud { display: flex; flex-wrap: wrap; gap: 5px; }
+        .tag { background: #222; color: #aaa; padding: 4px 8px; border-radius: 3px; font-size: 0.8rem; border: 1px solid #333; }
+
+        /* Empty State */
+        #dossierEmpty { display: flex; height: 100%; align-items: center; justify-content: center; color: #444; font-style: italic; }
+        #dossierContent { display: none; height: 100%; overflow-y: auto; }
+
+        #logBox { margin-top: 10px; font-size: 0.7rem; color: #666; font-family: monospace; height: 80px; overflow-y: auto; border-top: 1px solid #333; padding-top: 10px; }
+        .control-group-row { display:flex; align-items:center; gap:10px; margin:0 0 15px 0; color:#999; font-size:0.78rem; }
+        .control-group-row input[type="checkbox"] { width:auto; accent-color:var(--accent); }
+        .hint { color:#666; font-size:0.68rem; line-height:1.45; margin:-8px 0 14px; }
+        .badge-row { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+        .badge { display:inline-flex; align-items:center; gap:4px; border:1px solid #333; background:#202020; color:#aaa; padding:3px 7px; border-radius:999px; font-size:0.68rem; }
+        .badge-capacity { border-color:#4a3a17; color:#d8b86a; background:#181309; }
+        .badge-type { border-color:#28404a; color:#77c6df; background:#071419; }
+        .badge-contact-email { border-color:#29452b; color:#78e08f; background:#081609; }
+        .badge-contact-form { border-color:#48305a; color:#d9a7ff; background:#170a20; }
+        .badge-contact-social { border-color:#24415e; color:#8bc8ff; background:#081525; }
+        .badge-contact-unknown { border-color:#444; color:#777; background:#151515; }
+        .recommendation-shelf { border:1px solid #6b5526; background:linear-gradient(135deg,rgba(200,169,110,.12),rgba(0,229,255,.04)); padding:10px; margin-bottom:12px; border-radius:5px; }
+        .shelf-title { color:#c8a96e; text-transform:uppercase; letter-spacing:.14em; font-size:.68rem; font-weight:800; margin-bottom:8px; }
+        .spotlight-card { border-left-color:#c8a96e; box-shadow:0 0 0 1px rgba(200,169,110,.15), 0 10px 24px rgba(0,0,0,.25); }
+        .rec-reason { margin-top:8px; color:#d8c08a; font-size:.76rem; line-height:1.45; border-left:2px solid #c8a96e; padding-left:8px; }
+        .source-list a { display:block; color:#777; font-size:.72rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:4px; }
+
+    </style>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="panel">
+        <h1>Melankolia Venue Finder</h1>
+        
+        <label>Band Name</label>
+        <div class="input-row">
+            <input type="text" id="bandName" placeholder="e.g. She Past Away">
+            <button class="btn-detect" id="detectBtn" onclick="detectGenre()" title="Auto-Detect Genre">⚡</button>
+        </div>
+        
+        <label>Genre Profile</label>
+        <div class="input-row">
+            <input type="text" id="genre" placeholder="e.g. Post-Punk, Darkwave" style="color:var(--magic)">
+        </div>
+        
+        <label>Target Sector</label>
+        <div class="input-row">
+            <input type="text" id="location" placeholder="e.g. West Berlin">
+        </div>
+
+        <label>Maximum Venue Capacity</label>
+        <div class="input-row">
+            <input type="number" id="maxCapacity" value="500" placeholder="e.g. 500" min="50" max="10000">
+        </div>
+        <div class="control-group-row">
+            <input type="checkbox" id="includeMainstream" checked>
+            <label for="includeMainstream" style="margin:0;text-transform:none;font-size:.72rem;color:#aaa">Include established / mainstream music clubs</label>
+        </div>
+        <div class="hint">Genre remains editable after auto-detect. Use the capacity cap to target rooms that match the artist's draw.</div>
+        
+        <button id="scanBtn" class="main-btn" onclick="startEngine()">Initialize Scan</button>
+        
+        <div id="missionBox" class="mission-box">
+            <div id="missionText" class="mission-text"></div>
+        </div>
+
+        <div style="flex-grow:1"></div>
+        <div id="logBox">System Ready.</div>
+    </div>
+
+    <div class="col-center">
+        <div id="map"></div>
+        <div class="tabs">
+            <div class="tab-btn active" id="tabVenues" onclick="switchTab('venues')">Venues</div>
+            <div class="tab-btn" id="tabPromoters" onclick="switchTab('promoters')">Promoters</div>
+        </div>
+        <div class="list-container" id="listContainer">
+            <div style="padding:20px; text-align:center; color:#444; margin-top:50px;">
+                Awaiting Satellite Data...
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div id="dossierEmpty">Select a target to view dossier</div>
+        
+        <div id="dossierContent">
+            <div class="dossier-header">
+                <h2 class="dossier-title" id="dName">Venue Name</h2>
+                <div class="dossier-sub" id="dLoc">City, Country</div>
+            </div>
+
+            <div class="action-bar">
+                <a href="#" target="_blank" id="lnkWeb" class="action-btn">WEB</a>
+                <a href="#" target="_blank" id="lnkIg" class="action-btn">IG</a>
+                <a href="#" target="_blank" id="lnkFb" class="action-btn">FB</a>
+                <a href="#" target="_blank" id="lnkSearch" class="action-btn">SEARCH</a>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-label">Capacity</span>
+                    <div class="stat-val" id="dCap">-</div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Est. Ticket</span>
+                    <div class="stat-val" id="dPrice">-</div>
+                </div>
+                <div class="stat-box" style="grid-column: span 2">
+                    <span class="stat-label">Contact Protocol</span>
+                    <div class="stat-val" id="dEmail" style="font-size:0.9rem; color:#ffeb3b">-</div>
+                </div>
+            </div>
+
+            <div class="dossier-section">
+                <div class="sec-title">Atmosphere Report</div>
+                <div class="sec-content" id="dDesc"></div>
+            </div>
+
+            <div class="dossier-section">
+                <div class="sec-title">Booking Profile / Similar Acts</div>
+                <div class="tag-cloud" id="dBands"></div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Gemini calls are proxied through a Netlify Function so API keys never live in browser code.
+    const GEMINI_PROXY_URL = '/.netlify/functions/geminiSearch';
+
+    // --- SETUP ---
+    var map = L.map('map').setView([48.8566, 2.3522], 5);
+    var markers = []; 
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        subdomains: 'abcd', maxZoom: 19
+    }).addTo(map);
+
+    let venueData = [];
+    let promoterData = [];
+    let activeTab = 'venues';
+
+    function log(msg) {
+        const box = document.getElementById('logBox');
+        const time = new Date().toLocaleTimeString('en-US', {hour12: false});
+        box.innerHTML += `<div>[${time}] ${msg}</div>`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function switchTab(tab) {
+        activeTab = tab;
+        document.getElementById('tabVenues').className = tab === 'venues' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tabPromoters').className = tab === 'promoters' ? 'tab-btn active' : 'tab-btn';
+        renderCurrentList();
+        setTimeout(() => map.invalidateSize(), 120);
+    }
+
+    // --- GENRE DETECTION ---
+    async function detectGenre() {
+        const band = document.getElementById('bandName').value.trim();
+        if(!band) { alert("Enter Band Name first."); return; }
+
+        document.getElementById('detectBtn').disabled = true;
+        document.getElementById('genre').value = "Scanning...";
+        try {
+            const response = await fetch(GEMINI_PROXY_URL, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: 'detectGenre', band })
+            });
+            const data = await readJsonResponse(response, 'Genre detection');
+            document.getElementById('genre').value = (data.text || '').trim() || 'Unknown';
+        } catch(e) {
+            document.getElementById('genre').value = "Unknown";
+            log(`Genre detection error: ${e.message}`);
+        }
+        document.getElementById('detectBtn').disabled = false;
+    }
+
+    // --- MAIN ENGINE ---
+    async function startEngine() {
+        const loc = document.getElementById('location').value.trim();
+        const genre = document.getElementById('genre').value.trim();
+        const maxCapacity = parseInt(document.getElementById('maxCapacity')?.value || '500', 10) || 500;
+        const includeMainstream = !!document.getElementById('includeMainstream')?.checked;
+        if (!loc || !genre) { alert("Please complete mission parameters."); return; }
+
+        document.getElementById('scanBtn').disabled = true;
+        document.getElementById('missionBox').style.display = 'block';
+        document.getElementById('missionText').innerHTML = `<strong>SECTOR:</strong> ${esc(loc)}<br><strong>MODE:</strong> ${esc(genre)}<br><strong>CAP:</strong> ${maxCapacity}<br><strong>SCOPE:</strong> ${includeMainstream ? 'Full spectrum' : 'Underground / independent only'}`;
+        try {
+            log(`Scanning Sector: ${loc} · ${genre} · cap ${maxCapacity}...`);
+            const [venues, promoters] = await Promise.all([
+                fetchPipeline('venues', loc, genre, maxCapacity, includeMainstream),
+                fetchPipeline('promoters', loc, genre, maxCapacity, includeMainstream)
+            ]);
+            venueData = Array.isArray(venues) ? venues : [];
+            promoterData = Array.isArray(promoters) ? promoters : [];
+            log(`Intel Acquired: ${venueData.length} Venues, ${promoterData.length} Promoters.`);
+            await hydrateVenueCoordinates(venueData, loc);
+            updateMap(venueData);
+            renderCurrentList();
+            document.getElementById('scanBtn').innerText = "REFRESH SCAN";
+        } catch (e) {
+            log(`ERROR: ${e.message}`);
+        }
+        document.getElementById('scanBtn').disabled = false;
+    }
+
+    // --- API CALLS ---
+
+    async function readJsonResponse(response, label) {
+        const text = await response.text();
+        let data = null;
+        try { data = JSON.parse(text); }
+        catch(e) {
+            const isHtml = text.trim().startsWith('<');
+            throw new Error(`${label} returned ${response.status} ${response.statusText || ''}${isHtml ? ' — Netlify returned an HTML error/timeout page' : ''}`.trim());
+        }
+        if (!response.ok || data.error || data.success === false) throw new Error(data.error || `${label} failed`);
+        return data;
+    }
+
+    async function fetchPipeline(mode, loc, genre, maxCapacity, includeMainstream) {
+        const venueFoci = includeMainstream
+            ? ['underground DIY and alternative rooms', 'established clubs with small or mid-size rooms', 'bars art spaces cultural centers and nontraditional live rooms']
+            : ['underground DIY and alternative rooms', 'artist-run spaces cultural centers and squats', 'small independent bars clubs and basement rooms'];
+        const promoterFoci = includeMainstream
+            ? ['independent promoters and collectives', 'label nights event series festivals and club bookers', 'booking agencies concert promoters and alternative culture programmers']
+            : ['underground promoters and DIY collectives', 'label nights event series and scene festivals', 'independent bookers alternative culture programmers and artist-run promoters'];
+        const foci = mode === 'venues' ? venueFoci : promoterFoci;
+        const perPass = mode === 'venues' ? 10 : 8;
+        const dossiers = [];
+        const grounding = [];
+        for (let i = 0; i < foci.length; i++) {
+            const focus = foci[i];
+            log(`${mode.toUpperCase()}: grounded research pass ${i + 1}/${foci.length} — ${focus}...`);
+            try {
+                const researchResp = await fetch(GEMINI_PROXY_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: 'researchDossier', resultType: mode, location: loc, genre, maxCapacity, includeMainstream, searchFocus: focus, resultLimit: perPass })
+                });
+                const research = await readJsonResponse(researchResp, `${mode} research ${i + 1}`);
+                if (research.rawDossier) dossiers.push(`## ${focus}\n${research.rawDossier}`);
+                if (Array.isArray(research.grounding)) grounding.push(...research.grounding);
+            } catch (e) {
+                log(`WARN: ${mode} research pass ${i + 1} skipped — ${e.message}`);
+            }
+        }
+        if (!dossiers.length) throw new Error(`${mode} research returned no usable dossiers`);
+        log(`${mode.toUpperCase()}: schema parsing pass from ${dossiers.length} dossier batch(es)...`);
+        const parseResp = await fetch(GEMINI_PROXY_URL, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: 'parseDossier', resultType: mode, rawDossier: dossiers.join('\n\n---\n\n'), grounding })
+        });
+        const parsed = await readJsonResponse(parseResp, `${mode} parse`);
+        return dedupeIntel(parsed.data || parsed.json || []);
+    }
+
+    function dedupeIntel(items) {
+        const seen = new Set();
+        return (Array.isArray(items) ? items : []).filter(item => {
+            const key = String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }
+
+    // --- RENDER LIST ---
+    function renderCurrentList() {
+        const list = document.getElementById('listContainer');
+        list.innerHTML = '';
+        const data = activeTab === 'venues' ? venueData : promoterData;
+        const tag = activeTab === 'venues' ? 'VENUE' : 'PROMOTER';
+        if(data.length === 0) {
+            list.innerHTML = '<div style="padding:20px;text-align:center;color:#666">No Intel.</div>';
+            return;
+        }
+        const top = data.map((item, index)=>({item,index})).filter(x => x.item.is_top_recommendation);
+        const standard = data.map((item, index)=>({item,index})).filter(x => !x.item.is_top_recommendation);
+        if (top.length) {
+            const shelf = document.createElement('div');
+            shelf.className = 'recommendation-shelf';
+            shelf.innerHTML = `<div class="shelf-title">Top Recommended ${activeTab === 'venues' ? 'Venues' : 'Promoters'}</div>`;
+            top.forEach(x => shelf.appendChild(buildIntelCard(x.item, x.index, tag, true)));
+            list.appendChild(shelf);
+        }
+        standard.forEach(x => list.appendChild(buildIntelCard(x.item, x.index, tag, false)));
+    }
+
+    function buildIntelCard(item, index, tag, spotlight=false) {
+        const card = document.createElement('div');
+        card.className = 'intel-card' + (spotlight ? ' spotlight-card' : '');
+        card.id = `card-${index}`;
+        const contact = contactBadge(item);
+        card.innerHTML = `
+            <span class="card-title">${esc(item.name)}</span>
+            <div class="card-meta"><span>${esc(activeTab === 'venues' ? item.city : item.type)}</span><span style="color:#666">${tag}</span></div>
+            <div class="badge-row">
+                ${activeTab === 'venues' ? `<span class="badge badge-capacity">Capacity: ${esc(item.capacity_display || item.capacity || 'Unknown')}</span>` : ''}
+                <span class="badge badge-type">${esc(item.venue_type || item.type || 'Music Contact')}</span>
+                ${contact}
+                <span class="badge">Confidence: ${esc(item.confidence_score || '—')}/5</span>
+            </div>
+            ${spotlight && item.recommendation_reason ? `<div class="rec-reason">${esc(item.recommendation_reason)}</div>` : ''}
+        `;
+        card.onclick = () => selectItem(item, card, index);
+        return card;
+    }
+
+    async function hydrateVenueCoordinates(venues, loc) {
+        const cacheKey = 'mk_venue_geocode_cache_v1';
+        let cache = {};
+        try { cache = JSON.parse(localStorage.getItem(cacheKey) || '{}') || {}; } catch(e) {}
+        let changed = false;
+        const missing = venues.filter(v => !Number.isFinite(Number(v.lat ?? v.coordinates?.lat)) || !Number.isFinite(Number(v.lng ?? v.coordinates?.lng)));
+        if (missing.length) log(`MAP: resolving coordinates for ${missing.length} venue(s)...`);
+        for (const v of missing) {
+            const q = [v.name, v.city || loc, 'music venue'].filter(Boolean).join(', ');
+            const key = q.toLowerCase();
+            try {
+                let hit = cache[key];
+                if (!hit) {
+                    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`;
+                    const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                    const data = await resp.json();
+                    if (Array.isArray(data) && data[0]) hit = { lat: Number(data[0].lat), lng: Number(data[0].lon) };
+                    if (hit) cache[key] = hit;
+                    await new Promise(r => setTimeout(r, 350));
+                }
+                if (hit && Number.isFinite(hit.lat) && Number.isFinite(hit.lng)) {
+                    v.lat = hit.lat; v.lng = hit.lng; v.coordinates = { lat: hit.lat, lng: hit.lng };
+                    changed = true;
+                }
+            } catch(e) {
+                log(`MAP: geocode skipped for ${v.name || 'venue'} — ${e.message}`);
+            }
+        }
+        if (changed) localStorage.setItem(cacheKey, JSON.stringify(cache));
+    }
+
+    function updateMap(venues) {
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+        var bounds = [];
+        venues.forEach((v, index) => {
+            const lat = v.lat ?? v.coordinates?.lat;
+            const lng = v.lng ?? v.coordinates?.lng;
+            if(Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))) {
+                var marker = L.marker([Number(lat), Number(lng)]).addTo(map).bindPopup(v.name || 'Venue');
+                marker.on('click', () => {
+                    switchTab('venues');
+                    const card = document.getElementById(`card-${index}`);
+                    if(card) {
+                        card.scrollIntoView({behavior: "smooth", block: "center"});
+                        selectItem(v, card, index);
+                    }
+                });
+                markers[index] = marker;
+                bounds.push([Number(lat), Number(lng)]);
+            }
+        });
+        setTimeout(() => map.invalidateSize(), 120);
+        if(bounds.length > 0) map.fitBounds(bounds, {padding: [50, 50]});
+        else log('MAP: no venue coordinates available yet.');
+    }
+
+    // --- DOSSIER VIEW ---
+    function selectItem(item, card, index) {
+        document.querySelectorAll('.intel-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        if(activeTab === 'venues' && markers[index]) markers[index].openPopup();
+        document.getElementById('dossierEmpty').style.display = 'none';
+        document.getElementById('dossierContent').style.display = 'block';
+        document.getElementById('dName').innerText = item.name || 'Unknown';
+        document.getElementById('dLoc').innerText = activeTab === 'venues' ? (item.city || '') : (item.type || 'Promoter / Collective');
+        setLink('lnkWeb', item.website);
+        setLink('lnkIg', item.instagram);
+        setLink('lnkFb', item.facebook);
+        document.getElementById('lnkSearch').href = `https://www.google.com/search?q=${encodeURIComponent('"' + (item.name || '') + '" booking')}`;
+        document.getElementById('dCap').innerText = item.capacity_display || item.capacity || "N/A";
+        document.getElementById('dPrice').innerText = item.venue_type || item.type || "N/A";
+        const emailBox = document.getElementById('dEmail');
+        emailBox.innerHTML = contactProtocolHtml(item);
+        emailBox.style.color = item.email ? "#78e08f" : "#d8b86a";
+        const sourceLinks = Array.isArray(item.verification_sources) && item.verification_sources.length
+            ? `<div class="source-list" style="margin-top:12px"><div class="sec-title">Verification Sources</div>${item.verification_sources.slice(0,6).map(u=>`<a href="${escAttr(u)}" target="_blank">${esc(u)}</a>`).join('')}</div>` : '';
+        document.getElementById('dDesc').innerHTML = `${esc(item.description || "No intel available.")}${item.recommendation_reason ? `<div class="rec-reason">${esc(item.recommendation_reason)}</div>` : ''}${sourceLinks}`;
+        const tagsDiv = document.getElementById('dBands');
+        tagsDiv.innerHTML = '';
+        const acts = item.similar_acts_booked || item.associated_acts || item.similar_bands || [];
+        if(Array.isArray(acts) && acts.length > 0) {
+            acts.forEach(b => { tagsDiv.innerHTML += `<span class="tag">${esc(b)}</span>`; });
+        } else {
+            tagsDiv.innerHTML = '<span class="tag" style="color:#444">No Data</span>';
+        }
+    }
+
+    function contactBadge(item) {
+        const method = item.booking_method || 'unknown';
+        if (method === 'email' && item.email) return '<span class="badge badge-contact-email">Email Booking Agent</span>';
+        if (method === 'contact_form') return '<span class="badge badge-contact-form">Submit via Form</span>';
+        if (method === 'instagram_dm') return '<span class="badge badge-contact-social">DM on Instagram</span>';
+        if (method === 'facebook_messenger') return '<span class="badge badge-contact-social">Facebook Messenger</span>';
+        return '<span class="badge badge-contact-unknown">Contact Unknown</span>';
+    }
+    function contactProtocolHtml(item) {
+        const method = item.booking_method || 'unknown';
+        if (method === 'email' && item.email) return `${esc(item.email)} <a href="mailto:${escAttr(item.email)}" style="color:#78e08f;font-size:.75rem">[MAIL]</a>`;
+        if (method === 'contact_form' && item.booking_form_url) return `<a href="${escAttr(item.booking_form_url)}" target="_blank" style="color:#d9a7ff">Submit via Contact Form</a>`;
+        if (method === 'instagram_dm' && item.instagram) return `<a href="${escAttr(item.instagram)}" target="_blank" style="color:#8bc8ff">DM on Instagram</a>`;
+        if (method === 'facebook_messenger' && item.facebook) return `<a href="${escAttr(item.facebook)}" target="_blank" style="color:#8bc8ff">Message on Facebook</a>`;
+        return 'Unknown — verify via socials / website';
+    }
+    function esc(s) { return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function escAttr(s) { return esc(s).replace(/`/g, '&#96;'); }
+
+    function setLink(id, url) {
+        const el = document.getElementById(id);
+        if(url) {
+            el.href = url;
+            el.classList.remove('disabled');
+        } else {
+            el.href = "#";
+            el.classList.add('disabled');
+        }
+    }
+
+</script>
+
+</body>
+</html>

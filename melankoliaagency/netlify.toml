@@ -4,7 +4,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["firebase-admin", "@firebase/app", "@google-cloud/firestore"]
+  external_node_modules = ["firebase-admin", "@firebase/app", "@google-cloud/firestore", "@netlify/blobs"]
   included_files = ["netlify/functions/node_modules/**"]
 
 [[redirects]]
