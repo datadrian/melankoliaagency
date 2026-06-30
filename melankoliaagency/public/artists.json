@@ -3212,7 +3212,7 @@
       "slug": "zanias",
       "name": "Zanias",
       "bio": "Zanias has been haunting underground clubs around the world with her instantly recognisable voice and uniquely ethereal electronic productions since 2011, with the spawning of her first project Linea Aspera in London. As a solo artist, based in Berlin since 2013, she explores a more alien and spherical palette of sounds, using her coldwave past with the experimental pop influences of Fever Ray, Enya, early Grimes and Caroline Polachek. With her latest album ‘Cataclysm’, Zanias makes a poignant call for revolution of both politics and consciousness in the face of humanity’s existential threats of war and climate collapse, conveyed through her signature of deeply personal and poetic lyricism. Every song inhabits its own aesthetic universe and rhythm, featuring elemental fusions of post-industrial, witchhouse, trance, breakbeats and hyperpop. As with all her previous albums, Zanias carves her own genre from the solidified ashes of her influences. In 2025 Zanias created a whole new live set with London-based drummer Dream Dilate Decay. Industrial polyrhythms, tribal intensity and a vocal performance akin to a banshee characterise the sonic ritual conjured by the duo, striking a delicate balance of ethereal fragility and iron strength. This new incarnation promises to be her most captivating era yet.",
-      "shortBio": "Zanias has been haunting underground clubs around the world with her instantly recognisable voice and uniquely ethereal electronic productions since 2011, with the spawning of her first project Linea Aspera in London. As a solo artist, based in Berlin since 20…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -3379,7 +3379,8 @@
         }
       ],
       "gallery": [
-        "/images/artists/zanias.jpg"
+        "/images/artists/zanias.jpg",
+        "/images/artists/zanias/mr0pl0vpl731.jpg"
       ],
       "roles": {
         "tile": {
@@ -3395,9 +3396,9 @@
           "scale": 1
         },
         "banner": {
-          "src": "/images/artists/zanias.jpg",
-          "x": 50,
-          "y": 50,
+          "src": "/images/artists/zanias/mr0pl0vpl731.jpg",
+          "x": 56,
+          "y": 41,
           "scale": 1
         }
       }
