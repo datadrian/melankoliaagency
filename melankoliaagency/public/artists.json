@@ -3116,7 +3116,7 @@
       "slug": "yama-uba",
       "name": "Yama Uba",
       "bio": "Yama Uba is a dark synth pop / post-punk duo that reaches into the depths of human experience and brings to light the range of emotion that makes us whole. The sonic palette of duo Akiko Sampson and Winter Zora expresses the complexity of the human spirit, from love to hope to rage, through emotive vocals, shimmering guitar, and soaring saxophone atop explosive bass, velvet synthesizers, and machine beats. Yama Uba has captivated audiences across the United States and Japan, sharing stages with darkwave luminaries Kaelan Mikla, Buzz Kull, Harsh Symmetry, post-punk legends Pink Turns Blue, and Japanese gothic rock pioneers Phaidia. On stage, live shows are performed either by Akiko Sampson solo (vocals, bass, synth, drum programming) or by both Akiko and Winter Zora (vocals, guitar, saxophone). Based in Oakland, California, this duo just released their 2024 debut album, \"Silhouettes\", on Psychic Eye and Ratskin Records. Cover art designed by Pearl Thompson (The Cure).",
-      "shortBio": "Yama Uba is a dark synth pop / post-punk duo that reaches into the depths of human experience and brings to light the range of emotion that makes us whole. The sonic palette of duo Akiko Sampson and Winter Zora expresses the complexity of the human spirit, fro…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -3184,25 +3184,26 @@
         }
       ],
       "gallery": [
-        "/images/artists/yama-uba.jpg"
+        "/images/artists/yama-uba.jpg",
+        "/images/artists/yama-uba/mr0pk0yexdoo.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/yama-uba.jpg",
+          "src": "/images/artists/yama-uba/mr0pk0yexdoo.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/yama-uba.jpg",
+          "src": "/images/artists/yama-uba/mr0pk0yexdoo.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "banner": {
           "src": "/images/artists/yama-uba.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 51,
+          "y": 21,
           "scale": 1
         }
       }
