@@ -2056,8 +2056,8 @@
         },
         "banner": {
           "src": "/images/artists/mellow-code.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 51,
+          "y": 0,
           "scale": 1
         }
       }
