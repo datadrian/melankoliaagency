@@ -1430,7 +1430,7 @@
       "slug": "healng",
       "name": "Healng",
       "bio": "Emerging from the vibrant underground electronic circuit in the United States, Healng has carved out a distinct niche within the industrial and darkwave landscape. Based in Cincinnati, the project is the creative output of Avery Stanken, who has meticulously crafted a sonic identity that feels both nostalgic and forward-thinking. By blending the mechanical precision of classic EBM with the moody, introspective atmosphere of modern darkwave, Healng delivers music that is as suitable for the dance floor as it is for solitary, late-night listening. The project’s discography and live presence reflect a deep commitment to the \"DIY\" ethos of the industrial scene. Healng is frequently associated with the broader dark electronic community, often sharing stages with established acts and contributing to compilations that highlight the raw volatility of the genre. Tracks from the project often feature sharp, percussive elements, distorted basslines, and a sense of urgency that mirrors the anxieties of modern life. Whether through self-released EPs or collaborations with other artists like Brood Faye, Healng maintains a consistent focus on high-intensity sound design. Beyond the studio, Healng is recognized for a compelling live presence that has seen the project tour and perform at various goth and industrial nights across the country. As the project continues to evolve, it remains a vital voice for those seeking music that balances aggressive, machine-driven rhythms with a profound, shadow-cloaked emotional depth.",
-      "shortBio": "Created by Avery D. Stanken in the Cincinnati and Northern Kentucky area, Healng has quickly established itself as a rising force within the modern dark electronic underground. Drawing inspiration from early 90s techno and Wax Trax! era industrial music, the project delivers a powerful fusion of driving rhythms, raw energy, and dark club aesthetics. Since emerging in 2022, Healng has toured extensively throughout the United States and shared stages with artists including Spike Hellis, Pixel Grip, and Ultra Sunn. As Healng continues to expand its reach through new releases and live performances, we look forward to bringing the project to audiences worldwide. ",
+      "shortBio": "",
       "genres": "darkwave,industrial,EBM",
       "location": "Cincinnati, Ohio",
       "status": "active",
@@ -1470,8 +1470,8 @@
         },
         "banner": {
           "src": "/images/artists/healng/mr0jswcdpb77.jpg",
-          "x": 48,
-          "y": 14,
+          "x": 57,
+          "y": 10,
           "scale": 1
         }
       }
