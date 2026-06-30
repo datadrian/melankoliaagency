@@ -584,7 +584,7 @@
       "slug": "cd-ghost",
       "name": "CD Ghost",
       "bio": "Cody Han and Blake Dimas produce surreal yet danceable synthpop under the name CD Ghost They began in 2020 by releasing three EPs in quick succession, with tracks such as “Roll the Dice” and “Undercurrent” garnering attention online. In 2022, the pair joined Born Losers Records to release their first full length, “Night Music” which saw them expand their watercolor dream pop palette towards the intersections of indie pop, post-punk, and darkwave. Written during the pandemic while split between Los Angeles and Beijing, the project reflects on solitude, transformation, and the mysteries of the night. Drawing from a kitschy past as much as they are embracing pure contemporary pop, their hook-laden, beat-driven lamentations find a way to stick in your head and make their home. With a few releases under their belt and a growing audience, CD Ghost is steadfast in their impossible goal of writing the best pop songs ever.",
-      "shortBio": "Cody Han and Blake Dimas produce surreal yet danceable synthpop under the name CD Ghost They began in 2020 by releasing three EPs in quick succession, with tracks such as “Roll the Dice” and “Undercurrent” garnering attention online. In 2022, the pair joined B…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -652,7 +652,8 @@
         }
       ],
       "gallery": [
-        "/images/artists/cd-ghost.jpg"
+        "/images/artists/cd-ghost.jpg",
+        "/images/artists/cd-ghost/mr0p6fqv66s8.jpg"
       ],
       "roles": {
         "tile": {
@@ -668,9 +669,9 @@
           "scale": 1
         },
         "banner": {
-          "src": "/images/artists/cd-ghost.jpg",
+          "src": "/images/artists/cd-ghost/mr0p6fqv66s8.jpg",
           "x": 50,
-          "y": 50,
+          "y": 8,
           "scale": 1
         }
       }
