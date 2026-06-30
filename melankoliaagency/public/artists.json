@@ -1895,17 +1895,18 @@
         }
       ],
       "gallery": [
-        "/images/artists/male-tears.jpg"
+        "/images/artists/male-tears.jpg",
+        "/images/artists/male-tears/mr0pc8six7bw.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/male-tears.jpg",
+          "src": "/images/artists/male-tears/mr0pc8six7bw.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/male-tears.jpg",
+          "src": "/images/artists/male-tears/mr0pc8six7bw.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
