@@ -374,7 +374,8 @@
         }
       ],
       "gallery": [
-        "/images/artists/blood-rave.jpg"
+        "/images/artists/blood-rave.jpg",
+        "/images/artists/blood-rave/mr0p5ew6lp4q.jpg"
       ],
       "roles": {
         "tile": {
@@ -390,9 +391,9 @@
           "scale": 1
         },
         "banner": {
-          "src": "/images/artists/blood-rave.jpg",
-          "x": 46,
-          "y": 23,
+          "src": "/images/artists/blood-rave/mr0p5ew6lp4q.jpg",
+          "x": 50,
+          "y": 1,
           "scale": 1
         }
       }
