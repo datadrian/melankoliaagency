@@ -1439,8 +1439,31 @@
           "cover": "http://coverartarchive.org/release/73aebfac-2831-4d93-a3b8-542a5646016a/35880933990-500.jpg"
         }
       ],
-      "gallery": [],
-      "roles": {}
+      "gallery": [
+        "/images/artists/healng/mr0jsv3fo0q6.jpg",
+        "/images/artists/healng/mr0jswcdpb77.jpg",
+        "/images/artists/healng/mr0jsx8zcsyl.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/healng/mr0jsv3fo0q6.jpg",
+          "x": 46,
+          "y": 5,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/healng/mr0jsv3fo0q6.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/healng/mr0jswcdpb77.jpg",
+          "x": 48,
+          "y": 14,
+          "scale": 1
+        }
+      }
     },
     {
       "slug": "jorge-elbrecht",
