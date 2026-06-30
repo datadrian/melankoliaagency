@@ -2783,7 +2783,8 @@
         }
       ],
       "gallery": [
-        "/images/artists/street-fever.jpg"
+        "/images/artists/street-fever.jpg",
+        "/images/artists/street-fever/mr0pichrqenw.jpg"
       ],
       "roles": {
         "tile": {
@@ -2799,9 +2800,9 @@
           "scale": 1
         },
         "banner": {
-          "src": "/images/artists/street-fever.jpg",
-          "x": 50,
-          "y": 50,
+          "src": "/images/artists/street-fever/mr0pichrqenw.jpg",
+          "x": 53,
+          "y": 9,
           "scale": 1
         }
       }
