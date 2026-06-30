@@ -2066,7 +2066,7 @@
       "slug": "nox-novacula",
       "name": "Nox Novacula",
       "bio": "Since their formation in 2017, Nox Novacula has carved out a commanding presence in the deathrock scene with their icy, visceral sound. Emerging from Seattle, the band channels the raw spirit of goth and punk into a distinctively modern yet hauntingly timeless identity. Their 2021 release, Ascension, showcased a mastery of traditional deathrock influences, drawing comparisons to legendary acts like Christian Death while solidifying their place among contemporary dark music innovators. Their latest album, Feed the Fire (2024), takes their artistry to a new level. Released on Artoffact Records, it blends the band's signature ominous riffs and energetic rhythms with an expanded palette of electronic elements and experimental compositions. Tracks like \"Plague\" and \"No Forgiveness\" exemplify their ability to balance fierce, anthemic energy with intricate arrangements, while \"Stay\" and \"Flood\" highlight their bold foray into darkwave and electropop. The result is an album that pushes the boundaries of the genre without losing its dark, evocative core. Nox Novacula’s sound is a meticulously crafted homage to the genre’s origins—evoking the apocalyptic anthems of Sisters of Mercy and the gritty gothic punk of Death Cult—while forging a path that feels both urgent and innovative. Whether you're a long-time devotee of deathrock's theatrical gloom or a new admirer drawn by the genre's revival, Nox Novacula offers a thrilling dive into a soundscape of shadows and rebellion.",
-      "shortBio": "Since their formation in 2017, Nox Novacula has carved out a commanding presence in the deathrock scene with their icy, visceral sound. Emerging from Seattle, the band channels the raw spirit of goth and punk into a distinctively modern yet hauntingly timeless…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -2126,25 +2126,26 @@
         }
       ],
       "gallery": [
-        "/images/artists/nox-novacula.jpg"
+        "/images/artists/nox-novacula.jpg",
+        "/images/artists/nox-novacula/mr0pdxl34he7.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/nox-novacula.jpg",
+          "src": "/images/artists/nox-novacula/mr0pdxl34he7.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/nox-novacula.jpg",
+          "src": "/images/artists/nox-novacula/mr0pdxl34he7.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "banner": {
           "src": "/images/artists/nox-novacula.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 48,
+          "y": 20,
           "scale": 1
         }
       }
