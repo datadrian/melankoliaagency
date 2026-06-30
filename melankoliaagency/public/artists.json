@@ -1644,25 +1644,26 @@
         }
       ],
       "gallery": [
-        "/images/artists/jorge-elbrecht.jpg"
+        "/images/artists/jorge-elbrecht.jpg",
+        "/images/artists/jorge-elbrecht/mr0pb95hz6t3.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/jorge-elbrecht.jpg",
+          "src": "/images/artists/jorge-elbrecht/mr0pb95hz6t3.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/jorge-elbrecht.jpg",
+          "src": "/images/artists/jorge-elbrecht/mr0pb95hz6t3.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "banner": {
           "src": "/images/artists/jorge-elbrecht.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 47,
+          "y": 14,
           "scale": 1
         }
       }
