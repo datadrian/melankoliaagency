@@ -2560,7 +2560,7 @@
       "slug": "some-ember",
       "name": "Some Ember",
       "bio": "Some Ember is the project of producer, vocalist and multi-instrumentalist Dylan Travis. Formed in 2011 in Oakland, California, Some Ember has been a fixture of the minimal synth and DIY communities in the Bay Area, Berlin, and now Los Angeles. Lately joined live and on record by Marisa Prietto (Bizoux, Wax Idols, Glaare) Some Ember's dramatic performances are anchored around the duo's powerful voices and presence. Always focused on themes of immanence, renewal, and buoyed by self-produced electronics, the project has evolved into a physical, danceable form. Releases include LPs on Third Coming and Dream Recordings, cassettes on Night-People, Ascetic House, and Crash Symbols, and most recently the self-released EP \"Held a Fragment of the Moon\" and the single \"Pendulum\".",
-      "shortBio": "Some Ember is the project of producer, vocalist and multi-instrumentalist Dylan Travis. Formed in 2011 in Oakland, California, Some Ember has been a fixture of the minimal synth and DIY communities in the Bay Area, Berlin, and now Los Angeles. Lately joined li…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -2661,17 +2661,18 @@
         }
       ],
       "gallery": [
-        "/images/artists/some-ember.jpg"
+        "/images/artists/some-ember.jpg",
+        "/images/artists/some-ember/mr0phdo3tnso.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/some-ember.jpg",
+          "src": "/images/artists/some-ember/mr0phdo3tnso.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/some-ember.jpg",
+          "src": "/images/artists/some-ember/mr0phdo3tnso.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
@@ -2679,7 +2680,7 @@
         "banner": {
           "src": "/images/artists/some-ember.jpg",
           "x": 50,
-          "y": 50,
+          "y": 34,
           "scale": 1
         }
       }
