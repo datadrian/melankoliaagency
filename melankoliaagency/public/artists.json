@@ -888,7 +888,7 @@
       "slug": "dame-area",
       "name": "Dame Area",
       "bio": "Hailing from Barcelona, Dame Area has forged a sound that is both hypnotic and relentless—where primal polyrhythms, industrial intensity, and hypnotic synths collide. This Catalan-Italian duo is one of the most explosive live acts of the moment. Their latest LP, “Toda la verdad sobre Dame Area” (Mannequin Records / Humo), captures the feverish energy of their live shows. Named the second-best rock album of 2024 by Pitchfork and \"Record of the Week\" by The Quietus, it stands as a testament to their uncompromising vision and raw power. Since their beginnings, Dame Area has continuously evolved, refining their distinct sound across albums like “Centro di Gravitá”, “Ondas Tribales”, and “Toda la mentira sobre Dame Area”—each release pushing the boundaries of industrial, EBM, and post-punk. Their music is a ritual, a sonic force that refuses to be confined.",
-      "shortBio": "Hailing from Barcelona, Dame Area has forged a sound that is both hypnotic and relentless—where primal polyrhythms, industrial intensity, and hypnotic synths collide. This Catalan-Italian duo is one of the most explosive live acts of the moment. Their latest L…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -996,7 +996,8 @@
         }
       ],
       "gallery": [
-        "/images/artists/dame-area.jpg"
+        "/images/artists/dame-area.jpg",
+        "/images/artists/dame-area/mr0p8kxaxxyd.jpg"
       ],
       "roles": {
         "tile": {
@@ -1012,9 +1013,9 @@
           "scale": 1
         },
         "banner": {
-          "src": "/images/artists/dame-area.jpg",
-          "x": 50,
-          "y": 50,
+          "src": "/images/artists/dame-area/mr0p8kxaxxyd.jpg",
+          "x": 52,
+          "y": 14,
           "scale": 1
         }
       }
