@@ -1402,8 +1402,8 @@
         }
       ],
       "gallery": [
-        "/images/artists/donzii.jpg",
-        "/images/artists/donzii/mr0paet0t1b0.jpg"
+        "/images/artists/donzii/mr0paet0t1b0.jpg",
+        "/images/artists/donzii/mr0pgzhud5hr.jpg"
       ],
       "roles": {
         "tile": {
@@ -1419,9 +1419,9 @@
           "scale": 1
         },
         "banner": {
-          "src": "/images/artists/donzii.jpg",
-          "x": 60,
-          "y": 58,
+          "src": "/images/artists/donzii/mr0pgzhud5hr.jpg",
+          "x": 47,
+          "y": 22,
           "scale": 1
         }
       }
