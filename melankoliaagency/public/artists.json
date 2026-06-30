@@ -2154,7 +2154,7 @@
       "slug": "sacred-skin",
       "name": "Sacred Skin",
       "bio": "Los Angeles-based duo Brian DaMert and Brian Tarney explore the vastness of spellbinding, anthemic new wave synth-pop music under the name Sacred Skin . Their first single, Colder was released in March of 2021. The melancholic undertones and pitch perfect songwriting stole the hearts of dark souls everywhere. Subsequent single- Eyes Closed and Far Away - landed them early live shows at LA’s Substance Festival and famed venue the Hollywood Palladium supporting AFI. The succession of singles and live dates led to the release of their first LP, The Decline of Pleasure in May 2022. With its distinctive and dreamlike new wave arrangements and DaMert’s powerful vocals infused with lust and longing, the album is unlike anything in its class. Their use of early digital outboard gear and samplers, namely the Sequential Prophet VS synthesizer and the EMU Emulator II, retains a classic studio feel that is timelessly unique. Sacred Skin’s second LP \"Born In Fire was released on Artoffact Records in 2024. Their latest and third EP is set to be out in 2025.",
-      "shortBio": "Los Angeles-based duo Brian DaMert and Brian Tarney explore the vastness of spellbinding, anthemic new wave synth-pop music under the name Sacred Skin . Their first single, Colder was released in March of 2021. The melancholic undertones and pitch perfect song…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -2317,7 +2317,8 @@
         }
       ],
       "gallery": [
-        "/images/artists/sacred-skin.jpg"
+        "/images/artists/sacred-skin.jpg",
+        "/images/artists/sacred-skin/mr0pf2sa7mvo.jpg"
       ],
       "roles": {
         "tile": {
@@ -2333,9 +2334,9 @@
           "scale": 1
         },
         "banner": {
-          "src": "/images/artists/sacred-skin.jpg",
+          "src": "/images/artists/sacred-skin/mr0pf2sa7mvo.jpg",
           "x": 50,
-          "y": 50,
+          "y": 67,
           "scale": 1
         }
       }
