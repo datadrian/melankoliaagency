@@ -679,8 +679,8 @@
     {
       "slug": "corbeau-hangs",
       "name": "Corbeau Hangs",
-      "bio": "orbeau Hangs is the search into the anomalies of the nature of 80s darkness fusing darkwave, industrial and post punk influences to create a soundtrack of tragic hope. Blending post-punk grittiness, driven industrial tones and the atmospheric dilemma of darkwave and cold wave to garnish a wave of familiar and nostalgic hints while being something totally of its own electronic persona. Manuel Perez is joined by Quinn Tipton in this project reminiscent of horror soundtracks to complement the societal void in which these sounds find themselves in.",
-      "shortBio": "orbeau Hangs is the search into the anomalies of the nature of 80s darkness fusing darkwave, industrial and post punk influences to create a soundtrack of tragic hope. Blending post-punk grittiness, driven industrial tones and the atmospheric dilemma of darkwa…",
+      "bio": "Corbeau Hangs is the search into the anomalies of the nature of 80s darkness fusing darkwave, industrial and post punk influences to create a soundtrack of tragic hope. Blending post-punk grittiness, driven industrial tones and the atmospheric dilemma of darkwave and cold wave to garnish a wave of familiar and nostalgic hints while being something totally of its own electronic persona. Manuel Perez is joined by Quinn Tipton in this project reminiscent of horror soundtracks to complement the societal void in which these sounds find themselves in.",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -733,25 +733,26 @@
         }
       ],
       "gallery": [
-        "/images/artists/corbeau-hangs.jpg"
+        "/images/artists/corbeau-hangs.jpg",
+        "/images/artists/corbeau-hangs/mr0p7bh46oj5.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/corbeau-hangs.jpg",
+          "src": "/images/artists/corbeau-hangs/mr0p7bh46oj5.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/corbeau-hangs.jpg",
+          "src": "/images/artists/corbeau-hangs/mr0p7bh46oj5.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "banner": {
           "src": "/images/artists/corbeau-hangs.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 51,
+          "y": 85,
           "scale": 1
         }
       }
