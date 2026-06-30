@@ -761,7 +761,7 @@
       "slug": "creux-lies",
       "name": "Creux Lies",
       "bio": "Revered for use of reverb-laden guitar work, creative synth structures, and dynamic vocals akin to the style of many shades of 80’s and early 90’s pop-darkness, Creux Lies hails from Sacramento, California. The lineup includes - Ean Clevenger (vox/programming), Barry Crider (guitarist), Jon Mak (synth/vocals) and Kyle Vorst (bassist). In late 2018, Creux Lies completed their first full-length album via Cleopatra, “The Hearth”, recorded at the creative fantasy-land known as Earthtone Studios (Tera Melos, So Stressed!, King Woman) in their home city under the creative care of producer/engineer extraordinaire Patrick Hills. Seminal performances for Creux Lies include appearances at WGT, Absolution Fest, Murder of Crows NY, and several other shared stages and tours with a roster of notable acts such as AFI, The Soft Moon, Clan of Xymox, Drab Majesty, Soft Kill, Gene Loves Jezebel, Actors, Vowws, Twin Tribes, and others. In 2021 Creux Lies was poised for 2021 with the release of their second full-length via the international Freakwave label and their new album is set to release in 2026. Headlining performance antics will ensue promptly. Catch them soon on tour throughout the reaches of the planet.",
-      "shortBio": "Revered for use of reverb-laden guitar work, creative synth structures, and dynamic vocals akin to the style of many shades of 80’s and early 90’s pop-darkness, Creux Lies hails from Sacramento, California. The lineup includes - Ean Clevenger (vox/programming)…",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -860,25 +860,26 @@
         }
       ],
       "gallery": [
-        "/images/artists/creux-lies.jpg"
+        "/images/artists/creux-lies.jpg",
+        "/images/artists/creux-lies/mr0p7y0rk7n1.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/creux-lies.jpg",
+          "src": "/images/artists/creux-lies/mr0p7y0rk7n1.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/creux-lies.jpg",
+          "src": "/images/artists/creux-lies/mr0p7y0rk7n1.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "banner": {
           "src": "/images/artists/creux-lies.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 48,
+          "y": 14,
           "scale": 1
         }
       }
