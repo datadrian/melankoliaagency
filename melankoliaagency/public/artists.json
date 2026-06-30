@@ -1024,7 +1024,7 @@
       "slug": "daniel-myer",
       "name": "Daniel Myer",
       "bio": "Daniel Myer , a visionary composer and producer who has left an indelible mark on the techno and house scene. From his early beginnings to his influential contributions, Daniel Myer's musical prowess has illuminated dance floors and inspired countless artists and fans alike. Born in the seventies, Daniel Myer was fascinated by music from a young age, he found solace and inspiration in various genres, exploring the depths of punk, new wave, and electronic music. This diverse musical upbringing laid the foundation for his future endeavors and set the stage for his unique approach to composition. As a teenager, Myer began experimenting with synthesizers and drum machines, immersing himself in the world of electronic music. This led him to form his first band, Haujobb, in the nineties. With Haujobb, he merged elements of industrial, techno, and ambient music, pushing the boundaries of sound and captivating audiences with their innovative releases like \"Solutions for a Small Planet\" and \"Vertical Theory.\" Daniel Myer's talent for collaboration became evident as he worked as Remixer and collaborator with renowned artists like Depeche Mode, Alessandro Cortini, Camouflage, Black Line, Ben Lukas Boysen, Skinny Puppy, Recoil and many more. These collaborations showcased his ability to blend diverse musical styles while maintaining his unique sound and vision. Myer's influence on the techno and house scene cannot be overstated. His work seamlessly fuses pulsating beats, atmospheric melodies, and intricate textures, transporting listeners to captivating sonic realms. He has been credited with introducing a fresh, introspective approach to electronic music, infusing it with a cinematic quality that resonates deeply with his audience. The release Matrix was accompanied with a Sample CD and was used by Techno Artists, such as Oliver Huntemann, DJ Hell, Robag Wruhme or Laurent Garnier. The musician's solo releases under various aliases, including Architect, Aktivist or Hexer have garnered criticaal acclaim for their meticulous attention to detail and emotional depth. Tracks like \"Attack Ships On Fire“ and \"Voicestealer“ serve as prime examples of his ability to craft hypnotic and mesmerizing sonic landscapes that pulsate through the veins of the techno and house scene. Moreover, Daniel Myer's work extends beyond the studio and into live performances, where he mesmerizes crowds with his captivating stage presence and ability to create a resonant, immersive experience. His performances at renowned festivals such as MUTEK and Fusion Festival have solidified his status as a true luminary of the genre. Throughout his illustrious career, Daniel Myer has consistently pushed the boundaries of electronic music, refusing to be confined to one particular style or sound. His insatiable hunger for exploration drives him to continually evolve and experiment with new techniques and genres, concluding in creating soundtracks for videogames and movies and releases music on labels such as Groove Attack, Rough Trade, Sonic Groove, Aufnahme + Wiedergabe, Fleisch, Body Theory, Virgin, Poets Club, Form & Function, Metropolis, Ant-Zen and many more.",
-      "shortBio": "Daniel Myer , a visionary composer and producer who has left an indelible mark on the techno and house scene. From his early beginnings to his influential contributions, Daniel Myer's musical prowess has illuminated dance floors and inspired countless artists …",
+      "shortBio": "",
       "genres": "",
       "location": "",
       "status": "active",
@@ -1138,25 +1138,26 @@
         }
       ],
       "gallery": [
-        "/images/artists/daniel-myer.jpg"
+        "/images/artists/daniel-myer.jpg",
+        "/images/artists/daniel-myer/mr0p99zjl6th.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/daniel-myer.jpg",
+          "src": "/images/artists/daniel-myer/mr0p99zjl6th.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/daniel-myer.jpg",
+          "src": "/images/artists/daniel-myer/mr0p99zjl6th.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "banner": {
           "src": "/images/artists/daniel-myer.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 49,
+          "y": 39,
           "scale": 1
         }
       }
