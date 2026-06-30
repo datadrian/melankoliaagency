@@ -1741,25 +1741,26 @@
         }
       ],
       "gallery": [
-        "/images/artists/light-asylum.jpg"
+        "/images/artists/light-asylum.jpg",
+        "/images/artists/light-asylum/mr0pbs3h0ywg.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/light-asylum.jpg",
+          "src": "/images/artists/light-asylum/mr0pbs3h0ywg.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/light-asylum.jpg",
+          "src": "/images/artists/light-asylum/mr0pbs3h0ywg.jpg",
           "x": 50,
           "y": 50,
           "scale": 1
         },
         "banner": {
           "src": "/images/artists/light-asylum.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 43,
+          "y": 15,
           "scale": 1
         }
       }
