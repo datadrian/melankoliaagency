@@ -754,6 +754,24 @@ gigwell-booking-form {
   display: block;
   border-radius: 12px;
 }
+.spotify-player-wrap .spotify-embed {
+  width: 100%;
+  min-height: 152px;
+}
+.spotify-player-wrap .spotify-fallback-link {
+  display: inline-block;
+  margin-top: .6rem;
+  font-size: .8rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #9a9a9a;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.spotify-player-wrap .spotify-fallback-link:hover {
+  color: #fff;
+  border-bottom-color: #666;
+}
 
 /* ── VIDEO THUMB TITLE ── */
 .artist-video-thumb {

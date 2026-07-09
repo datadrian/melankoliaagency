@@ -142,13 +142,22 @@
       }
 
       renderSocial(a);
-      var spotEl = document.getElementById('artistSpotify');
-      if (spotEl) {
-        var spUrl = spotifyEmbed(a.links && a.links.spotify);
-        spotEl.innerHTML = spUrl
-          ? '<iframe style="border-radius:12px" src="' + esc(spUrl) + '" width="100%" height="352" frameborder="0" allowfullscreen allow="autoplay;clipboard-write;encrypted-media;fullscreen;picture-in-picture" loading="lazy"></iframe>'
-          : '';
-      }
+      try {
+        var spotEl = document.getElementById('artistSpotify');
+        if (spotEl) {
+          var rawSpotify = a.links && a.links.spotify;
+          var spUrl = spotifyEmbed(rawSpotify);
+          if (spUrl) {
+            spotEl.innerHTML =
+              '<iframe class="spotify-embed" src="' + esc(spUrl) + '" width="100%" height="352" frameborder="0" allowtransparency="true" allow="autoplay;clipboard-write;encrypted-media;fullscreen;picture-in-picture" loading="lazy"></iframe>' +
+              '<a class="spotify-fallback-link" href="' + esc(rawSpotify) + '" target="_blank" rel="noopener noreferrer">Listen on Spotify \u2197</a>';
+            spotEl.style.display = '';
+          } else {
+            spotEl.innerHTML = '';
+            spotEl.style.display = 'none';
+          }
+        }
+      } catch (spErr) { console.error('spotify render', spErr); }
       var bookBtn = document.getElementById('bookBtn'); if (bookBtn) bookBtn.href = '/booking?artist=' + encodeURIComponent(a.name);
       var shortBio = document.getElementById('artistShortBio'); if (shortBio && a.shortBio && a.shortBio !== a.bio) shortBio.textContent = a.shortBio;
       var bioEl = document.getElementById('artistBio'); if (bioEl) bioEl.textContent = a.bio || '';
