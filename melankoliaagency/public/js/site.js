@@ -19,6 +19,11 @@
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
+  function spotifyEmbed(url) {
+    var m = String(url || '').match(/open\.spotify\.com\/(artist|album|track|playlist)\/([A-Za-z0-9]+)/);
+    if (!m) return '';
+    return 'https://open.spotify.com/embed/' + m[1] + '/' + m[2] + '?utm_source=generator&theme=0';
+  }
   function ytId(url) {
     var m = String(url || '').match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([A-Za-z0-9_-]{11})/);
     return m ? m[1] : null;
@@ -137,6 +142,13 @@
       }
 
       renderSocial(a);
+      var spotEl = document.getElementById('artistSpotify');
+      if (spotEl) {
+        var spUrl = spotifyEmbed(a.links && a.links.spotify);
+        spotEl.innerHTML = spUrl
+          ? '<iframe style="border-radius:12px" src="' + esc(spUrl) + '" width="100%" height="352" frameborder="0" allowfullscreen allow="autoplay;clipboard-write;encrypted-media;fullscreen;picture-in-picture" loading="lazy"></iframe>'
+          : '';
+      }
       var bookBtn = document.getElementById('bookBtn'); if (bookBtn) bookBtn.href = '/booking?artist=' + encodeURIComponent(a.name);
       var shortBio = document.getElementById('artistShortBio'); if (shortBio && a.shortBio && a.shortBio !== a.bio) shortBio.textContent = a.shortBio;
       var bioEl = document.getElementById('artistBio'); if (bioEl) bioEl.textContent = a.bio || '';
