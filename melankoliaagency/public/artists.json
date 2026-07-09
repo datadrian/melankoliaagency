@@ -1924,8 +1924,12 @@
       "name": "Mellow Code",
       "bio": "Mellow Code is an avant-garde darkwave project, led by Josh McVety and Oliver Michael German, offering a unique blend of hypnotic mechanical rhythms and new wave vocals. Often getting inspiration and sound samples from their fabrication workshop, Mellow Code’s sound is a mix of EBM, house, and various electronic styles combined with glittering FM synthesis , creating an experience that goes beyond typical genre boundaries. Explore their recent album, “Object Reality”, and tracks like “Ich stehe im Blut” and “Face It” for a creative spin on darkwave and EBM. Get ready to be immersed in Mellow Code’s eclectic and resonant music—a perfect soundtrack for introspection or hitting the dance floor.",
       "shortBio": "",
-      "genres": "",
-      "location": "",
+      "genres": [
+        "Darkwave",
+        "EBM",
+        "Industrial"
+      ],
+      "location": "Los Angeles, California",
       "status": "active",
       "featured": false,
       "links": {
@@ -1974,68 +1978,12 @@
           "url": "https://musicbrainz.org/release-group/26575628-cbc1-45fa-a775-25c43f23e0ee"
         },
         {
-          "title": "Nostalgia",
-          "year": "2019",
-          "type": "Album",
-          "mbid": "48b7c03a-ff57-40c9-bc71-eb1402e73874",
-          "cover": "https://coverartarchive.org/release-group/48b7c03a-ff57-40c9-bc71-eb1402e73874/front-250",
-          "url": "https://musicbrainz.org/release-group/48b7c03a-ff57-40c9-bc71-eb1402e73874"
-        },
-        {
-          "title": "Eurotrash Hitmen",
-          "year": "2019",
-          "type": "Album",
-          "mbid": "df072461-f294-4707-8c29-e21c1192493d",
-          "cover": "https://coverartarchive.org/release-group/df072461-f294-4707-8c29-e21c1192493d/front-250",
-          "url": "https://musicbrainz.org/release-group/df072461-f294-4707-8c29-e21c1192493d"
-        },
-        {
-          "title": "Distracted",
-          "year": "2019",
-          "type": "Album",
-          "mbid": "cfbee2c5-7519-4afa-a671-aca24896880b",
-          "cover": "https://coverartarchive.org/release-group/cfbee2c5-7519-4afa-a671-aca24896880b/front-250",
-          "url": "https://musicbrainz.org/release-group/cfbee2c5-7519-4afa-a671-aca24896880b"
-        },
-        {
-          "title": "Default",
-          "year": "2019",
-          "type": "Album",
-          "mbid": "aeb4d68d-c6cc-4e4a-a6be-e292ba18037a",
-          "cover": "https://coverartarchive.org/release-group/aeb4d68d-c6cc-4e4a-a6be-e292ba18037a/front-250",
-          "url": "https://musicbrainz.org/release-group/aeb4d68d-c6cc-4e4a-a6be-e292ba18037a"
-        },
-        {
-          "title": "Codex V.1",
-          "year": "2019",
-          "type": "Album",
-          "mbid": "33dbc4c9-16e2-4097-bef0-98de6f837eac",
-          "cover": "https://coverartarchive.org/release-group/33dbc4c9-16e2-4097-bef0-98de6f837eac/front-250",
-          "url": "https://musicbrainz.org/release-group/33dbc4c9-16e2-4097-bef0-98de6f837eac"
-        },
-        {
-          "title": "Borsa in Vendita",
-          "year": "2019",
-          "type": "Single",
-          "mbid": "2bcb55f1-1b2f-4435-90dd-d25a88d244f4",
-          "cover": "https://coverartarchive.org/release-group/2bcb55f1-1b2f-4435-90dd-d25a88d244f4/front-250",
-          "url": "https://musicbrainz.org/release-group/2bcb55f1-1b2f-4435-90dd-d25a88d244f4"
-        },
-        {
           "title": "Body Cuerpo",
           "year": "2019",
           "type": "Album",
           "mbid": "6e5e54a1-77da-4acb-80fc-fdc3d3f525da",
           "cover": "https://coverartarchive.org/release-group/6e5e54a1-77da-4acb-80fc-fdc3d3f525da/front-250",
           "url": "https://musicbrainz.org/release-group/6e5e54a1-77da-4acb-80fc-fdc3d3f525da"
-        },
-        {
-          "title": "A House 109",
-          "year": "2019",
-          "type": "EP",
-          "mbid": "132c15f9-e0e3-479b-895a-ef86a5b630aa",
-          "cover": "https://coverartarchive.org/release-group/132c15f9-e0e3-479b-895a-ef86a5b630aa/front-250",
-          "url": "https://musicbrainz.org/release-group/132c15f9-e0e3-479b-895a-ef86a5b630aa"
         }
       ],
       "gallery": [
