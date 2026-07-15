@@ -3371,6 +3371,52 @@
           "scale": 1
         }
       }
+    },
+    {
+      "slug": "godtounge",
+      "name": "God Tounge",
+      "bio": "The Seattle duo God Tongue made up of Isku Katerwol and Camille Hashizume fill the void with synth punk ebm minimalism. Hardware driven bass worship for the freaks. A sound created for late night dance debauchery. Prepare yourself for an acid body rave.",
+      "shortBio": "",
+      "genres": "Synth Punk",
+      "location": "Seattle",
+      "status": "active",
+      "featured": false,
+      "links": {
+        "spotify": "https://open.spotify.com/artist/7AhNlOdRctlgIrJB9GDhAh",
+        "instagram": "https://www.instagram.com/god.tongue_/?hl=en"
+      },
+      "videos": [
+        "https://www.youtube.com/watch?v=34FuUtzpjDI",
+        "https://www.youtube.com/watch?v=dcej4Pi5Mxg",
+        "https://www.youtube.com/watch?v=QTl_2DxlHNo"
+      ],
+      "discography": [],
+      "gallery": [
+        "/images/artists/godtounge/mrmpc83rizu7.jpg",
+        "/images/artists/godtounge/mrmpca6lyer2.jpg",
+        "/images/artists/godtounge/mrmpcbh10nbt.jpg",
+        "/images/artists/godtounge/mrmpccmvh9fr.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/godtounge/mrmpcbh10nbt.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/godtounge/mrmpcbh10nbt.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/godtounge/mrmpca6lyer2.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
     }
   ]
 }
