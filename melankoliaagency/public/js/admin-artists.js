@@ -171,7 +171,8 @@
         '<input data-disc="' + i + '" data-k="title" value="' + esc(r.title || '') + '" placeholder="Title" style="flex:2">' +
         '<input data-disc="' + i + '" data-k="year" value="' + esc(r.year || '') + '" placeholder="Year" style="width:70px">' +
         '<input data-disc="' + i + '" data-k="type" value="' + esc(r.type || '') + '" placeholder="Type" style="width:90px">' +
-        '<button class="btn danger" data-disc-rm="' + i + '" style="flex:0 0 auto">✕</button>' +
+        '<button class="btn secondary" data-disc-art="' + i + '" title="Fetch cover art" style="flex:0 0 auto">\u2b73 Art</button>' +
+        '<button class="btn danger" data-disc-rm="' + i + '" style="flex:0 0 auto">\u2715</button>' +
       '</div>';
     }).join('');
     host.querySelectorAll('input[data-disc]').forEach(function (el) {
@@ -185,6 +186,39 @@
         var idx = parseInt(b.getAttribute('data-disc-rm'), 10);
         a.discography.splice(idx, 1); dirty = true; renderDiscography();
       });
+    });
+    host.querySelectorAll('button[data-disc-art]').forEach(function (b) {
+      b.addEventListener('click', function () { fetchCoverArt(parseInt(b.getAttribute('data-disc-art'), 10), b); });
+    });
+  }
+
+  // Fetch cover art for a single release: CoverArtArchive (by mbid) first, then iTunes by artist+title.
+  function fetchCoverArt(idx, btn) {
+    var a = artists[current]; var r = a.discography[idx]; if (!r) return;
+    var orig = btn ? btn.textContent : ''; if (btn) { btn.disabled = true; btn.textContent = '\u2026'; }
+    function done(url) {
+      if (url) { r.cover = url; dirty = true; renderDiscography(); setStatus('\u2713 Cover art found for "' + (r.title || 'release') + '"', 'ok'); }
+      else { if (btn) { btn.disabled = false; btn.textContent = orig; } setStatus('No cover art found for "' + (r.title || 'release') + '"', 'err'); }
+    }
+    var caa = r.mbid
+      ? fetch('https://coverartarchive.org/release-group/' + encodeURIComponent(r.mbid))
+          .then(function (x) { return x.ok ? x.json() : null; })
+          .then(function (j) { if (!j) return ''; var im = (j.images || []).filter(function (i) { return i.front; })[0] || (j.images || [])[0]; return (im && (im.thumbnails && (im.thumbnails.large || im.thumbnails['500'] || im.thumbnails.small) || im.image)) || ''; })
+          .catch(function () { return ''; })
+      : Promise.resolve('');
+    caa.then(function (url) {
+      if (url) return done(url);
+      var term = ((a.name || '') + ' ' + (r.title || '')).trim();
+      if (!term) return done('');
+      fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(term) + '&entity=album&limit=5')
+        .then(function (x) { return x.ok ? x.json() : null; })
+        .then(function (j) {
+          if (!j) return done('');
+          var want = String(r.title || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          var hit = (j.results || []).filter(function (z) { return String(z.collectionName || '').toLowerCase().replace(/[^a-z0-9]/g, '') === want; })[0] || (j.results || [])[0];
+          done(hit && hit.artworkUrl100 ? String(hit.artworkUrl100).replace('100x100bb', '600x600bb') : '');
+        })
+        .catch(function () { done(''); });
     });
   }
 
