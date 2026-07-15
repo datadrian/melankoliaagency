@@ -10,7 +10,7 @@
   var API = '/.netlify/functions/save-artists';
   // Images are committed to git and deployed with the site — read same-origin.
   var CDN = '';
-  var LINK_FIELDS = ['website', 'instagram', 'facebook', 'bandcamp', 'spotify', 'soundcloud', 'youtube', 'tiktok', 'apple', 'bandsintown'];
+  var LINK_FIELDS = ['website', 'instagram', 'facebook', 'bandcamp', 'spotify', 'soundcloud', 'youtube', 'tiktok', 'apple', 'ra', 'bandsintown'];
   var ROLES = [
     { key: 'tile', label: 'Tile (homepage)', ratio: '1 / 1', sub: 'Square thumbnail in the artist grid' },
     { key: 'profile', label: 'Profile (artist page)', ratio: '1 / 1', sub: 'Main photo on the artist page' },
@@ -26,6 +26,11 @@
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function slugify(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
+  function sortArtists() {
+    var sel = current >= 0 ? artists[current] : null;
+    artists.sort(function (a, b) { return String(a.name || '').toLowerCase().localeCompare(String(b.name || '').toLowerCase()); });
+    current = sel ? artists.indexOf(sel) : -1;
+  }
   function setStatus(m, k) { var e = $('status'); e.textContent = m || ''; e.className = 'status' + (k ? ' ' + k : ''); }
   function imgUrl(path) { if (!path) return ''; if (fresh[path]) return fresh[path]; if (/^https?:|^data:/.test(path)) return path; return CDN + path; }
 
@@ -68,6 +73,7 @@
       .catch(function (e) { setStatus('Load failed: ' + e.message, 'err'); });
   }
   function ready() {
+    sortArtists();
     artists.forEach(normalize);
     setStatus(artists.length + ' artists loaded', 'ok');
     renderList();
@@ -92,7 +98,7 @@
   }
   function addArtist() {
     artists.push({ slug: 'new-artist-' + Date.now().toString(36), name: 'New Artist', bio: '', shortBio: '', genres: '', location: '', status: 'active', featured: false, links: {}, videos: [], discography: [], gallery: [], roles: {} });
-    current = artists.length - 1; dirty = true; renderList(); renderEditor();
+    var justAdded = artists[artists.length - 1]; sortArtists(); current = artists.indexOf(justAdded); dirty = true; renderList(); renderEditor();
   }
 
   /* ---------- editor ---------- */
@@ -125,9 +131,12 @@
       '<div class="field"><label>Full bio</label><textarea id="f_bio" rows="9">' + esc(a.bio) + '</textarea></div>' +
 
       '<h2 class="section">Links</h2>' + linkRows +
-      '<h2 class="section">Videos (one YouTube URL per line)</h2><div class="field"><textarea id="f_videos" rows="5">' + esc((a.videos || []).join('\n')) + '</textarea></div>';
+      '<h2 class="section">Videos (one YouTube URL per line)</h2><div class="field"><textarea id="f_videos" rows="5">' + esc((a.videos || []).join('\n')) + '</textarea></div>' +
+      '<h2 class="section">Discography <span style="color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400">— shown on the artist page</span></h2>' +
+      '<div class="disc-editor" id="discEditor"></div>' +
+      '<button class="btn secondary" id="addDiscBtn" style="margin-top:8px">+ Add release</button>';
 
-    bind('f_name', function (v) { a.name = v; renderList(); });
+    bind('f_name', function (v) { a.name = v; sortArtists(); renderList(); });
     bind('f_slug', function (v) { a.slug = slugify(v); });
     bind('f_genres', function (v) { a.genres = v; });
     bind('f_location', function (v) { a.location = v; });
@@ -143,11 +152,41 @@
 
     renderGallery();
     renderRoles();
+    renderDiscography();
+    $('addDiscBtn').addEventListener('click', function () { a.discography = a.discography || []; a.discography.push({ title: '', year: '', type: '', cover: '' }); dirty = true; renderDiscography(); });
   }
 
   /* ---------- gallery ---------- */
   function roleUsing(a, src) { return ROLES.filter(function (R) { return a.roles[R.key] && sameSrc(a.roles[R.key].src, src); }).map(function (R) { return R.key; }); }
   function sameSrc(x, y) { return x && y && x === y; }
+
+  function renderDiscography() {
+    var a = artists[current]; var host = $('discEditor'); if (!host) return;
+    var d = a.discography || [];
+    if (!d.length) { host.innerHTML = '<p style="color:var(--muted);margin:0">No releases yet. Run Research or add one manually.</p>'; return; }
+    host.innerHTML = d.map(function (r, i) {
+      var cover = r.cover ? '<img src="' + esc(r.cover) + '" alt="" style="width:46px;height:46px;object-fit:cover;border-radius:4px;flex:0 0 auto" onerror="this.style.display=\'none\'">' : '<span style="width:46px;height:46px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:#222;border-radius:4px;color:#888">' + esc((r.title || '?').charAt(0).toUpperCase()) + '</span>';
+      return '<div class="disc-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px">' +
+        cover +
+        '<input data-disc="' + i + '" data-k="title" value="' + esc(r.title || '') + '" placeholder="Title" style="flex:2">' +
+        '<input data-disc="' + i + '" data-k="year" value="' + esc(r.year || '') + '" placeholder="Year" style="width:70px">' +
+        '<input data-disc="' + i + '" data-k="type" value="' + esc(r.type || '') + '" placeholder="Type" style="width:90px">' +
+        '<button class="btn danger" data-disc-rm="' + i + '" style="flex:0 0 auto">✕</button>' +
+      '</div>';
+    }).join('');
+    host.querySelectorAll('input[data-disc]').forEach(function (el) {
+      el.addEventListener('input', function () {
+        var idx = parseInt(el.getAttribute('data-disc'), 10), k = el.getAttribute('data-k');
+        a.discography[idx][k] = el.value; dirty = true;
+      });
+    });
+    host.querySelectorAll('button[data-disc-rm]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var idx = parseInt(b.getAttribute('data-disc-rm'), 10);
+        a.discography.splice(idx, 1); dirty = true; renderDiscography();
+      });
+    });
+  }
 
   function renderGallery() {
     var a = artists[current], g = $('gallery');
@@ -262,18 +301,31 @@
       .then(function (r) { return r.text(); })
       .then(function (t) { var d; try { d = JSON.parse(t); } catch (e) { throw new Error('AI returned an unexpected response'); } if (d.error) throw new Error(d.error); return d; })
       .then(function (d) {
-        if (d.genres) a.genres = Array.isArray(d.genres) ? d.genres.join(', ') : d.genres;
-        if (d.location) a.location = d.location;
-        if (d.bio) a.bio = d.bio;
-        if (d.shortBio) a.shortBio = d.shortBio;
-        if (d.socials) { a.links = a.links || {}; LINK_FIELDS.forEach(function (k) { if (d.socials[k]) a.links[k] = d.socials[k]; }); }
-        if (Array.isArray(d.discography) && d.discography.length) a.discography = d.discography;
+        var filled = [];
+        if (d.genres) { a.genres = Array.isArray(d.genres) ? d.genres.join(', ') : d.genres; filled.push('genres'); }
+        if (d.location) { a.location = d.location; filled.push('location'); }
+        if (d.bio) { a.bio = d.bio; filled.push('bio'); }
+        // shortBio intentionally left blank — artist pages use verified quotes, not AI teaser bios
+        if (d.socials) {
+          a.links = a.links || {};
+          var linkCount = 0;
+          LINK_FIELDS.forEach(function (k) { if (d.socials[k]) { a.links[k] = d.socials[k]; linkCount++; } });
+          if (linkCount) filled.push(linkCount + ' link' + (linkCount > 1 ? 's' : ''));
+        }
+        if (Array.isArray(d.discography) && d.discography.length) {
+          a.discography = d.discography.map(function (r) {
+            return { title: r.title || '', year: r.year || '', type: r.type || '', cover: r.cover || '', mbid: r.mbid || '', url: r.url || '' };
+          });
+          filled.push(a.discography.length + ' releases');
+        }
         if (Array.isArray(d.videos) && d.videos.length) {
           var vs = d.videos.map(function (v) { return typeof v === 'string' ? v : (v && (v.url || v.youtube) || ''); }).filter(Boolean);
-          if (vs.length) a.videos = Array.from(new Set((a.videos || []).concat(vs)));
+          // Replace videos on research so wrong/leftover ones don't linger; user can prune the list.
+          if (vs.length) { a.videos = Array.from(new Set(vs)); filled.push(vs.length + ' videos'); }
         }
         dirty = true; renderEditor();
-        setStatus('✓ Filled from AI research — review the fields and click Save changes', 'ok');
+        var summary = filled.length ? 'Filled: ' + filled.join(', ') : 'Research returned no new data';
+        setStatus('✓ ' + summary + ' — review the fields (esp. Videos) and click Save changes', filled.length ? 'ok' : 'err');
       })
       .catch(function (e) {
         var b = $('researchBtn'); if (b) { b.disabled = false; b.textContent = '✦ Research'; }

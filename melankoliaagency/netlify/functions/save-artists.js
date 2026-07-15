@@ -106,11 +106,13 @@ exports.handler = async (event) => {
     if (action === 'save') {
       if (!Array.isArray(body.artists)) return resp(400, { success: false, error: 'artists array required' });
       const existing = await getFile(DATA_PATH);
-      const content = JSON.stringify({ artists: body.artists }, null, 2);
+      // Always store roster alphabetically by name (matches public site ordering).
+      const sortedArtists = body.artists.slice().sort((a, b) => String(a && a.name || '').toLowerCase().localeCompare(String(b && b.name || '').toLowerCase()));
+      const content = JSON.stringify({ artists: sortedArtists }, null, 2);
       const b64 = Buffer.from(content, 'utf8').toString('base64');
       const out = await putFile(DATA_PATH, b64, 'content: update artists via admin', existing && existing.sha);
       await purge(DATA_PATH);
-      return resp(200, { success: true, commit: out.commit && out.commit.sha, count: body.artists.length });
+      return resp(200, { success: true, commit: out.commit && out.commit.sha, count: sortedArtists.length });
     }
 
     return resp(400, { success: false, error: 'Unknown action' });

@@ -62,7 +62,8 @@
     if (!grid) return;
     var search = document.getElementById('artistSearch');
     loadArtists().then(function (artists) {
-      var visible = artists.filter(function (a) { return (a.status || 'active') !== 'inactive'; });
+      var visible = artists.filter(function (a) { return (a.status || 'active') !== 'inactive'; })
+        .sort(function (a, b) { return String(a.name || '').toLowerCase().localeCompare(String(b.name || '').toLowerCase()); });
       function render(list) {
         if (!list.length) { grid.innerHTML = '<p style="padding:3rem;color:#666;text-align:center;text-transform:uppercase;font-size:.8rem;">No artists found</p>'; return; }
         grid.innerHTML = list.map(function (a) {
