@@ -1427,6 +1427,51 @@
       }
     },
     {
+      "slug": "godtongue",
+      "name": "God Tongue",
+      "bio": "God Tongue is a Seattle-based electronic duo composed of Isku Katerwol and vocalist Camille. The project is defined by a visceral, hardware-driven sound they describe as 'Acid Body Rave' or 'Acid Body Wave,' which fuses the aggressive, rhythmic foundations of Electronic Body Music (EBM) with acid-driven basslines and minimal-wave textures. Their music is characterized by a gritty, mechanical intensity, utilizing a setup of hardware synthesizers and drum machines—such as the Bass Station, Sequential Drumtrax, and Access Virus TI Snow—to create a raw, industrial atmosphere. Their debut album, Liminal (2025), exemplifies this aesthetic, balancing claustrophobic dread with high-energy, dancefloor-oriented rhythms.",
+      "shortBio": "",
+      "genres": "Electronic Body Music, EBM, Acid Body Rave, Industrial, Minimal-wave",
+      "location": "Seattle, WA",
+      "status": "active",
+      "featured": false,
+      "links": {
+        "spotify": "https://open.spotify.com/artist/7AhNlOdRctlgIrJB9GDhAh",
+        "instagram": "https://www.instagram.com/god.tongue_/",
+        "bandcamp": "https://nogodtongue.bandcamp.com",
+        "soundcloud": "https://soundcloud.com/godtongue",
+        "ra": "https://ra.co/dj/godtongue"
+      },
+      "videos": [],
+      "discography": [],
+      "gallery": [
+        "/images/artists/godtounge/mrmpc83rizu7.jpg",
+        "/images/artists/godtounge/mrmpca6lyer2.jpg",
+        "/images/artists/godtounge/mrmpcbh10nbt.jpg",
+        "/images/artists/godtounge/mrmpccmvh9fr.jpg"
+      ],
+      "roles": {
+        "tile": {
+          "src": "/images/artists/godtounge/mrmpcbh10nbt.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "profile": {
+          "src": "/images/artists/godtounge/mrmpcbh10nbt.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        },
+        "banner": {
+          "src": "/images/artists/godtounge/mrmpca6lyer2.jpg",
+          "x": 50,
+          "y": 50,
+          "scale": 1
+        }
+      }
+    },
+    {
       "slug": "healng",
       "name": "Healng",
       "bio": "Emerging from the vibrant underground electronic circuit in the United States, Healng has carved out a distinct niche within the industrial and darkwave landscape. Based in Cincinnati, the project is the creative output of Avery Stanken, who has meticulously crafted a sonic identity that feels both nostalgic and forward-thinking. By blending the mechanical precision of classic EBM with the moody, introspective atmosphere of modern darkwave, Healng delivers music that is as suitable for the dance floor as it is for solitary, late-night listening. The project’s discography and live presence reflect a deep commitment to the \"DIY\" ethos of the industrial scene. Healng is frequently associated with the broader dark electronic community, often sharing stages with established acts and contributing to compilations that highlight the raw volatility of the genre. Tracks from the project often feature sharp, percussive elements, distorted basslines, and a sense of urgency that mirrors the anxieties of modern life. Whether through self-released EPs or collaborations with other artists like Brood Faye, Healng maintains a consistent focus on high-intensity sound design. Beyond the studio, Healng is recognized for a compelling live presence that has seen the project tour and perform at various goth and industrial nights across the country. As the project continues to evolve, it remains a vital voice for those seeking music that balances aggressive, machine-driven rhythms with a profound, shadow-cloaked emotional depth.",
@@ -3368,48 +3413,6 @@
           "src": "/images/artists/zanias/mr0pl0vpl731.jpg",
           "x": 56,
           "y": 41,
-          "scale": 1
-        }
-      }
-    },
-    {
-      "slug": "godtounge",
-      "name": "God Tounge",
-      "bio": "The Seattle duo God Tongue made up of Isku Katerwol and Camille Hashizume fill the void with synth punk ebm minimalism. Hardware driven bass worship for the freaks. A sound created for late night dance debauchery. Prepare yourself for an acid body rave.",
-      "shortBio": "",
-      "genres": "Synth Punk",
-      "location": "Seattle",
-      "status": "active",
-      "featured": false,
-      "links": {
-        "spotify": "https://open.spotify.com/artist/7AhNlOdRctlgIrJB9GDhAh",
-        "instagram": "https://www.instagram.com/god.tongue_/?hl=en"
-      },
-      "videos": [],
-      "discography": [],
-      "gallery": [
-        "/images/artists/godtounge/mrmpc83rizu7.jpg",
-        "/images/artists/godtounge/mrmpca6lyer2.jpg",
-        "/images/artists/godtounge/mrmpcbh10nbt.jpg",
-        "/images/artists/godtounge/mrmpccmvh9fr.jpg"
-      ],
-      "roles": {
-        "tile": {
-          "src": "/images/artists/godtounge/mrmpcbh10nbt.jpg",
-          "x": 50,
-          "y": 50,
-          "scale": 1
-        },
-        "profile": {
-          "src": "/images/artists/godtounge/mrmpcbh10nbt.jpg",
-          "x": 50,
-          "y": 50,
-          "scale": 1
-        },
-        "banner": {
-          "src": "/images/artists/godtounge/mrmpca6lyer2.jpg",
-          "x": 50,
-          "y": 50,
           "scale": 1
         }
       }
