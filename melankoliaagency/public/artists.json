@@ -1695,8 +1695,8 @@
       "roles": {
         "tile": {
           "src": "/images/artists/jorge-elbrecht/mr0pb95hz6t3.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 55,
+          "y": 100,
           "scale": 1
         },
         "profile": {
@@ -2681,14 +2681,14 @@
       "roles": {
         "tile": {
           "src": "/images/artists/some-ember/mr0phdo3tnso.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 49,
+          "y": 0,
           "scale": 1
         },
         "profile": {
           "src": "/images/artists/some-ember/mr0phdo3tnso.jpg",
-          "x": 50,
-          "y": 50,
+          "x": 23,
+          "y": 0,
           "scale": 1
         },
         "banner": {
