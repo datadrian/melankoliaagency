@@ -239,19 +239,20 @@
       "gallery": [
         "/images/artists/bestial-mouths.jpg",
         "/images/artists/bestial-mouths/mr0ovlot7vcw.jpg",
-        "/images/artists/bestial-mouths/mrmszn4jqh56.jpg"
+        "/images/artists/bestial-mouths/mrmszn4jqh56.jpg",
+        "/images/artists/bestial-mouths/mrn1dt20hf98.jpg"
       ],
       "roles": {
         "tile": {
-          "src": "/images/artists/bestial-mouths.jpg",
-          "x": 50,
-          "y": 50,
+          "src": "/images/artists/bestial-mouths/mrn1dt20hf98.jpg",
+          "x": 74,
+          "y": 40,
           "scale": 1
         },
         "profile": {
-          "src": "/images/artists/bestial-mouths.jpg",
-          "x": 50,
-          "y": 50,
+          "src": "/images/artists/bestial-mouths/mrn1dt20hf98.jpg",
+          "x": 54,
+          "y": 36,
           "scale": 1
         },
         "banner": {
