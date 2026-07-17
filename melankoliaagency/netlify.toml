@@ -7,6 +7,19 @@
   external_node_modules = ["firebase-admin", "@firebase/app", "@google-cloud/firestore", "@netlify/blobs"]
   included_files = ["netlify/functions/node_modules/**"]
 
+# About page permanently removed — 301 to home at the edge (no flash, de-indexes).
+[[redirects]]
+  from = "/about"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/about/*"
+  to = "/"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/tour-dashboard"
   to = "/tour-dashboard/index.html"
@@ -58,6 +71,16 @@
   to = "/advancing/index.html"
   status = 200
   force = true
+
+[[headers]]
+  for = "/about"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/about/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
 
 [[headers]]
   for = "/*"

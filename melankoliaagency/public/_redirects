@@ -1,3 +1,5 @@
+/about   /   301!
+/about/*  /   301!
 /band-app   /band-app/index.html   200
 /band-app/*  /band-app/index.html   200
 /advancing   /advancing/index.html   200
