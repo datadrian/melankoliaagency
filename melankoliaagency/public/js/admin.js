@@ -394,6 +394,7 @@ function showView(name) {
   if (name === 'bands' && typeof initBandAccess === 'function') initBandAccess();
   if (name === 'settings')  renderBackupManager();
   if (name === 'pages')     renderPageEditor();
+  if (name === 'discovery') initContactDiscovery();
 }
 
 document.querySelectorAll('.sidebar-link[data-view]').forEach(link => {
@@ -2346,3 +2347,170 @@ function renderBookings() {
 initData();
 renderDashboard();
 renderArtistGrid();
+
+/* ===================== Contact Discovery ===================== */
+const CONTACT_PROPOSALS_API = '/.netlify/functions/contact-proposals';
+const SCAN_REQUEST_API = '/.netlify/functions/contact-scan-request';
+let _discFilter = 'pending';
+let _discProposals = [];
+
+function initContactDiscovery() {
+  loadProposals();
+  refreshDiscStats();
+}
+
+async function proposalsCall(payload) {
+  const res = await fetch(CONTACT_PROPOSALS_API, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: ADMIN_PUBLISH_PASSWORD, ...payload }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || j.success === false) throw new Error(j.error || 'request failed');
+  return j;
+}
+
+async function refreshDiscStats() {
+  try {
+    const j = await proposalsCall({ action: 'stats' });
+    const s = j.data || {};
+    const el = document.getElementById('discStats');
+    if (el) el.innerHTML = `<b>${s.pending || 0}</b> pending &middot; ${s.new || 0} new &middot; ${s.update || 0} updates &middot; ${s.approved || 0} approved &middot; ${s.rejected || 0} rejected`;
+  } catch (e) { /* silent */ }
+}
+
+function setDiscFilter(f, btn) {
+  _discFilter = f;
+  document.querySelectorAll('.disc-filters .chip').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  loadProposals();
+}
+
+async function loadProposals() {
+  const host = document.getElementById('discList');
+  if (host) host.innerHTML = '<p class="muted">Loading proposals\u2026</p>';
+  try {
+    let payload = { action: 'list' };
+    if (_discFilter === 'new' || _discFilter === 'update') { payload.status = 'pending'; payload.type = _discFilter; }
+    else payload.status = _discFilter;
+    const j = await proposalsCall(payload);
+    _discProposals = j.data || [];
+    renderProposals();
+    refreshDiscStats();
+  } catch (e) {
+    if (host) host.innerHTML = `<p class="disc-status err">Couldn't load proposals: ${escapeHtml(e.message)}</p>`;
+  }
+}
+
+function renderProposals() {
+  const host = document.getElementById('discList');
+  if (!host) return;
+  if (!_discProposals.length) {
+    host.innerHTML = '<p class="muted">No proposals here. Run a scan or switch filters.</p>';
+    return;
+  }
+  host.innerHTML = _discProposals.map(p => {
+    const c = p.candidate || {};
+    const low = (p.confidence === 'low');
+    const isUpdate = p.type === 'update';
+    const badge = isUpdate
+      ? '<span class="disc-badge update">Enrich existing</span>'
+      : '<span class="disc-badge new">New contact</span>';
+    const lowb = low ? '<span class="disc-badge lowconf">Verify match</span>' : '';
+    const fields = [];
+    if (c.email) fields.push(`<span><b>Email</b> ${escapeHtml(c.email)}</span>`);
+    if (c.phone) fields.push(`<span><b>Phone</b> ${escapeHtml(c.phone)}</span>`);
+    if (c.city || c.country) fields.push(`<span><b>Location</b> ${escapeHtml([c.city, c.country].filter(Boolean).join(', '))}</span>`);
+    if (c.website) fields.push(`<span><b>Web</b> ${escapeHtml(c.website)}</span>`);
+    if (c.instagram) fields.push(`<span><b>IG</b> ${escapeHtml(c.instagram)}</span>`);
+    if (c.contact_type) fields.push(`<span><b>Type</b> ${escapeHtml(c.contact_type)}</span>`);
+    let diff = '';
+    if (isUpdate && p.proposed_fields) {
+      const rows = Object.entries(p.proposed_fields).filter(([k, v]) => v);
+      if (rows.length) diff = `<div class="disc-diff">Will fill on <b>${escapeHtml((p.existing_snapshot && p.existing_snapshot.name) || 'existing venue')}</b>: ` +
+        rows.map(([k, v]) => `<span class="add">+ ${escapeHtml(k)}: ${escapeHtml(String(v))}</span>`).join(' &middot; ') + '</div>';
+    }
+    const note = p.note ? `<div class="disc-note">\u26a0 ${escapeHtml(p.note)}</div>` : '';
+    const pending = (p.status || 'pending') === 'pending';
+    const actions = pending ? `
+      <button class="btn-primary" onclick="approveProposal('${p.id}')">\u2713 Approve</button>
+      <button class="btn-secondary" onclick="rejectProposal('${p.id}')">\u2715 Reject</button>` :
+      `<span class="disc-sub">${escapeHtml(p.status)}</span>`;
+    return `<div class="disc-card">
+      <input type="checkbox" class="disc-check" data-pid="${p.id}" ${pending ? '' : 'disabled'}>
+      <div class="disc-main">
+        <div>${badge}${lowb}<span class="disc-name">${escapeHtml(c.venue_name || c.org || c.name || c.email || 'Unknown')}</span></div>
+        <div class="disc-sub">${escapeHtml(c.name || '')}${c.name && c.org ? ' \u2014 ' : ''}${escapeHtml(c.org && c.org !== c.venue_name ? c.org : '')}</div>
+        <div class="disc-fields">${fields.join('')}</div>
+        ${diff}${note}
+      </div>
+      <div class="disc-actions">${actions}</div>
+    </div>`;
+  }).join('');
+}
+
+function discSelectAll(on) {
+  document.querySelectorAll('#discList .disc-check:not(:disabled)').forEach(cb => { cb.checked = on; });
+}
+
+async function approveProposal(id) {
+  try {
+    await proposalsCall({ action: 'approve', id });
+    showDiscStatus('Approved \u2014 saved to Contact Manager.', 'ok');
+    loadProposals();
+  } catch (e) { showDiscStatus('Approve failed: ' + e.message, 'err'); }
+}
+
+async function rejectProposal(id) {
+  const reason = prompt('Reason for rejecting (optional):', '') || '';
+  try {
+    await proposalsCall({ action: 'reject', id, reason });
+    loadProposals();
+  } catch (e) { showDiscStatus('Reject failed: ' + e.message, 'err'); }
+}
+
+async function bulkApproveProposals() {
+  const ids = Array.from(document.querySelectorAll('#discList .disc-check:checked')).map(cb => cb.dataset.pid);
+  if (!ids.length) { showDiscStatus('Select at least one proposal first.', 'err'); return; }
+  showDiscStatus(`Approving ${ids.length}\u2026`, 'working');
+  try {
+    const j = await proposalsCall({ action: 'bulk_approve', ids });
+    showDiscStatus(`Approved ${j.approved}, ${j.failed} failed.`, j.failed ? 'err' : 'ok');
+    loadProposals();
+  } catch (e) { showDiscStatus('Bulk approve failed: ' + e.message, 'err'); }
+}
+
+// The Gmail scan is performed by the Superagent (it holds the Gmail connection).
+// This button files a scan request the agent picks up, then the panel refreshes.
+async function requestContactScan() {
+  const days = document.getElementById('discWindow').value || '90';
+  const btn = document.getElementById('discScanBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '\u2709 Requesting scan\u2026'; }
+  try {
+    await fetch(SCAN_REQUEST_API, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: ADMIN_PUBLISH_PASSWORD, action: 'request', days: Number(days) }),
+    }).catch(() => {});
+    showDiscStatus(`Scan requested for the last ${days} days. Your agent scans the inbox and files proposals here \u2014 this list auto-refreshes. You can also just tell the agent: \u201cscan the booking inbox for new contacts\u201d.`, 'working');
+    // poll for new proposals for ~2 min
+    let tries = 0;
+    const t = setInterval(async () => {
+      tries++;
+      await loadProposals();
+      if (tries >= 24) clearInterval(t);
+    }, 5000);
+  } catch (e) {
+    showDiscStatus('Could not file scan request: ' + e.message, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '\u2709 Scan inbox for contacts'; }
+  }
+}
+
+function showDiscStatus(msg, kind) {
+  const el = document.getElementById('discScanStatus');
+  if (!el) return;
+  el.style.display = 'block';
+  el.className = 'disc-status ' + (kind || '');
+  el.innerHTML = msg;
+}
+
+function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }

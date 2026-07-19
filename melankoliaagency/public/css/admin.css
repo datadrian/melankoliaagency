@@ -2035,3 +2035,37 @@ select.form-input option { background: #111; }
 .venue-manager-card p { color:var(--muted); font-size:.75rem; line-height:1.5; margin:.45rem 0; max-width:900px; }
 .venue-manager-card em { color:var(--text); font-style:normal; font-size:.7rem; }
 @media (max-width:900px){ .venue-manager-card{grid-template-columns:1fr}.venue-manager-card .route-stop-actions{justify-content:flex-start} }
+
+/* ===== Contact Discovery ===== */
+.disc-scanbar{display:flex;justify-content:space-between;align-items:center;gap:1.5rem;background:var(--panel,#fff);border:1px solid var(--border,#e5e5e5);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;flex-wrap:wrap}
+.disc-scan-note{font-size:.8rem;color:var(--muted,#777);max-width:52ch;line-height:1.5}
+.disc-scan-actions{display:flex;align-items:center;gap:.75rem}
+.disc-scan-actions label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted,#777);display:flex;align-items:center;gap:.4rem}
+.disc-scan-actions select{padding:.35rem .5rem;border:1px solid var(--border,#e5e5e5);border-radius:5px;font-size:.8rem}
+.disc-status{padding:.7rem 1rem;border-radius:6px;font-size:.8rem;margin-bottom:1rem;border:1px solid var(--border,#e5e5e5);background:#f7f7f7}
+.disc-status.ok{border-color:#b6dfc0;background:#eef9f1;color:#1c6b34}
+.disc-status.err{border-color:#e3b6b6;background:#fbeeee;color:#8a2020}
+.disc-status.working{border-color:#c9d4e6;background:#eef2fb;color:#274690}
+.disc-toolbar{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.9rem;flex-wrap:wrap}
+.disc-stats{font-size:.78rem;color:var(--muted,#777)}
+.disc-filters{display:flex;gap:.4rem;flex-wrap:wrap}
+.disc-filters .chip{border:1px solid var(--border,#e5e5e5);background:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.72rem;cursor:pointer;color:#444}
+.disc-filters .chip.active{background:#111;color:#fff;border-color:#111}
+.disc-bulk{display:flex;gap:.5rem}
+.disc-list{display:flex;flex-direction:column;gap:.6rem}
+.disc-card{border:1px solid var(--border,#e5e5e5);border-radius:8px;background:#fff;padding:.9rem 1rem;display:flex;gap:.9rem;align-items:flex-start}
+.disc-card .disc-check{margin-top:.2rem}
+.disc-card .disc-main{flex:1;min-width:0}
+.disc-badge{display:inline-block;font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:.15rem .5rem;border-radius:4px;margin-right:.5rem;vertical-align:middle}
+.disc-badge.new{background:#e7f0ff;color:#1b47a8}
+.disc-badge.update{background:#fff2e0;color:#9a5a12}
+.disc-badge.lowconf{background:#fde8e8;color:#992222}
+.disc-name{font-weight:600;font-size:.92rem}
+.disc-sub{font-size:.76rem;color:var(--muted,#777);margin-top:.15rem}
+.disc-fields{display:flex;flex-wrap:wrap;gap:.35rem .9rem;margin-top:.55rem;font-size:.74rem}
+.disc-fields span b{color:#333;font-weight:600}
+.disc-diff{margin-top:.5rem;font-size:.73rem;background:#faf7ef;border:1px solid #eee2c8;border-radius:6px;padding:.5rem .65rem}
+.disc-diff .add{color:#1c6b34}
+.disc-actions{display:flex;flex-direction:column;gap:.4rem;flex:0 0 auto}
+.disc-actions button{font-size:.72rem;padding:.32rem .7rem}
+.disc-note{font-size:.72rem;color:#9a5a12;margin-top:.35rem}

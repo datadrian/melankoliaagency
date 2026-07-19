@@ -58,6 +58,7 @@
         <a href="#" class="sidebar-link" data-view="videos"><span class="icon">◈</span> Videos</a>
         <a href="#" class="sidebar-link" data-view="bookings"><span class="icon">◈</span> Booking Requests</a>
         <a href="#" class="sidebar-link" data-view="venues"><span class="icon">⌖</span> Contact Manager</a>
+        <a href="#" class="sidebar-link" data-view="discovery"><span class="icon">✉</span> Contact Discovery</a>
         <a href="#" class="sidebar-link" data-view="routes"><span class="icon">◇</span> Route Planner</a>
         <a href="#" class="sidebar-link" data-view="emails"><span class="icon">✉</span> Email Generator</a>
         <a href="#" class="sidebar-link" data-view="advancing"><span class="icon">◇</span> Advancing</a>
@@ -514,6 +515,51 @@
       </div>
 
       <!-- ROUTE PLANNER -->
+      <div class="view" id="view-discovery">
+        <div class="view-head">
+          <h1>Contact Discovery</h1>
+          <p class="view-sub">Find promoters, venues &amp; bookers from booking@ Gmail and add or enrich them in the Contact Manager — with your approval.</p>
+        </div>
+
+        <div class="disc-scanbar">
+          <div class="disc-scan-note">
+            Scanning reads the booking inbox &amp; sent mail, extracts booking contacts, and matches them against your CRM.
+            Nothing is saved until you approve it below.
+          </div>
+          <div class="disc-scan-actions">
+            <label>Window
+              <select id="discWindow">
+                <option value="30">Last 30 days</option>
+                <option value="90" selected>Last 90 days</option>
+                <option value="180">Last 6 months</option>
+                <option value="365">Last year</option>
+              </select>
+            </label>
+            <button class="btn-primary" id="discScanBtn" onclick="requestContactScan()">✉ Scan inbox for contacts</button>
+          </div>
+        </div>
+
+        <div id="discScanStatus" class="disc-status" style="display:none"></div>
+
+        <div class="disc-toolbar">
+          <div class="disc-stats" id="discStats">—</div>
+          <div class="disc-filters">
+            <button class="chip active" data-dfilter="pending" onclick="setDiscFilter('pending', this)">Pending</button>
+            <button class="chip" data-dfilter="new" onclick="setDiscFilter('new', this)">New only</button>
+            <button class="chip" data-dfilter="update" onclick="setDiscFilter('update', this)">Updates only</button>
+            <button class="chip" data-dfilter="approved" onclick="setDiscFilter('approved', this)">Approved</button>
+            <button class="chip" data-dfilter="rejected" onclick="setDiscFilter('rejected', this)">Rejected</button>
+          </div>
+          <div class="disc-bulk">
+            <button class="btn-secondary" onclick="discSelectAll(true)">Select all</button>
+            <button class="btn-secondary" onclick="discSelectAll(false)">None</button>
+            <button class="btn-primary" onclick="bulkApproveProposals()">✓ Approve selected</button>
+          </div>
+        </div>
+
+        <div id="discList" class="disc-list"><p class="muted">Loading proposals…</p></div>
+      </div>
+
       <div class="view" id="view-routes">
         <div class="route-admin-shell" id="routeAdminShell">
           <div class="route-loading">Loading Route Planner…</div>
