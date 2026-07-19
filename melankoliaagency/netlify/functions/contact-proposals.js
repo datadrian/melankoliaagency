@@ -12,6 +12,7 @@ const ADMIN_PW = () => process.env.MELANKOLIA_ADMIN_PASSWORD || 'melankolia2025'
 const AGENT_KEY = () => process.env.CONTACT_DISCOVERY_KEY || process.env.MELANKOLIA_ADMIN_PASSWORD || 'melankolia2025';
 const now = () => new Date().toISOString();
 const id = () => `prop_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+const venueId = () => `venue_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 const RAG_URL = (process.env.SITE_BASE || 'https://melankoliaagency.com') + '/.netlify/functions/rag-venues';
 
 const guard = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms));
@@ -127,6 +128,7 @@ async function writeToCRM(p) {
   } else {
     const c = p.candidate || {};
     venuePayload = {
+      id: venueId(),
       name: c.venue_name || c.org || c.name || c.email || 'Unknown',
       city: c.city || 'Unknown',
       country: c.country || '',
