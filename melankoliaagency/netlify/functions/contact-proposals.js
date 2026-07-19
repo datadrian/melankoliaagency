@@ -30,6 +30,16 @@ exports.handler = async (event) => {
 
     if (b.action === 'list') return json(200, await withGuard(listProposals(b)));
     if (b.action === 'stats') return json(200, await withGuard(statsProposals()));
+    if (b.action === 'purge') {
+      if (!isAgent) return json(403, { success: false, error: 'purge requires agent_key' });
+      const all = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 500 }).catch(() => []);
+      let del = 0;
+      for (const d of all) {
+        const match = (b.status && (d.status || 'pending') === b.status) || (Array.isArray(b.ids) && b.ids.includes(d.id));
+        if (match) { await deleteDoc(COLL, d.id).catch(() => {}); del++; }
+      }
+      return json(200, { success: true, deleted: del });
+    }
     if (b.action === 'stage') {
       if (!isAgent) return json(403, { success: false, error: 'stage requires agent_key' });
       return json(200, await withGuard(stageProposals(b.proposals || [], b.scan || {})));
