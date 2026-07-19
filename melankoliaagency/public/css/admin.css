@@ -2069,3 +2069,6 @@ select.form-input option { background: #111; }
 .disc-actions{display:flex;flex-direction:column;gap:.4rem;flex:0 0 auto}
 .disc-actions button{font-size:.72rem;padding:.32rem .7rem}
 .disc-note{font-size:.72rem;color:#9a5a12;margin-top:.35rem}
+
+/* Contact Discovery — market chip */
+.disc-badge.market-chip{background:rgba(200,164,100,.14);color:#c8a464;border:1px solid rgba(200,164,100,.35);}

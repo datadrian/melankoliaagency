@@ -133,6 +133,7 @@ async function writeToCRM(p) {
       city: c.city || 'Unknown',
       country: c.country || '',
       region: c.region || '',
+      market: c.market || '',
       contact_type: c.contact_type || 'promoter',
       booking_email: c.email || '',
       phone: c.phone || '',

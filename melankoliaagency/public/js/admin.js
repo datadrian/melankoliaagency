@@ -2416,10 +2416,12 @@ function renderProposals() {
       ? '<span class="disc-badge update">Enrich existing</span>'
       : '<span class="disc-badge new">New contact</span>';
     const lowb = low ? '<span class="disc-badge lowconf">Verify match</span>' : '';
+    const marketb = c.market ? `<span class="disc-badge market-chip">${escapeHtml(c.market)}</span>` : '';
     const fields = [];
     if (c.email) fields.push(`<span><b>Email</b> ${escapeHtml(c.email)}</span>`);
     if (c.phone) fields.push(`<span><b>Phone</b> ${escapeHtml(c.phone)}</span>`);
-    if (c.city || c.country) fields.push(`<span><b>Location</b> ${escapeHtml([c.city, c.country].filter(Boolean).join(', '))}</span>`);
+    const locStr = [c.city, c.region, c.country].filter(Boolean).join(', ');
+    if (locStr) fields.push(`<span><b>Location</b> ${escapeHtml(locStr)}</span>`);
     if (c.website) fields.push(`<span><b>Web</b> ${escapeHtml(c.website)}</span>`);
     if (c.instagram) fields.push(`<span><b>IG</b> ${escapeHtml(c.instagram)}</span>`);
     if (c.contact_type) fields.push(`<span><b>Type</b> ${escapeHtml(c.contact_type)}</span>`);
@@ -2438,7 +2440,7 @@ function renderProposals() {
     return `<div class="disc-card">
       <input type="checkbox" class="disc-check" data-pid="${p.id}" ${pending ? '' : 'disabled'}>
       <div class="disc-main">
-        <div>${badge}${lowb}<span class="disc-name">${escapeHtml(c.venue_name || c.org || c.name || c.email || 'Unknown')}</span></div>
+        <div>${badge}${lowb}${marketb}<span class="disc-name">${escapeHtml(c.venue_name || c.org || c.name || c.email || 'Unknown')}</span></div>
         <div class="disc-sub">${escapeHtml(c.name || '')}${c.name && c.org ? ' \u2014 ' : ''}${escapeHtml(c.org && c.org !== c.venue_name ? c.org : '')}</div>
         <div class="disc-fields">${fields.join('')}</div>
         ${diff}${note}
