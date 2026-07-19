@@ -2425,6 +2425,15 @@ function renderProposals() {
     if (c.website) fields.push(`<span><b>Web</b> ${escapeHtml(c.website)}</span>`);
     if (c.instagram) fields.push(`<span><b>IG</b> ${escapeHtml(c.instagram)}</span>`);
     if (c.contact_type) fields.push(`<span><b>Type</b> ${escapeHtml(c.contact_type)}</span>`);
+    let venuesHtml = '';
+    if (Array.isArray(c.venues) && c.venues.length) {
+      const chips = c.venues.map(v => {
+        const nm = escapeHtml(v.name || '');
+        const ci = v.city ? ` <span class="disc-venue-city">${escapeHtml(v.city)}</span>` : '';
+        return `<span class="disc-venue-chip">${nm}${ci}</span>`;
+      }).join('');
+      venuesHtml = `<div class="disc-venues"><b>Venues</b> ${chips}</div>`;
+    }
     let diff = '';
     if (isUpdate && p.proposed_fields) {
       const rows = Object.entries(p.proposed_fields).filter(([k, v]) => v);
@@ -2443,6 +2452,7 @@ function renderProposals() {
         <div>${badge}${lowb}${marketb}<span class="disc-name">${escapeHtml(c.venue_name || c.org || c.name || c.email || 'Unknown')}</span></div>
         <div class="disc-sub">${escapeHtml(c.name || '')}${c.name && c.org ? ' \u2014 ' : ''}${escapeHtml(c.org && c.org !== c.venue_name ? c.org : '')}</div>
         <div class="disc-fields">${fields.join('')}</div>
+        ${venuesHtml}
         ${diff}${note}
       </div>
       <div class="disc-actions">${actions}</div>

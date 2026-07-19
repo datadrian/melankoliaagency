@@ -2072,3 +2072,9 @@ select.form-input option { background: #111; }
 
 /* Contact Discovery — market chip */
 .disc-badge.market-chip{background:rgba(200,164,100,.14);color:#c8a464;border:1px solid rgba(200,164,100,.35);}
+
+/* Contact Discovery — associated venues */
+.disc-venues{margin-top:6px;font-size:12px;color:#9a9a9a;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.disc-venues b{color:#c8c8c8;margin-right:2px;}
+.disc-venue-chip{display:inline-flex;gap:5px;align-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 8px;color:#ddd;}
+.disc-venue-city{color:#c8a464;font-size:11px;}

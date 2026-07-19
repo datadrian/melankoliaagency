@@ -134,6 +134,18 @@ async function writeToCRM(p) {
     Object.entries(p.proposed_fields || {}).forEach(([k, v]) => {
       if (v && !isFilled(base[k])) merged[k] = v;
     });
+    // Venues UNION: never overwrite; add any new rooms not already present (case-insensitive by name)
+    const propVenues = Array.isArray((p.candidate || {}).venues) ? p.candidate.venues.filter(v => v && v.name) : [];
+    if (propVenues.length) {
+      const existingV = Array.isArray(base.associated_venues) ? base.associated_venues : [];
+      const seen = new Set(existingV.map(v => String(v.name || '').toLowerCase().trim()));
+      const additions = [];
+      propVenues.forEach(v => {
+        const key = String(v.name).toLowerCase().trim();
+        if (key && !seen.has(key)) { seen.add(key); additions.push({ name: v.name, city: v.city || '', address: v.address || '' }); }
+      });
+      if (additions.length) merged.associated_venues = existingV.concat(additions);
+    }
     venuePayload = merged;
   } else {
     const c = p.candidate || {};
@@ -152,6 +164,7 @@ async function writeToCRM(p) {
       booking_method: c.booking_method || (c.email ? 'email' : ''),
       relationship_status: c.relationship_status || 'prospect',
       genre_affinity: c.genre_affinity || [],
+      associated_venues: Array.isArray(c.venues) ? c.venues.filter(v => v && v.name).map(v => ({ name: v.name, city: v.city || '', address: v.address || '' })) : [],
       quality_flags: [],
       source_file: 'contact_discovery',
       notes: c.notes || '',
