@@ -2078,3 +2078,23 @@ select.form-input option { background: #111; }
 .disc-venues b{color:#c8c8c8;margin-right:2px;}
 .disc-venue-chip{display:inline-flex;gap:5px;align-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 8px;color:#ddd;}
 .disc-venue-city{color:#c8a464;font-size:11px;}
+
+/* Contact Discovery — inline proposal editor */
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.18);color:#ccc;border-radius:5px;padding:5px 10px;font-size:12px;cursor:pointer;}
+.btn-ghost:hover{background:rgba(255,255,255,.06);color:#fff;}
+.disc-edit{margin-top:10px;padding:12px;border:1px solid rgba(200,164,100,.28);border-radius:8px;background:rgba(255,255,255,.03);}
+.disc-egrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 12px;}
+.disc-ef{display:flex;flex-direction:column;gap:3px;font-size:11px;color:#9a9a9a;}
+.disc-ef-wide{margin-top:8px;}
+.disc-ef span{text-transform:uppercase;letter-spacing:.04em;}
+.disc-ef input,.disc-ef select,.disc-ef textarea{background:#141414;border:1px solid rgba(255,255,255,.14);border-radius:5px;color:#eee;padding:6px 8px;font-size:13px;font-family:inherit;}
+.disc-ef input:focus,.disc-ef select:focus,.disc-ef textarea:focus{outline:none;border-color:#c8a464;}
+.disc-evenues{margin-top:12px;}
+.disc-evtitle{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#9a9a9a;margin-bottom:6px;}
+.disc-evrow{display:grid;grid-template-columns:1.4fr 1fr 1.4fr auto;gap:6px;margin-bottom:6px;}
+.disc-evrow input{background:#141414;border:1px solid rgba(255,255,255,.14);border-radius:5px;color:#eee;padding:5px 8px;font-size:12px;}
+.disc-evrow input:focus{outline:none;border-color:#c8a464;}
+.disc-evdel{background:transparent;border:1px solid rgba(255,255,255,.14);color:#c88;border-radius:5px;cursor:pointer;padding:0 8px;}
+.disc-evdel:hover{background:rgba(200,80,80,.15);}
+.disc-eactions{display:flex;gap:8px;margin-top:12px;}
+@media(max-width:640px){.disc-egrid{grid-template-columns:1fr;}.disc-evrow{grid-template-columns:1fr 1fr;}}

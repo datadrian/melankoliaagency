@@ -44,6 +44,7 @@ exports.handler = async (event) => {
       if (!isAgent) return json(403, { success: false, error: 'stage requires agent_key' });
       return json(200, await withGuard(stageProposals(b.proposals || [], b.scan || {})));
     }
+    if (b.action === 'edit') return json(200, await withGuard(editProposal(b.id, b.candidate || {})));
     if (b.action === 'approve') return json(200, await withGuard(approveProposal(b.id)));
     if (b.action === 'bulk_approve') return json(200, await withGuard(bulkApprove(b.ids || [])));
     if (b.action === 'reject') return json(200, await withGuard(rejectProposal(b.id, b.reason || '')));
@@ -97,6 +98,36 @@ async function stageProposals(rows, scan) {
     staged++;
   }
   return { success: true, staged, skipped, total_in: rows.length };
+}
+
+async function editProposal(pid, patch) {
+  if (!pid) throw new Error('id required');
+  const p = await getDoc(COLL, pid);
+  if (!p) return { success: false, error: 'Proposal not found' };
+  if ((p.status || 'pending') !== 'pending') return { success: false, error: 'Only pending proposals can be edited' };
+  const ALLOWED = ['name','org','venue_name','email','phone','website','instagram','contact_type','city','region','country','market','booking_method','relationship_status','notes','venues'];
+  const c = { ...(p.candidate || {}) };
+  ALLOWED.forEach(k => {
+    if (patch[k] === undefined) return;
+    if (k === 'venues') {
+      c.venues = Array.isArray(patch.venues)
+        ? patch.venues.filter(v => v && String(v.name || '').trim())
+            .map(v => ({ name: String(v.name).trim(), city: String(v.city || '').trim(), address: String(v.address || '').trim() }))
+        : [];
+    } else {
+      c[k] = typeof patch[k] === 'string' ? patch[k].trim() : patch[k];
+    }
+  });
+  const upd = { candidate: c, updated_at: now(), edited: true };
+  if (p.type === 'update' && p.proposed_fields) {
+    const pf = { ...p.proposed_fields };
+    ['website','instagram','phone','booking_method','city','region','country'].forEach(k => {
+      if (patch[k] !== undefined && pf[k] !== undefined && c[k]) pf[k] = c[k];
+    });
+    upd.proposed_fields = pf;
+  }
+  await updateDoc(COLL, pid, upd);
+  return { success: true, candidate: c };
 }
 
 async function approveProposal(pid) {

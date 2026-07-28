@@ -2444,6 +2444,7 @@ function renderProposals() {
     const pending = (p.status || 'pending') === 'pending';
     const actions = pending ? `
       <button class="btn-primary" onclick="approveProposal('${p.id}')">\u2713 Approve</button>
+      <button class="btn-ghost" onclick="toggleEditProposal('${p.id}')">\u270e Edit</button>
       <button class="btn-secondary" onclick="rejectProposal('${p.id}')">\u2715 Reject</button>` :
       `<span class="disc-sub">${escapeHtml(p.status)}</span>`;
     return `<div class="disc-card">
@@ -2454,6 +2455,7 @@ function renderProposals() {
         <div class="disc-fields">${fields.join('')}</div>
         ${venuesHtml}
         ${diff}${note}
+        <div class="disc-edit" id="discEdit-${p.id}" style="display:none"></div>
       </div>
       <div class="disc-actions">${actions}</div>
     </div>`;
@@ -2462,6 +2464,86 @@ function renderProposals() {
 
 function discSelectAll(on) {
   document.querySelectorAll('#discList .disc-check:not(:disabled)').forEach(cb => { cb.checked = on; });
+}
+
+function _pById(id){ return (_discProposals || []).find(function(p){ return p.id === id; }); }
+
+function toggleEditProposal(id) {
+  const box = document.getElementById('discEdit-' + id);
+  if (!box) return;
+  if (box.style.display !== 'none') { box.style.display = 'none'; box.innerHTML=''; return; }
+  const p = _pById(id); if (!p) return;
+  const c = p.candidate || {};
+  const CT = ['promoter','venue','festival','agency','buyer','other'];
+  const val = function(v){ return escapeHtml(v == null ? '' : String(v)); };
+  const row = function(label, key, v, ph){ return '<label class="disc-ef"><span>'+label+'</span><input data-ek="'+key+'" value="'+val(v)+'" placeholder="'+(ph||'')+'"></label>'; };
+  const typeOpts = CT.map(function(t){ return '<option value="'+t+'"'+(c.contact_type===t?' selected':'')+'>'+t+'</option>'; }).join('');
+  const venues = Array.isArray(c.venues) ? c.venues : [];
+  box.innerHTML =
+    '<div class="disc-egrid">' +
+      row('Contact name','name', c.name) +
+      row('Org / Company','org', c.org) +
+      row('Primary name (record)','venue_name', c.venue_name) +
+      row('Email','email', c.email) +
+      row('Phone','phone', c.phone) +
+      row('Website','website', c.website) +
+      row('Instagram','instagram', c.instagram) +
+      '<label class="disc-ef"><span>Type</span><select data-ek="contact_type">'+typeOpts+'</select></label>' +
+      row('City','city', c.city) +
+      row('Region / State','region', c.region) +
+      row('Country','country', c.country) +
+      row('Market','market', c.market, 'e.g. US — SoCal') +
+    '</div>' +
+    '<label class="disc-ef disc-ef-wide"><span>Notes</span><textarea data-ek="notes" rows="2">'+val(c.notes)+'</textarea></label>' +
+    '<div class="disc-evenues"><div class="disc-evtitle">Associated venues</div><div id="discEV-'+id+'">' +
+      venues.map(function(v,i){ return _venueRowHtml(v,i); }).join('') +
+    '</div><button class="btn-ghost" type="button" onclick="_addVenueRow(\''+id+'\')">+ Add venue</button></div>' +
+    '<div class="disc-eactions"><button class="btn-primary" onclick="saveProposalEdit(\''+id+'\')">Save changes</button>' +
+    '<button class="btn-secondary" onclick="toggleEditProposal(\''+id+'\')">Cancel</button></div>';
+  box.style.display = 'block';
+}
+
+function _venueRowHtml(v, i) {
+  v = v || {};
+  const val = function(x){ return escapeHtml(x == null ? '' : String(x)); };
+  return '<div class="disc-evrow">' +
+    '<input data-vk="name" placeholder="Venue / room" value="'+val(v.name)+'">' +
+    '<input data-vk="city" placeholder="City" value="'+val(v.city)+'">' +
+    '<input data-vk="address" placeholder="Address (optional)" value="'+val(v.address)+'">' +
+    '<button class="disc-evdel" type="button" title="Remove" onclick="this.parentNode.remove()">\u2715</button>' +
+  '</div>';
+}
+
+function _addVenueRow(id) {
+  const host = document.getElementById('discEV-' + id);
+  if (!host) return;
+  const tmp = document.createElement('div');
+  tmp.innerHTML = _venueRowHtml({}, host.children.length);
+  host.appendChild(tmp.firstChild);
+}
+
+function _collectEdit(id) {
+  const box = document.getElementById('discEdit-' + id);
+  const patch = {};
+  box.querySelectorAll('[data-ek]').forEach(function(el){ patch[el.dataset.ek] = el.value; });
+  const venues = [];
+  box.querySelectorAll('#discEV-' + id + ' .disc-evrow').forEach(function(rowEl){
+    const v = {};
+    rowEl.querySelectorAll('[data-vk]').forEach(function(el){ v[el.dataset.vk] = el.value.trim(); });
+    if (v.name) venues.push(v);
+  });
+  patch.venues = venues;
+  return patch;
+}
+
+async function saveProposalEdit(id) {
+  const patch = _collectEdit(id);
+  showDiscStatus('Saving changes\u2026', 'working');
+  try {
+    await proposalsCall({ action: 'edit', id: id, candidate: patch });
+    showDiscStatus('Saved. Review then approve.', 'ok');
+    await loadProposals();
+  } catch (e) { showDiscStatus('Save failed: ' + e.message, 'err'); }
 }
 
 async function approveProposal(id) {
