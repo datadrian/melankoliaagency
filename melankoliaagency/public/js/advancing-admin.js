@@ -49,7 +49,7 @@ async function initAdvancing(){
 function renderAdvancing(el, counts={}){
   const pending = _advShows.filter(s=>['pending_review','pending_promoter'].includes(s.status));
   el.innerHTML = `<section class="ops-shell">
-    <div class="ops-topbar"><div><p class="route-kicker">Advancing Center</p><h1>Show logistics + promoter sheets</h1><span>Route Planner saves draft shows here. Promote each show through promoter info, approval, publishing, and band app visibility.</span></div><div class="ops-actions"><button class="btn-secondary" onclick="initAdvancing()">Refresh</button><button class="btn-primary" onclick="opsCreateShow()">New Show</button></div></div>
+    <div class="ops-topbar"><div><p class="route-kicker">Advancing Center</p><h1>Show logistics + promoter sheets</h1><span>Route Planner saves draft shows here. Promote each show through promoter info, approval, publishing, and band app visibility.</span></div><div class="ops-actions"><button class="btn-secondary" onclick="initAdvancing()">Refresh</button><button class="btn-secondary" onclick="initArchives()">Archives${counts.archived?` (${counts.archived})`:''}</button><button class="btn-primary" onclick="opsCreateShow()">New Show</button></div></div>
     <div class="ops-stat-grid">${opsStat('Draft',counts.draft||0)}${opsStat('Awaiting Promoter',counts.pending_promoter||0)}${opsStat('Pending Review',counts.pending_review||0)}${opsStat('Approved',counts.approved||0)}${opsStat('Published',counts.published||0)}</div>
     ${pending.length?`<div class="ops-panel"><div class="ops-panel-title"><span>Needs attention</span><em>Promoter submissions and shows waiting on review.</em></div><div class="ops-list">${pending.map(showRow).join('')}</div></div>`:''}
     <div class="ops-panel"><div class="ops-panel-title"><span>All advancing shows</span><em>${_advShows.length} show records linked from route planning and manual entries.</em></div>${_advShows.length?`<div class="ops-table">${_advShows.map(showRow).join('')}</div>`:'<div class="ops-empty">No show records yet. Save a route from Route Planner or create one manually.</div>'}</div>
@@ -81,10 +81,11 @@ async function opsOpenShow(id){
   const res = await advApi({action:'agency_get_show',show_id:id});
   if(!res.success) return el.innerHTML = opsError('Could not open show', res.error);
   const s=res.data, bandNames=(s.band_ids||[]).map(id=>_advBands.find(b=>b.id===id)?.name).filter(Boolean).join(', ');
-  el.innerHTML = `<section class="ops-shell"><div class="ops-topbar"><button class="btn-secondary btn-sm" onclick="initAdvancing()">← Advancing</button><div><p class="route-kicker">${advEsc(s.status||'draft')}</p><h1>${advEsc(s.venue_name||s.city||'Show')}</h1><span>${advEsc([s.date,[s.city,s.country].filter(Boolean).join(', '),bandNames].filter(Boolean).join(' · '))}</span></div><div class="ops-actions"><button class="btn-secondary" onclick="opsEmailForShow('${advAttr(s.id)}')">Generate Email</button><button class="btn-secondary" onclick="opsApproveShow('${advAttr(s.id)}')">Approve</button><button class="btn-primary" onclick="opsPublishShow('${advAttr(s.id)}')">Publish to Band App</button></div></div>
+  el.innerHTML = `<section class="ops-shell"><div class="ops-topbar"><button class="btn-secondary btn-sm" onclick="initAdvancing()">← Advancing</button><div><p class="route-kicker">${advEsc(s.status||'draft')}</p><h1>${advEsc(s.venue_name||s.city||'Show')}</h1><span>${advEsc([s.date,[s.city,s.country].filter(Boolean).join(', '),bandNames].filter(Boolean).join(' · '))}</span></div><div class="ops-actions"><button class="btn-secondary" onclick="opsEmailForShow('${advAttr(s.id)}')">Generate Email</button><button class="btn-secondary" onclick="opsApproveShow('${advAttr(s.id)}')">Approve</button><button class="btn-primary" onclick="opsPublishShow('${advAttr(s.id)}')">Publish to Band App</button><button class="btn-secondary" onclick="opsArchiveShow('${advAttr(s.id)}')">Archive</button><button class="btn-danger" onclick="opsDeleteShow('${advAttr(s.id)}','${advAttr(s.venue_name||s.city||'this show')}')">Delete</button></div></div>
     <div class="ops-detail-grid"><div class="ops-panel"><div class="ops-panel-title"><span>Promoter link</span><em>Send this to promoter for advancing info.</em></div><input class="form-input" readonly value="${advAttr(s.promoter_url||'')}"><div class="ops-actions"><button class="btn-secondary" onclick="navigator.clipboard.writeText('${advAttr(s.promoter_url||'')}');opsToast('Promoter link copied')">Copy Link</button><a class="btn-secondary" target="_blank" href="${advAttr(s.promoter_url||'#')}">Open Form</a></div></div>
     <div class="ops-panel"><div class="ops-panel-title"><span>Promoter form toggles</span><em>Select exactly what the custom link should ask this venue/promoter to answer.</em></div>${reqToggleHtml(s.advancing_requirements)}<div class="ops-actions"><button class="btn-primary" onclick="opsSaveReq('${advAttr(s.id)}')">Save Form Toggles</button></div></div>
     <div class="ops-panel"><div class="ops-panel-title"><span>Travel / hotel / gear snapshot</span><em>Factors back into Route Planner and publishes to Band App after approval.</em></div><div class="ops-mini-grid"><div><b>Travel</b><span>${advEsc(s.travel_mode_recommendation||s.transport?.mode||'TBD')}</span></div><div><b>Hotel</b><span>${advEsc(s.hotel_responsibility||s.lodging?.responsibility||'TBD')}</span></div><div><b>Transfer</b><span>${s.airport_transfer_required?'Airport transfer needed':'No airport transfer marked'}</span></div><div><b>Backline</b><span>${advEsc(s.backline_needed||'TBD')}</span></div></div><div class="ops-actions"><button class="btn-secondary" onclick="opsSetShowLinked('${advAttr(s.id)}',{hotel_required:true,hotel_responsibility:'promoter'})">Promoter covers hotel</button><button class="btn-secondary" onclick="opsSetShowLinked('${advAttr(s.id)}',{airport_transfer_required:true,transport_responsibility:'promoter'})">Promoter handles airport transfer</button><button class="btn-secondary" onclick="opsSetShowLinked('${advAttr(s.id)}',{backline_needed:'full'})">Full backline needed</button></div></div>
+    ${advDocsPanel(s)}
     <div class="ops-panel"><div class="ops-panel-title"><span>Show data</span><em>Raw linked Firestore record.</em></div><pre>${advEsc(JSON.stringify(s,null,2))}</pre></div></div></section>`;
 }
 async function opsApproveShow(id){ const r=await advApi({action:'agency_approve_sheet',show_id:id,reviewed_by:'agency'}); if(r.success){opsToast('✓ Show approved'); opsOpenShow(id);} else opsToast(r.error||'Approve failed','error'); }
@@ -132,3 +133,96 @@ function selectRenderedEmailBox(id){ const el=document.getElementById(id); if(!e
 if(typeof window!=='undefined') window.selectRenderedEmailBox=window.selectRenderedEmailBox||selectRenderedEmailBox;
 function renderedEmailHtml(html){ const m=String(html||'').match(/<body[^>]*>([\s\S]*?)<\/body>/i); return m?m[1]:String(html||''); }
 function emailOutput(email){ const id='renderedEmail_'+Date.now()+'_'+Math.random().toString(36).slice(2,7); const html=email.html||''; return `<label>Subject<input class="form-input" value="${advAttr(email.subject||'')}"></label><label>Plain text<textarea class="form-input form-textarea" rows="8">${advEsc(email.text||'')}</textarea></label><div class="ops-panel-title" style="margin-top:18px"><span>Rendered Gmail-ready email</span><em>Click Select, copy, then paste into Gmail compose.</em></div><div class="email-render-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px"><button type="button" class="btn-primary" onclick="selectRenderedEmailBox('${id}')">Select Rendered Email</button></div><div id="${id}" class="email-render-box" contenteditable="true" style="background:#050505;border:1px solid #333;max-height:520px;overflow:auto;padding:0;user-select:text;-webkit-user-select:text">${renderedEmailHtml(html)}</div><details style="margin-top:14px"><summary>Raw HTML source fallback</summary><textarea class="form-input form-textarea" rows="10">${advEsc(html)}</textarea></details>`; }
+
+/* ===== Advancing: delete / archive / documents ===== */
+async function opsDeleteShow(id, name){
+  if(!confirm(`Delete "${name}"?\n\nThis removes it from the advancing center. Uploaded documents stay in storage and it can be found under Archives → Deleted.`)) return;
+  const r=await advApi({action:'agency_delete_show',show_id:id});
+  if(r.success){ opsToast('✓ Show deleted'); initAdvancing(); } else opsToast(r.error||'Delete failed','error');
+}
+async function opsArchiveShow(id){
+  if(!confirm('Archive this show now? It moves to Archives and out of the active list.')) return;
+  const r=await advApi({action:'agency_archive_show',show_id:id});
+  if(r.success){ opsToast('✓ Show archived'); initAdvancing(); } else opsToast(r.error||'Archive failed','error');
+}
+async function opsRestoreShow(id){
+  const r=await advApi({action:'agency_restore_show',show_id:id});
+  if(r.success){ opsToast('✓ Show restored'); initArchives(); } else opsToast(r.error||'Restore failed','error');
+}
+
+/* ---- Archives view ---- */
+async function initArchives(){
+  const el = document.getElementById('advancingAdminShell') || document.getElementById('view-advancing'); if(!el) return;
+  el.innerHTML = opsLoading('Loading archives…');
+  const r=await advApi({action:'agency_list_archived'});
+  if(!r.success) return el.innerHTML = opsError('Archives unavailable', r.error);
+  const {archived=[],deleted=[]}=r.data||{};
+  const row=(s,kind)=>`<article class="ops-row"><div><strong>${advEsc(s.venue_name||s.city||'Untitled Show')}</strong><span>${advEsc([s.date,[s.city,s.country].filter(Boolean).join(', '),(s.auto_archived?'auto-archived':(kind==='deleted'?'deleted':'archived'))].filter(Boolean).join(' · '))}</span></div><div class="ops-actions"><button class="btn-secondary btn-sm" onclick="opsRestoreShow('${advAttr(s.id)}')">Restore</button></div></article>`;
+  el.innerHTML = `<section class="ops-shell">
+    <div class="ops-topbar"><button class="btn-secondary btn-sm" onclick="initAdvancing()">← Advancing</button><div><p class="route-kicker">Archives</p><h1>Archived & deleted shows</h1><span>Shows auto-archive one week after the show date. Restore any of them back into the active advancing center.</span></div><div class="ops-actions"><button class="btn-secondary" onclick="opsRunArchiveSweep()">Run auto-archive now</button></div></div>
+    <div class="ops-panel"><div class="ops-panel-title"><span>Archived</span><em>${archived.length} show(s).</em></div>${archived.length?`<div class="ops-table">${archived.map(s=>row(s,'archived')).join('')}</div>`:'<div class="ops-empty">No archived shows yet.</div>'}</div>
+    <div class="ops-panel"><div class="ops-panel-title"><span>Deleted</span><em>${deleted.length} show(s). Documents are preserved.</em></div>${deleted.length?`<div class="ops-table">${deleted.map(s=>row(s,'deleted')).join('')}</div>`:'<div class="ops-empty">No deleted shows.</div>'}</div>
+  </section>`;
+}
+async function opsRunArchiveSweep(){
+  opsToast('Running auto-archive sweep…');
+  const r=await advApi({action:'agency_run_archive_sweep'});
+  if(r.success){ opsToast(`✓ Archived ${r.data.archived} past show(s)`); initArchives(); } else opsToast(r.error||'Sweep failed','error');
+}
+
+/* ---- Documents panel (upload + Gemini extract + review) ---- */
+function advDocsPanel(s){
+  const docs = Array.isArray(s.advancing_docs)?s.advancing_docs:[];
+  const cards = docs.map(d=>advDocCard(s.id,d)).join('');
+  return `<div class="ops-panel adv-docs"><div class="ops-panel-title"><span>Advancing documents</span><em>Upload a contract / tech pack / day sheet (PDF or image). The original is saved; Gemini extracts the details for review.</em></div>
+    <div class="adv-upload"><input type="file" id="advDocFile-${advAttr(s.id)}" accept="application/pdf,image/*" style="display:none" onchange="advUploadDoc('${advAttr(s.id)}',this)">
+    <button class="btn-primary" onclick="document.getElementById('advDocFile-${advAttr(s.id)}').click()">⭱ Upload document</button>
+    <span class="adv-upload-hint">PDF or image · original always kept</span></div>
+    <div id="advDocStatus-${advAttr(s.id)}" class="adv-doc-status"></div>
+    ${docs.length?`<div class="adv-doc-list">${cards}</div>`:'<div class="ops-empty">No documents uploaded yet.</div>'}
+  </div>`;
+}
+function advDocCard(showId,d){
+  const ex=d.extracted||{};
+  const filled=Object.entries(ex).filter(([k,v])=>v&&String(v).trim()&&k!=='summary');
+  const badge = d.extract_status==='done'?'<span class="adv-badge ok">Extracted</span>'
+    : d.extract_status==='error'?`<span class="adv-badge err">Extract failed</span>`
+    : d.extract_status==='pending'?'<span class="adv-badge">Processing…</span>'
+    : '<span class="adv-badge">Not scanned</span>';
+  const isPdf=d.mime==='application/pdf';
+  const preview=isPdf?`<a class="adv-doc-thumb pdf" href="${advAttr(d.url)}" target="_blank">PDF</a>`:`<a class="adv-doc-thumb" href="${advAttr(d.url)}" target="_blank"><img src="${advAttr(d.url)}" alt=""></a>`;
+  const fieldsHtml = filled.length?`<div class="adv-ex-grid">${filled.map(([k,v])=>`<label class="adv-ex-f"><span>${advEsc(k.replace(/_/g,' '))}</span><input data-exk="${advAttr(k)}" value="${advAttr(v)}"></label>`).join('')}</div>
+    <div class="ops-actions"><button class="btn-primary btn-sm" onclick="advApplyDocFields('${advAttr(showId)}','${advAttr(d.id)}')">Apply to show sheet</button></div>`:'';
+  const summary=ex.summary?`<p class="adv-ex-summary">${advEsc(ex.summary)}</p>`:'';
+  const errline=d.extract_status==='error'?`<p class="adv-ex-err">${advEsc(d.extract_error||'')}</p>`:'';
+  return `<div class="adv-doc-card" id="advDoc-${advAttr(d.id)}">
+    <div class="adv-doc-head">${preview}<div class="adv-doc-meta"><strong>${advEsc(d.filename||'document')}</strong><span>${advEsc((d.uploaded_by||'agency')+' · '+(d.uploaded_at||'').slice(0,10))}</span>${badge}</div>
+    <div class="ops-actions"><a class="btn-secondary btn-sm" href="${advAttr(d.url)}" target="_blank">View original</a><button class="btn-secondary btn-sm" onclick="advReextractDoc('${advAttr(showId)}','${advAttr(d.id)}')">Re-scan</button></div></div>
+    ${summary}${errline}${fieldsHtml}</div>`;
+}
+function advFileToDataUrl(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+async function advUploadDoc(showId, input){
+  const file=input.files&&input.files[0]; if(!file) return;
+  const status=document.getElementById('advDocStatus-'+showId);
+  if(file.size>18*1024*1024){ if(status) status.innerHTML=opsError('File too large','Please keep documents under ~18 MB.'); input.value=''; return; }
+  if(status) status.innerHTML=opsLoading('Uploading & scanning with Gemini… (can take ~15s)');
+  try{
+    const dataUrl=await advFileToDataUrl(file);
+    const r=await advApi({action:'agency_upload_doc',show_id:showId,filename:file.name,dataUrl});
+    input.value='';
+    if(r.success){ opsToast(r.data.extract_status==='done'?'✓ Uploaded & extracted':'✓ Uploaded (extraction: '+r.data.extract_status+')'); opsOpenShow(showId); }
+    else { if(status) status.innerHTML=opsError('Upload failed', r.error); }
+  }catch(e){ if(status) status.innerHTML=opsError('Upload failed', e.message); }
+}
+async function advReextractDoc(showId,docId){
+  const status=document.getElementById('advDocStatus-'+showId); if(status) status.innerHTML=opsLoading('Re-scanning document…');
+  const r=await advApi({action:'agency_reextract_doc',show_id:showId,doc_id:docId});
+  if(r.success){ opsToast('✓ Re-scanned'); opsOpenShow(showId); } else { if(status) status.innerHTML=opsError('Re-scan failed', r.error); }
+}
+async function advApplyDocFields(showId,docId){
+  const card=document.getElementById('advDoc-'+docId); if(!card) return;
+  const fields={}; card.querySelectorAll('[data-exk]').forEach(el=>{ if(el.value.trim()) fields[el.dataset.exk]=el.value.trim(); });
+  if(!Object.keys(fields).length){ opsToast('Nothing to apply','error'); return; }
+  const r=await advApi({action:'agency_apply_doc_fields',show_id:showId,doc_id:docId,fields});
+  if(r.success){ opsToast('✓ Applied to show sheet'); opsOpenShow(showId); } else opsToast(r.error||'Apply failed','error');
+}

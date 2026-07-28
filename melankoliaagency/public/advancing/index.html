@@ -335,6 +335,20 @@
         </div>
       </div>
 
+      <!-- Upload existing advancing doc -->
+      <div class="section">
+        <div class="section-header"><span class="section-icon">📎</span><span class="section-title">Upload Advancing Document (optional)</span></div>
+        <div class="section-body">
+          <div class="form-row single">
+            <div class="form-group">
+              <label>Already have a contract, tech pack, or day sheet? Upload it (PDF or image)</label>
+              <input type="file" id="adv-doc-file" accept="application/pdf,image/*">
+              <div id="adv-doc-note" style="font-size:11px;color:#888;margin-top:6px;line-height:1.6;">We'll keep your original document and read the key details from it automatically. You can still fill in the fields above too.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </form><!-- /advancing-form -->
   </div><!-- /form-wrap -->
 
@@ -510,6 +524,19 @@ async function submitForm() {
     const json = await res.json();
 
     if (json.success) {
+      // Upload advancing document if the promoter attached one (original kept + auto-read)
+      const fileInput = document.getElementById('adv-doc-file');
+      const file = fileInput && fileInput.files && fileInput.files[0];
+      if (file) {
+        try {
+          if (file.size <= 18*1024*1024) {
+            const note = document.getElementById('adv-doc-note');
+            if (note) note.textContent = 'Uploading your document…';
+            const dataUrl = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+            await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'promoter_upload_doc', token: showToken, filename: file.name, dataUrl }) });
+          }
+        } catch(e) { /* non-blocking: submission already saved */ }
+      }
       const gaps = json.data.gaps || [];
       document.getElementById('success-title').textContent = gaps.length
         ? 'Advancing submitted — some fields missing'
