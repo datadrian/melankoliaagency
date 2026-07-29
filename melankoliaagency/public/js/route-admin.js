@@ -63,14 +63,42 @@
     });
   }
 
+  // Wait briefly for the admin session token to be restored by the login gate
+  // (the gate verifies the session asynchronously on page load, and the planner
+  //  can initialize before that finishes — which caused the intermittent
+  //  "Not authorized. Please log in." flash on first load).
+  async function waitForSession(maxMs=4000){
+    if(typeof mkSessionToken!=='function') return '';
+    const started=Date.now();
+    let tok=mkSessionToken();
+    while(!tok && Date.now()-started<maxMs){
+      await new Promise(r=>setTimeout(r,150));
+      tok=mkSessionToken();
+    }
+    return tok;
+  }
   async function initRoutePlannerAdmin(){
     const root = $('routeAdminShell');
     if(!root) return;
     root.innerHTML = loading('Loading route operations…');
-    try{
-      tours = await api({action:'listTours'});
-      renderHub();
-    } catch(e){ root.innerHTML = errorBox('Route Planner backend unavailable', e.message); }
+    await waitForSession();
+    let lastErr=null;
+    // Try up to 3 times; auth errors on the very first call after login are
+    // transient (token/session not yet propagated), so a short retry clears them.
+    for(let attempt=0; attempt<3; attempt++){
+      try{
+        tours = await api({action:'listTours'});
+        renderHub();
+        return;
+      } catch(e){
+        lastErr=e;
+        const auth=/not authorized|log in|session/i.test(e.message||'');
+        if(!auth) break;          // real backend problem — don't spin
+        await new Promise(r=>setTimeout(r, 400*(attempt+1)));
+      }
+    }
+    root.innerHTML = errorBox('Route Planner backend unavailable', (lastErr&&lastErr.message)||'Unknown error') +
+      `<div style="margin-top:10px"><button type="button" class="btn-secondary btn-sm" onclick="RouteAdmin.init()">Retry</button></div>`;
   }
 
   function renderHub(){
