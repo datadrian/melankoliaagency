@@ -30,6 +30,12 @@ exports.handler = async (event) => {
     const isAdmin = auth.ok;
     if (!isAdmin && !isAgent) return json(401, { success: false, error: auth.error || 'Unauthorized' });
 
+    if (b.action === '_inspect') {
+      const d = await getDoc(COLL, b.id);
+      if (!d) return json(200, { success:true, found:false });
+      const { candidate, ...top } = d;
+      return json(200, { success:true, found:true, top_keys:Object.keys(top), status:d.status, type:d.type, created_at:d.created_at, email:d.email, edited:d.edited, cand_email:(candidate||{}).email, cand_website:(candidate||{}).website });
+    }
     if (b.action === 'list') return json(200, await withGuard(listProposals(b)));
     if (b.action === 'stats') return json(200, await withGuard(statsProposals()));
     if (b.action === 'purge') {
