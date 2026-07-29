@@ -2391,9 +2391,11 @@ async function loadProposals() {
   try {
     let payload = { action: 'list' };
     if (_discFilter === 'new' || _discFilter === 'update') { payload.status = 'pending'; payload.type = _discFilter; }
+    else if (_discFilter === 'screenshot') { payload.status = 'pending'; }
     else payload.status = _discFilter;
     const j = await proposalsCall(payload);
     _discProposals = j.data || [];
+    if (_discFilter === 'screenshot') _discProposals = _discProposals.filter(p => p.source === 'screenshot');
     renderProposals();
     refreshDiscStats();
   } catch (e) {
@@ -2417,6 +2419,7 @@ function renderProposals() {
       : '<span class="disc-badge new">New contact</span>';
     const lowb = low ? '<span class="disc-badge lowconf">Verify match</span>' : '';
     const marketb = c.market ? `<span class="disc-badge market-chip">${escapeHtml(c.market)}</span>` : '';
+    const shotb = p.source === 'screenshot' ? '<span class="disc-badge shot">\uD83D\uDCF7 Screenshot</span>' : '';
     const fields = [];
     if (c.email) fields.push(`<span><b>Email</b> ${escapeHtml(c.email)}</span>`);
     if (c.phone) fields.push(`<span><b>Phone</b> ${escapeHtml(c.phone)}</span>`);
@@ -2450,7 +2453,7 @@ function renderProposals() {
     return `<div class="disc-card">
       <input type="checkbox" class="disc-check" data-pid="${p.id}" ${pending ? '' : 'disabled'}>
       <div class="disc-main">
-        <div>${badge}${lowb}${marketb}<span class="disc-name">${escapeHtml(c.venue_name || c.org || c.name || c.email || 'Unknown')}</span></div>
+        <div>${badge}${shotb}${lowb}${marketb}<span class="disc-name">${escapeHtml(c.venue_name || c.org || c.name || c.email || 'Unknown')}</span></div>${p.source==="screenshot"&&p.source_image_url?`<a class="disc-shot-thumb" href="${escapeHtml(p.source_image_url)}" target="_blank" title="View original screenshot"><img src="${escapeHtml(p.source_image_url)}" loading="lazy" alt="screenshot"></a>`:""}
         <div class="disc-sub">${escapeHtml(c.name || '')}${c.name && c.org ? ' \u2014 ' : ''}${escapeHtml(c.org && c.org !== c.venue_name ? c.org : '')}</div>
         <div class="disc-fields">${fields.join('')}</div>
         ${venuesHtml}
@@ -2608,3 +2611,146 @@ function showDiscStatus(msg, kind) {
 }
 
 function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
+
+/* ===== Contact Discovery — screenshot upload & scan ===== */
+const SCREENSHOT_SCAN_API = '/.netlify/functions/contact-screenshot-scan';
+const _SHOT_BATCH = 3;        // images per backend call (keeps under function timeout)
+const _SHOT_CONCURRENCY = 3;  // parallel backend calls
+const _SHOT_MAX_DIM = 1600;   // downscale long edge to keep payloads small & fast
+
+function _shotStatus(html, cls) {
+  const el = document.getElementById('discShotStatus');
+  if (!el) return;
+  el.style.display = 'block';
+  el.className = 'disc-status' + (cls ? ' ' + cls : '');
+  el.innerHTML = html;
+}
+function _shotBusy(on) {
+  ['discShotBtn', 'discShotZipBtn'].forEach(idv => { const b = document.getElementById(idv); if (b) b.disabled = on; });
+}
+
+// Downscale + re-encode an image File/Blob to a JPEG data URL (shrinks 150+ image batches massively)
+function _shotToDataUrl(fileOrBlob) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(fileOrBlob);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        let { width: w, height: h } = img;
+        const scale = Math.min(1, _SHOT_MAX_DIM / Math.max(w, h));
+        w = Math.round(w * scale); h = Math.round(h * scale);
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        resolve(cv.toDataURL('image/jpeg', 0.82));
+      } catch (e) { URL.revokeObjectURL(url); resolve(null); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+async function handleScreenshotImages(input) {
+  const files = Array.from(input.files || []).filter(f => /^image\//.test(f.type) || /\.(png|jpe?g|webp|heic|heif)$/i.test(f.name));
+  input.value = '';
+  if (!files.length) return;
+  await runScreenshotScan(files.map(f => ({ name: f.name, blob: f })));
+}
+
+async function handleScreenshotZip(input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  if (file.size > 22 * 1024 * 1024) { _shotStatus('That zip is larger than ~22 MB. Please split it into smaller zips.', 'err'); return; }
+  _shotStatus('Unpacking zip\u2026');
+  _shotBusy(true);
+  try {
+    const fflate = await _loadFflate();
+    const buf = new Uint8Array(await file.arrayBuffer());
+    const entries = fflate.unzipSync(buf, {
+      filter: (f) => /\.(png|jpe?g|webp|heic|heif)$/i.test(f.name) && !/(^|\/)__MACOSX\//.test(f.name) && !/(^|\/)\._/.test(f.name)
+    });
+    const items = Object.keys(entries).map(name => ({
+      name: name.split('/').pop(),
+      blob: new Blob([entries[name]], { type: _mimeFromName(name) })
+    }));
+    if (!items.length) { _shotStatus('No images found in that zip.', 'err'); _shotBusy(false); return; }
+    await runScreenshotScan(items);
+  } catch (e) {
+    _shotStatus('Could not read that zip: ' + escapeHtml(e.message), 'err');
+    _shotBusy(false);
+  }
+}
+
+function _mimeFromName(n) {
+  const e = (n.split('.').pop() || '').toLowerCase();
+  return e === 'png' ? 'image/png' : e === 'webp' ? 'image/webp' : (e === 'heic' || e === 'heif') ? 'image/' + e : 'image/jpeg';
+}
+let _fflatePromise = null;
+function _loadFflate() {
+  if (window.fflate) return Promise.resolve(window.fflate);
+  if (_fflatePromise) return _fflatePromise;
+  _fflatePromise = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js';
+    s.onload = () => res(window.fflate);
+    s.onerror = () => rej(new Error('failed to load unzip library'));
+    document.head.appendChild(s);
+  });
+  return _fflatePromise;
+}
+
+async function runScreenshotScan(items) {
+  _shotBusy(true);
+  const total = items.length;
+  let done = 0, staged = 0, skipped = 0, noncontact = 0, errors = 0;
+  _shotStatus(`Preparing ${total} image${total > 1 ? 's' : ''}\u2026`);
+
+  // Encode (downscale) all images first, with light concurrency
+  const encoded = [];
+  let ei = 0;
+  async function encWorker() {
+    while (ei < items.length) {
+      const it = items[ei++];
+      const dataUrl = await _shotToDataUrl(it.blob);
+      if (dataUrl) encoded.push({ filename: it.name, dataUrl });
+      _shotStatus(`Preparing images\u2026 ${encoded.length}/${total}`);
+    }
+  }
+  await Promise.all(Array.from({ length: 4 }, encWorker));
+
+  // Chunk into small batches
+  const batches = [];
+  for (let i = 0; i < encoded.length; i += _SHOT_BATCH) batches.push(encoded.slice(i, i + _SHOT_BATCH));
+
+  function progress() {
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    _shotStatus(`<b>Scanning screenshots\u2026 ${pct}%</b> &middot; ${done}/${total} read &middot; ${staged} staged &middot; ${skipped} dupes &middot; ${noncontact} no-contact${errors ? ` &middot; ${errors} errors` : ''}`);
+  }
+  progress();
+
+  let bi = 0;
+  async function batchWorker() {
+    while (bi < batches.length) {
+      const batch = batches[bi++];
+      try {
+        const res = await fetch(SCREENSHOT_SCAN_API, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: ADMIN_PUBLISH_PASSWORD, images: batch })
+        });
+        const j = await res.json().catch(() => ({}));
+        if (j && j.success) { staged += j.staged || 0; skipped += j.skipped || 0; noncontact += j.noncontact || 0; errors += j.errors || 0; }
+        else { errors += batch.length; }
+      } catch (e) { errors += batch.length; }
+      done += batch.length;
+      progress();
+      loadProposals(); // live-refresh the queue as results land
+    }
+  }
+  await Promise.all(Array.from({ length: _SHOT_CONCURRENCY }, batchWorker));
+
+  _shotStatus(`<b>\u2713 Done.</b> ${staged} contact${staged === 1 ? '' : 's'} staged from ${total} screenshot${total === 1 ? '' : 's'}. ${skipped} duplicate${skipped === 1 ? '' : 's'}, ${noncontact} with no contact${errors ? `, ${errors} error${errors === 1 ? '' : 's'}` : ''}. Review them below.`, errors ? 'warn' : 'ok');
+  _shotBusy(false);
+  if (typeof setDiscFilter === 'function') { const chip = document.querySelector('.disc-filters .chip[data-dfilter="screenshot"]'); setDiscFilter('screenshot', chip); }
+  loadProposals();
+}

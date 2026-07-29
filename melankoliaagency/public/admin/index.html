@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Melankolia Agency</title>
-  <link rel="stylesheet" href="/css/admin.css?v=adv-docs-v1">
+  <link rel="stylesheet" href="/css/admin.css?v=screenshot-discovery-v1">
 </head>
 <body>
 
@@ -539,6 +539,19 @@
           </div>
         </div>
 
+        <div class="disc-scanbar disc-shotbar">
+          <div class="disc-scan-note">
+            <b>From phone screenshots.</b> Upload screenshots of texts, DMs, emails, contact cards or business cards. Gemini reads each one and stages the contact below — every proposal is tagged <span class="disc-badge shot">📷 Screenshot</span>. Batch-select many images, or drop in a .zip (up to ~20&nbsp;MB, ~150–200 images). Originals are saved.
+          </div>
+          <div class="disc-scan-actions">
+            <input type="file" id="discShotImages" accept="image/*" multiple style="display:none" onchange="handleScreenshotImages(this)">
+            <input type="file" id="discShotZip" accept=".zip,application/zip" style="display:none" onchange="handleScreenshotZip(this)">
+            <button class="btn-primary" id="discShotBtn" onclick="document.getElementById('discShotImages').click()">📷 Upload screenshots</button>
+            <button class="btn-secondary" id="discShotZipBtn" onclick="document.getElementById('discShotZip').click()">🗄 Upload .zip</button>
+          </div>
+        </div>
+        <div id="discShotStatus" class="disc-status" style="display:none"></div>
+
         <div id="discScanStatus" class="disc-status" style="display:none"></div>
 
         <div class="disc-toolbar">
@@ -547,6 +560,7 @@
             <button class="chip active" data-dfilter="pending" onclick="setDiscFilter('pending', this)">Pending</button>
             <button class="chip" data-dfilter="new" onclick="setDiscFilter('new', this)">New only</button>
             <button class="chip" data-dfilter="update" onclick="setDiscFilter('update', this)">Updates only</button>
+            <button class="chip" data-dfilter="screenshot" onclick="setDiscFilter('screenshot', this)">Screenshots</button>
             <button class="chip" data-dfilter="approved" onclick="setDiscFilter('approved', this)">Approved</button>
             <button class="chip" data-dfilter="rejected" onclick="setDiscFilter('rejected', this)">Rejected</button>
           </div>
@@ -856,7 +870,7 @@
   </div>
 
   <script src="/js/data.js"></script>
-  <script src="/js/admin.js?v=logo-strip-v21"></script>
+  <script src="/js/admin.js?v=screenshot-discovery-v1"></script>
   <script src="/js/route-admin.js?v=logo-strip-v21"></script>
   <script src="/js/advancing-admin.js?v=docs-archive-delete-v1"></script>
 </body>

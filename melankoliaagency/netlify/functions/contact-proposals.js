@@ -74,16 +74,39 @@ async function statsProposals() {
 
 async function stageProposals(rows, scan) {
   const existing = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 500 }).catch(() => []);
-  const seen = new Set(existing.map(d => norm(d.candidate && d.candidate.email)).filter(Boolean));
+  const seen = new Set();
+  existing.forEach(d => {
+    const em = norm(d.candidate && d.candidate.email);
+    if (em) seen.add(em);
+    else {
+      const c = d.candidate || {};
+      const key = 'np:' + norm(c.name || c.org || c.venue_name) + '|' + String(c.phone || '').replace(/[^0-9]/g, '');
+      if (key !== 'np:|') seen.add(key);
+    }
+  });
   let staged = 0, skipped = 0;
   for (const r of rows) {
+    const source = r.source || (scan && scan.source) || 'gmail';
     const email = norm(r.candidate && r.candidate.email);
-    if (!email) { skipped++; continue; }
-    if (seen.has(email)) { skipped++; continue; }
-    seen.add(email);
+    // Dedup: email-based when we have one (all sources). Gmail requires an email.
+    // Screenshots often have no email — dedup those by name+phone instead of dropping them.
+    if (email) {
+      if (seen.has(email)) { skipped++; continue; }
+      seen.add(email);
+    } else if (source === 'gmail') {
+      skipped++; continue;
+    } else {
+      const c = r.candidate || {};
+      const key = 'np:' + norm(c.name || c.org || c.venue_name) + '|' + String(c.phone || '').replace(/[^0-9]/g, '');
+      if (key !== 'np:|' && seen.has(key)) { skipped++; continue; }
+      if (key !== 'np:|') seen.add(key);
+    }
     const doc = {
       type: r.type === 'update' ? 'update' : 'new',
       status: 'pending',
+      source,
+      source_image_url: r.source_image_url || '',
+      source_filename: r.source_filename || '',
       candidate: r.candidate || {},
       match_target_venue_id: r.match_target_venue_id || '',
       proposed_fields: r.proposed_fields || {},
