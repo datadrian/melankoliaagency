@@ -2441,6 +2441,68 @@ async function loadProposals() {
   }
 }
 
+const CONTACT_ENRICH_API = '/.netlify/functions/contact-enrich';
+async function enrichCall(payload) {
+  const res = await fetch(CONTACT_ENRICH_API, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_token: mkSessionToken(), deep: true, ...payload }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || j.success === false) throw new Error(j.error || 'enrich failed');
+  return j;
+}
+// Hunt the web for a single pending proposal, then apply only-empty fields via the
+// existing `edit` action (review-queue flow) and refresh the list.
+async function enrichProposal(id, silent) {
+  const btn = document.querySelector(`.disc-enrich-btn[onclick*="${id}"]`);
+  if (btn) { btn.disabled = true; btn.textContent = '\ud83d\udd0e Hunting\u2026'; }
+  try {
+    const j = await enrichCall({ proposal_id: id });
+    const patch = j.patch || {};
+    const keys = Object.keys(patch);
+    if (!keys.length) {
+      if (!silent) showToast('No new info found for this contact', 'info');
+      if (btn) { btn.disabled = false; btn.textContent = '\ud83d\udd0e Find missing info'; }
+      return { filled: 0 };
+    }
+    await proposalsCall({ action: 'edit', id, candidate: patch });
+    if (!silent) {
+      showToast(`\u2728 Filled ${keys.length} field${keys.length===1?'':'s'}: ${keys.join(', ')}`, 'success');
+      await loadProposals();
+    }
+    return { filled: keys.length, keys };
+  } catch (e) {
+    if (!silent) showToast('Enrich failed: ' + e.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '\ud83d\udd0e Find missing info'; }
+    return { filled: 0, error: e.message };
+  }
+}
+// Bulk: enrich every pending proposal that is missing key fields, sequentially.
+const _ENRICH_KEYS = ['website','booking_email','email','emails','phone','phones','instagram','city','country'];
+function _isIncomplete(p) {
+  const c = p.candidate || {};
+  const hasEmail = c.email || (Array.isArray(c.emails) && c.emails.length);
+  const hasPhone = c.phone || (Array.isArray(c.phones) && c.phones.length);
+  return !c.website || !hasEmail || !hasPhone || !c.instagram || !c.city;
+}
+async function enrichAllIncomplete() {
+  const targets = (_discProposals || []).filter(p => (p.status||'pending')==='pending' && _isIncomplete(p));
+  if (!targets.length) return showToast('No incomplete pending contacts to enrich', 'info');
+  if (!confirm(`Hunt the web to fill missing info on ${targets.length} incomplete contact${targets.length===1?'':'s'}? This runs one at a time and can take a minute or two.`)) return;
+  const bar = document.getElementById('discEnrichProgress');
+  let done = 0, filled = 0;
+  for (const p of targets) {
+    if (bar) bar.textContent = `Enriching ${done+1}/${targets.length}\u2026 (${filled} fields filled)`;
+    const r = await enrichProposal(p.id, true);
+    if (r && r.filled) filled += r.filled;
+    done++;
+    await new Promise(r => setTimeout(r, 300));
+  }
+  if (bar) bar.textContent = '';
+  showToast(`\u2728 Enriched ${done} contacts \u2014 filled ${filled} fields total`, 'success');
+  await loadProposals();
+}
+
 function renderProposals() {
   const host = document.getElementById('discList');
   if (!host) return;
@@ -2498,6 +2560,7 @@ function renderProposals() {
     const actions = pending ? `
       <button class="btn-primary" onclick="approveProposal('${p.id}')">\u2713 Approve</button>
       <button class="btn-ghost" onclick="toggleEditProposal('${p.id}')">\u270e Edit</button>
+      <button class="btn-ghost disc-enrich-btn" onclick="enrichProposal('${p.id}')" title="Hunt the web (Gemini + Linktree) for missing fields">\ud83d\udd0e Find missing info</button>
       <button class="btn-secondary" onclick="rejectProposal('${p.id}')">\u2715 Reject</button>` :
       `<span class="disc-sub">${escapeHtml(p.status)}</span>`;
     return `<div class="disc-card">

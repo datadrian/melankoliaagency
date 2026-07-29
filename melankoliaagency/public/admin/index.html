@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Melankolia Agency</title>
-  <link rel="stylesheet" href="/css/admin.css?v=team-access-v2">
+  <link rel="stylesheet" href="/css/admin.css?v=enrich-v1">
 </head>
 <body>
 
@@ -611,9 +611,11 @@
           <div class="disc-bulk">
             <button class="btn-secondary" onclick="discSelectAll(true)">Select all</button>
             <button class="btn-secondary" onclick="discSelectAll(false)">None</button>
+            <button class="btn-secondary" onclick="enrichAllIncomplete()" title="Hunt the web to fill missing info on all incomplete pending contacts">🔎 Enrich all incomplete</button>
             <button class="btn-primary" onclick="bulkApproveProposals()">✓ Approve selected</button>
           </div>
         </div>
+        <div class="disc-enrich-progress" id="discEnrichProgress"></div>
 
         <div id="discList" class="disc-list"><p class="muted">Loading proposals…</p></div>
       </div>
@@ -918,8 +920,8 @@
   </div>
 
   <script src="/js/data.js"></script>
-  <script src="/js/admin.js?v=team-access-v2"></script>
+  <script src="/js/admin.js?v=enrich-v1"></script>
   <script src="/js/route-admin.js?v=csv-filters-v1"></script>
-  <script src="/js/advancing-admin.js?v=team-access-v2"></script>
+  <script src="/js/advancing-admin.js?v=enrich-v1"></script>
 </body>
 </html>
