@@ -3125,12 +3125,20 @@ async function runContactValidationScan() {
   const btn = document.getElementById('cvScanBtn');
   const restructure = document.getElementById('cvRestructureToggle').checked;
   const dedupe = document.getElementById('cvDedupeToggle').checked;
-  if (btn) { btn.disabled = true; btn.textContent = '\u25b6 Scanning\u2026'; }
-  showCvStatus('Scanning the Contact Manager for restructure &amp; duplicate candidates\u2026', 'working');
+  if (btn) { btn.disabled = true; }
+  let totalR = 0, totalM = 0, pass = 0;
   try {
-    const j = await cvCall({ action: 'scan', options: { restructure, dedupe } });
-    showCvStatus(`Scanned ${j.scanned} contacts \u2014 staged ${j.restructure_staged} restructure and ${j.merge_staged} merge proposals.`, 'ok');
-    loadCvProposals();
+    let more = true;
+    while (more && pass < 30) {
+      pass++;
+      if (btn) btn.textContent = pass === 1 ? '\u25b6 Scanning\u2026' : `\u25b6 Scanning\u2026 (pass ${pass})`;
+      showCvStatus(`Scanning the Contact Manager for restructure &amp; duplicate candidates\u2026 (pass ${pass})`, 'working');
+      const j = await cvCall({ action: 'scan', options: { restructure, dedupe } });
+      totalR += j.restructure_staged || 0; totalM += j.merge_staged || 0;
+      more = !!j.more;
+      loadCvProposals();
+    }
+    showCvStatus(`Scan complete \u2014 staged ${totalR} restructure and ${totalM} merge proposals across ${pass} pass(es).`, 'ok');
   } catch (e) {
     showCvStatus('Scan failed: ' + e.message, 'err');
   } finally {

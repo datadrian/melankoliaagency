@@ -103,24 +103,30 @@ function mergeVenues(primary, losers) {
   return merged;
 }
 
+const VENUE_MASK = ['name','city','country','region','address','market','contact_type','contact_name','contact_title','booking_email','phone','emails','phones','whatsapp','website','instagram','facebook','twitter','tiktok','youtube','linkedin','soundcloud','spotify','bandcamp','telegram','other_socials','booking_method','relationship_status','genre_affinity','associated_venues','contacts','quality_flags','notes','capacity','actual_capacity','rating','buyer_status','deleted_at','merged_into','created_at','updated_at'];
 async function listVenues() {
-  return (await listDocs(VENUES, { orderBy: 'updated_at desc', pageSize: 2000 })).filter(v => !v.deleted_at);
+  return (await listDocs(VENUES, { orderBy: 'updated_at desc', pageSize: 2000, mask: VENUE_MASK })).filter(v => !v.deleted_at);
 }
 
 // ---------- scan ----------
 async function runScan(options) {
+  const t0 = Date.now();
+  const BUDGET_MS = 18000; // leave headroom under Netlify's ~25s function limit
+  const outOfTime = () => (Date.now() - t0) > BUDGET_MS;
   const doRestructure = options.restructure !== false;
   const doDedupe = options.dedupe !== false;
   const venues = await listVenues();
-  const existingProposals = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000 }).catch(() => []);
+  const existingProposals = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000, mask: ['type', 'target_venue_id', 'merge_venue_ids'] }).catch(() => []);
 
   const restructureSeen = new Set(existingProposals.filter(p => p.type === 'restructure').map(p => p.target_venue_id));
   const mergeSeen = new Set(existingProposals.filter(p => p.type === 'merge').map(p => sigOf(p.target_venue_id, p.merge_venue_ids)));
 
   let restructureStaged = 0, mergeStaged = 0;
 
+  let restructureTruncated = false;
   if (doRestructure) {
     for (const v of venues) {
+      if (outOfTime()) { restructureTruncated = true; break; }
       if (Array.isArray(v.contacts) && v.contacts.length) continue; // already restructured
       if (restructureSeen.has(v.id)) continue;
       const hasPersonFields = v.contact_name || v.booking_email || v.phone || (v.emails && v.emails.length) || (v.phones && v.phones.length);
@@ -152,9 +158,11 @@ async function runScan(options) {
     }
   }
 
-  if (doDedupe) {
+  let dedupeTruncated = false;
+  if (doDedupe && !outOfTime()) {
     const clusters = findDuplicateClusters(venues);
     for (const cluster of clusters) {
+      if (outOfTime()) { dedupeTruncated = true; break; }
       const sig = sigOf(cluster.primary.id, cluster.losers.map(l => l.id));
       if (mergeSeen.has(sig)) continue;
       const merged = mergeVenues(cluster.primary, cluster.losers);
@@ -177,7 +185,8 @@ async function runScan(options) {
     }
   }
 
-  return { success: true, scanned: venues.length, restructure_staged: restructureStaged, merge_staged: mergeStaged };
+  const truncated = restructureTruncated || dedupeTruncated || (doDedupe && outOfTime());
+  return { success: true, scanned: venues.length, restructure_staged: restructureStaged, merge_staged: mergeStaged, truncated, more: truncated };
 }
 function sigOf(targetId, otherIds) { return [targetId, ...(otherIds || [])].sort().join('|'); }
 function trimSnapshot(v) {
