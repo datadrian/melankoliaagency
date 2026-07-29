@@ -337,7 +337,7 @@
   function pipelineColumn(status){ status=String(status||'prospect'); if(['confirmed','advanced','settled'].includes(status)) return 'confirmed'; if(['hold','offer'].includes(status)) return 'holds'; if(['contacted','negotiating','deal_made'].includes(status)) return 'negotiating'; return 'prospects'; }
   function pipelineStatusForColumn(col){ return col==='confirmed'?'confirmed':col==='holds'?'hold':col==='negotiating'?'negotiating':'prospect'; }
   function renderKanban(t){ const cols=[['prospects','Prospects'],['holds','Holds / Challenges'],['negotiating','Negotiating'],['confirmed','Confirmed']]; const legs=(t.legs||[]).map((l,i)=>({...l,_idx:i})).filter(l=>!l.day_off); return `<section class="route-kanban"><div class="route-panel-title"><span>Booking Pipeline</span><em>Drag cards between columns. Every move persists to Firestore once the route is generated/autosaved.</em></div><div class="route-kanban-grid">${cols.map(([key,label])=>`<div class="route-kanban-col" data-col="${key}" ondragover="event.preventDefault()" ondrop="RouteAdmin.dropKanban(event,'${key}')"><h4>${label}</h4>${legs.filter(l=>pipelineColumn(l.booking_status||l.deal_status)===key).map(l=>kanbanCard(l,l._idx)).join('')||'<p class="route-kanban-empty">Drop stops here</p>'}</div>`).join('')}</div></section>`; }
-  function kanbanCard(l,i){ const rate=l.rate_confirmed_usd||l.rate_offer_usd||l.rate_target_usd||l.suggested_guarantee_usd; return `<article class="route-kanban-card ${pipelineColumn(l.booking_status||l.deal_status)}" draggable="true" ondragstart="RouteAdmin.dragKanban(event,${i})" onclick="RouteAdmin.openStop(${i})"><strong>${esc(l.city||'TBD')}</strong><span>${esc([l.date,l.suggested_venue].filter(Boolean).join(' · '))}</span><em>${statusBadge(l.booking_status||'prospect')} ${money(rate,currencyOf(activeRoute()))}</em></article>`; }
+  function kanbanCard(l,i){ const rate=l.rate_confirmed_usd||l.rate_offer_usd||l.rate_target_usd||l.suggested_guarantee_usd; return `<article class="route-kanban-card ${pipelineColumn(l.booking_status||l.deal_status)}" draggable="true" ondragstart="RouteAdmin.dragKanban(event,${i})" onclick="RouteAdmin.openStop(${i})"><strong>${esc(l.city||'TBD')}</strong><span>${esc([l.date,l.suggested_venue].filter(Boolean).join(' · '))}</span><em>${statusBadge(l.booking_status||'prospect')} ${money(rate,currencyOf(activeRoute()))}</em>${(l.candidate_venues||[]).length?`<small class="ob-card-sum">${esc(outreachSummaryText(l))}</small>`:''}</article>`; }
   function setLegStatus(idx,status){ const t=activeRoute(); if(!t?.legs?.[idx]) return; t.legs[idx].booking_status=status; if(status==='confirmed'){ t.legs[idx].deal_status='confirmed'; t.legs[idx].locked=true; } rerenderActiveRoute(); renderMap(t.legs||[]); persistStop(idx,t.legs[idx]).then(()=>toast('✓ Stop moved to '+status.replace(/_/g,' '),'success')).catch(e=>toast('Status save failed: '+e.message,'error')); }
   function dragKanban(ev,idx){ ev.dataTransfer.setData('text/plain', String(idx)); ev.dataTransfer.effectAllowed='move'; }
   function dropKanban(ev,col){ ev.preventDefault(); const idx=Number(ev.dataTransfer.getData('text/plain')); if(Number.isInteger(idx)) setLegStatus(idx,pipelineStatusForColumn(col)); }
@@ -357,7 +357,7 @@
     const rate = l.rate_confirmed_usd || l.rate_offer_usd || l.rate_target_usd || l.suggested_guarantee_usd;
     return `<article class="route-leg ${l.day_off?'day-off':''}" onclick="RouteAdmin.openStop(${i})">
       <div class="route-leg-day"><b>${esc(l.day||i+1)}</b><span>${esc(l.day_of_week||'')}</span></div>
-      <div class="route-leg-main"><strong>${esc(l.city||'TBD')}</strong><span>${esc([l.date,l.country].filter(Boolean).join(' · '))}</span>${l.suggested_venue?`<em>${esc(l.suggested_venue)}</em>`:''}${l.notes?`<p>${esc(l.notes)}</p>`:''}</div>
+      <div class="route-leg-main"><strong>${esc(l.city||'TBD')}</strong><span>${esc([l.date,l.country].filter(Boolean).join(' · '))}</span>${l.suggested_venue?`<em>${esc(l.suggested_venue)}</em>`:''}${(l.candidate_venues||[]).length?`<p class="ob-leg-sum">🎯 ${esc(outreachSummaryText(l))}</p>`:''}${l.notes?`<p>${esc(l.notes)}</p>`:''}</div>
       <div class="route-leg-meta"><span>${esc(type)}</span>${statusBadge(status)}<span>Rate: ${esc(money(rate,currencyOf(activeRoute())))}</span><span>${esc(l.travel_mode_recommendation||'travel TBD')}</span><span>${esc(l.hotel_responsibility?('Hotel: '+l.hotel_responsibility):'Hotel TBD')}</span><span>${l.locked?'Locked':'Not locked'}</span></div>
       <div class="route-leg-actions">${!l.day_off?`<button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.openStop(${i})">Details</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.venueFinderForStop(${i})">Contact Finder</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.backlineForStop(${i})">Backline</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.suggestVenues(${i})">Fast Contacts</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.generateEmail(${i})">Email</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.adviseDeal(${i})">Deal</button>`:''}</div>
     </article>`;
@@ -488,7 +488,7 @@
       <label>Next Action<textarea id="stopNextAction" class="form-input form-textarea" rows="2">${esc(l.next_action||'')}</textarea></label>
       <label>Internal Notes<textarea id="stopNotes" class="form-input form-textarea" rows="3">${esc(l.notes||'')}</textarea></label>
       <div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.saveStopEdits(${idx})">Save Stop Edits</button><button class="btn-secondary" onclick="RouteAdmin.insertBlankDayAfter(${idx})">Add Blank Day After</button>${l.day_off?`<button class="btn-secondary" onclick="RouteAdmin.convertBlankDayToProspect(${idx})">Convert To Prospect</button>`:''}<button class="btn-secondary" onclick="RouteAdmin.venueFinderForStop(${idx})">Find Promoters/Venues</button><button class="btn-secondary" onclick="RouteAdmin.backlineForStop(${idx})">Backline Finder</button><button class="btn-secondary" onclick="RouteAdmin.manualVenueForm(${idx})">Manual Add Contact</button><button class="btn-secondary" onclick="RouteAdmin.generateEmail(${idx})">Generate Email</button></div>
-      ${renderBacklineMini(l)}<div class="route-stop-venues"><h4>Candidate contacts</h4>${candidates.length?candidates.map((v,vi)=>`<div class="route-venue-row"><strong>${esc(v.name||'Venue')}</strong><span>${esc(venueMeta(v))}</span><p>${esc(v.fit_reason||v.reason||v.outreach_angle||'')}</p><div class="route-venue-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.useCandidateVenue(${idx},${vi})">Use Venue</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.generateVenueEmail(${idx},${vi})">Branded Email</button>${v.website?`<a class="btn-secondary btn-sm" href="${attr(v.website)}" target="_blank">Site</a>`:''}</div></div>`).join(''):'<div class="route-ai-empty">No candidate contacts attached yet. Run Contact Finder for grounded promoter/venue options.</div>'}</div>
+      ${renderBacklineMini(l)}${renderOutreachBoard(l,idx)}
     </div>`;
   }
   function saveStopEdits(idx){
@@ -849,6 +849,110 @@
     out.innerHTML=`<div class="route-tool-card"><h3>Contact research complete</h3><p>${ok} stops researched${failed?`, ${failed} failed`:''}. Open any stop to see ranked venues and branded email buttons.</p></div>`;
     toast(t.id?'✓ Venue targets saved to Firestore':'✓ Venue targets attached to route draft', failed?'error':'success');
   }
+  // ---- Multi-venue outreach tracker (parallel outreach + backups) ----
+  const OUTREACH_STAGES = [
+    ['to_contact','To contact'],
+    ['contacted','Contacted'],
+    ['awaiting','Awaiting reply'],
+    ['interested','Interested / talking'],
+    ['declined','Declined / passed'],
+  ];
+  const OUTREACH_LABEL = Object.fromEntries([...OUTREACH_STAGES,['confirmed','Confirmed'],['fell_through','Fell through']]);
+  function vStatus(v){ return v && v.outreach_status ? v.outreach_status : 'to_contact'; }
+  function outreachCounts(l){
+    const c={to_contact:0,contacted:0,awaiting:0,interested:0,declined:0,confirmed:0,fell_through:0};
+    (l.candidate_venues||[]).forEach(v=>{ c[vStatus(v)]=(c[vStatus(v)]||0)+1; });
+    return c;
+  }
+  function outreachSummaryText(l){
+    const c=outreachCounts(l); const total=(l.candidate_venues||[]).length;
+    if(!total) return '';
+    if(c.confirmed) return `✅ ${c.confirmed} confirmed · ${total} venue${total>1?'s':''} tracked`;
+    const active=c.contacted+c.awaiting+c.interested;
+    return `${c.to_contact} to contact · ${active} in conversation · ${c.declined} passed`;
+  }
+  function venueRowHtml(v,idx,vi){
+    const st=vStatus(v);
+    const opts=OUTREACH_STAGES.map(([k,lab])=>`<option value="${k}" ${st===k?'selected':''}>${lab}</option>`).join('');
+    const when=v.outreach_date?` · contacted ${esc(v.outreach_date)}`:'';
+    const note=v.outreach_note?`<p class="ob-note">📝 ${esc(v.outreach_note)}</p>`:'';
+    const confirmed=st==='confirmed';
+    return `<div class="ob-row ob-${st}">
+      <div class="ob-row-head"><strong>${esc(v.name||'Venue')}</strong><span class="ob-pill ob-pill-${st}">${esc(OUTREACH_LABEL[st]||st)}${when}</span></div>
+      <span class="ob-meta">${esc(venueMeta(v))}</span>${v.fit_reason||v.outreach_angle?`<p class="ob-fit">${esc(v.fit_reason||v.outreach_angle)}</p>`:''}${note}
+      <div class="ob-actions">
+        ${confirmed
+          ? `<button class="btn-secondary btn-sm ob-danger" onclick="RouteAdmin.venueFellThrough(${idx},${vi})">Fell through — reopen backups</button>`
+          : `<label class="ob-status">Status <select class="form-input ob-select" onchange="RouteAdmin.setVenueOutreach(${idx},${vi},this.value)">${opts}</select></label>
+             <button class="btn-secondary btn-sm" onclick="RouteAdmin.logVenueContacted(${idx},${vi})">Log contacted today</button>
+             <button class="btn-primary btn-sm" onclick="RouteAdmin.confirmVenue(${idx},${vi})">Confirm this venue</button>`}
+        <button class="btn-secondary btn-sm" onclick="RouteAdmin.generateVenueEmail(${idx},${vi})">Branded Email</button>
+        <button class="btn-secondary btn-sm" onclick="RouteAdmin.venueOutreachNote(${idx},${vi})">Note</button>
+        ${v.website?`<a class="btn-secondary btn-sm" href="${attr(v.website)}" target="_blank">Site</a>`:''}
+      </div></div>`;
+  }
+  function renderOutreachBoard(l,idx){
+    const list=Array.isArray(l.candidate_venues)?l.candidate_venues:[];
+    if(!list.length) return `<div class="route-stop-venues"><h4>Venue outreach</h4><div class="route-ai-empty">No venues attached yet. Use “Find Promoters/Venues” or “Manual Add Contact” to build your outreach list for this date.</div></div>`;
+    const idxd=list.map((v,vi)=>({v,vi}));
+    const confirmed=idxd.filter(x=>vStatus(x.v)==='confirmed');
+    const toContact=idxd.filter(x=>vStatus(x.v)==='to_contact');
+    const inConvo=idxd.filter(x=>['contacted','awaiting','interested'].includes(vStatus(x.v)));
+    const passed=idxd.filter(x=>['declined','fell_through'].includes(vStatus(x.v)));
+    const summary=outreachSummaryText(l);
+    let html=`<div class="route-stop-venues ob-board"><div class="ob-head"><h4>Venue outreach — one date, multiple venues</h4><span class="ob-summary">${esc(summary)}</span></div>`;
+    if(confirmed.length){
+      html+=`<div class="ob-group ob-group-confirmed"><h5>✅ Confirmed</h5>${confirmed.map(x=>venueRowHtml(x.v,idx,x.vi)).join('')}</div>`;
+      const backups=[...inConvo,...toContact];
+      if(backups.length) html+=`<details class="ob-group ob-backups"><summary>🛟 Backups — kept in case this falls through (${backups.length})</summary>${backups.map(x=>venueRowHtml(x.v,idx,x.vi)).join('')}</details>`;
+    } else {
+      if(inConvo.length) html+=`<div class="ob-group"><h5>💬 In conversation (${inConvo.length})</h5>${inConvo.map(x=>venueRowHtml(x.v,idx,x.vi)).join('')}</div>`;
+      if(toContact.length) html+=`<div class="ob-group"><h5>📮 Still to contact (${toContact.length})</h5>${toContact.map(x=>venueRowHtml(x.v,idx,x.vi)).join('')}</div>`;
+    }
+    if(passed.length) html+=`<details class="ob-group ob-passed"><summary>Passed / fell through (${passed.length})</summary>${passed.map(x=>venueRowHtml(x.v,idx,x.vi)).join('')}</details>`;
+    html+=`</div>`;
+    return html;
+  }
+  function _persistLeg(idx,l,msg){ if(activeRoute()?.id){ persistStop(idx,l).then(()=>toast(msg,'success')).catch(e=>toast('Save failed: '+e.message,'error')); } else toast(msg+' (unsaved draft)','success'); }
+  function setVenueOutreach(idx,vi,status){
+    const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[vi]; if(!v) return;
+    v.outreach_status=status;
+    if(status==='contacted' && !v.outreach_date) v.outreach_date=new Date().toISOString().slice(0,10);
+    _persistLeg(idx,l,`✓ ${v.name||'Venue'} → ${OUTREACH_LABEL[status]||status}`);
+    rerenderActiveRoute(); openStop(idx);
+  }
+  function logVenueContacted(idx,vi){
+    const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[vi]; if(!v) return;
+    v.outreach_status='contacted'; v.outreach_date=new Date().toISOString().slice(0,10);
+    _persistLeg(idx,l,`✓ Logged: ${v.name||'Venue'} contacted ${v.outreach_date}`);
+    rerenderActiveRoute(); openStop(idx);
+  }
+  function venueOutreachNote(idx,vi){
+    const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[vi]; if(!v) return;
+    const note=prompt(`Note for ${v.name||'venue'} (e.g. "emailed booker, waiting on hold confirmation"):`, v.outreach_note||''); if(note===null) return;
+    v.outreach_note=note.trim();
+    _persistLeg(idx,l,'✓ Note saved'); rerenderActiveRoute(); openStop(idx);
+  }
+  function confirmVenue(idx,vi){
+    const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[vi]; if(!v) return;
+    if(!confirm(`Confirm ${v.name||'this venue'} for ${l.city||'this date'}?\nThe other venues stay parked as backups (nothing is deleted).`)) return;
+    (l.candidate_venues||[]).forEach(o=>{ if(o!==v && o.outreach_status==='confirmed') o.outreach_status='awaiting'; });
+    v.outreach_status='confirmed'; v.confirmed_date=new Date().toISOString().slice(0,10);
+    l.suggested_venue=v.name||l.suggested_venue; l.venue_address=v.address||l.venue_address||'';
+    l.confirmed_venue=v.name||''; l.booking_status='confirmed'; l.deal_status='confirmed'; l.locked=true;
+    _persistLeg(idx,l,`✅ ${v.name} confirmed — backups kept`);
+    rerenderActiveRoute(); renderMap(t.legs||[]); openStop(idx);
+  }
+  function venueFellThrough(idx,vi){
+    const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[vi]; if(!v) return;
+    if(!confirm(`Mark ${v.name||'this venue'} as fallen through?\nThe stop reopens and your backups become available again.`)) return;
+    v.outreach_status='fell_through';
+    if(l.confirmed_venue===v.name || l.suggested_venue===v.name){ l.confirmed_venue=''; l.suggested_venue=''; }
+    l.booking_status='negotiating'; l.deal_status=(l.deal_status==='confirmed'?'countered':l.deal_status); l.locked=false;
+    _persistLeg(idx,l,`↩ ${v.name} marked fell through — backups reopened`);
+    rerenderActiveRoute(); renderMap(t.legs||[]); openStop(idx);
+  }
+
   function useCandidateVenue(idx, venueIdx){
     const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[venueIdx]; if(!l||!v) return;
     l.suggested_venue = v.name || l.suggested_venue;
@@ -1076,7 +1180,7 @@
 
   async function venueManagerSendToRoute(i){ const v=venueManagerRows[i]; const t=activeRoute(); if(!v) return; if(!t?.legs?.length) return toast('Open or generate a route first, then send venues into it.','error'); const answer=prompt('Send to which stop number?', '1'); if(answer===null) return; const idx=Math.max(0,Math.min(t.legs.length-1,Number(answer)-1||0)); const l=t.legs[idx]; l.candidate_venues=Array.isArray(l.candidate_venues)?l.candidate_venues:[]; const candidate={name:v.name,address:v.address,capacity:v.actual_capacity||v.capacity,booking_method:v.booking_email||v.booking_method||'master list',email:v.booking_email,phone:v.phone,website:v.website,instagram:v.instagram,fit_reason:v.notes||'Selected from Venue Manager.',outreach_angle:v.notes||'Master venue list option',crm_source:true,crm_id:v.id}; l.candidate_venues.unshift(candidate); if(!l.suggested_venue){ l.suggested_venue=v.name; l.venue_address=v.address||''; } if(t.id) await persistStop(idx,l); toast(`✓ ${v.name} added to stop ${idx+1}`,'success'); rerenderActiveRoute(); openStop(idx); }
 
-  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, askAboutCurrentReview };
+  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, askAboutCurrentReview };
   function csvCell(v){
     const s = v==null ? '' : String(v);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;

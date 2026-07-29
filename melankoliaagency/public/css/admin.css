@@ -2154,3 +2154,36 @@ select.form-input option { background: #111; }
 /* Contact Discovery — fast/deep enrich toggle */
 .disc-deep-toggle{display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;color:#4b4b4b;user-select:none;cursor:pointer;}
 .disc-deep-toggle input{margin:0;}
+
+/* ===== Route Planner — multi-venue outreach board (dark) ===== */
+.ob-board{margin-top:1rem}
+.ob-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:.5rem}
+.ob-head h4{margin:0;color:var(--white)}
+.ob-summary{font-size:.78rem;color:var(--accent);font-weight:600}
+.ob-group{margin:.7rem 0}
+.ob-group>h5{margin:.4rem 0;font-size:.62rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+.ob-group-confirmed>h5{color:#5fd68a}
+details.ob-group>summary{cursor:pointer;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--off);padding:.6rem .8rem;background:#0d0d0d;border:1px solid var(--border);border-radius:8px}
+details.ob-backups>summary{color:var(--accent);background:#17130a;border-color:#3a3016}
+details.ob-group[open]>summary{margin-bottom:.6rem}
+.ob-row{border:1px solid var(--border);border-radius:10px;padding:.7rem .85rem;margin:.55rem 0;background:#101010}
+.ob-row.ob-confirmed{border-color:#2c7a48;background:#0c160f}
+.ob-row.ob-declined,.ob-row.ob-fell_through{opacity:.6}
+.ob-row-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.ob-row-head strong{font-size:.92rem;color:var(--white)}
+.ob-meta{display:block;font-size:.72rem;color:var(--muted);margin-top:.2rem;letter-spacing:.02em}
+.ob-fit{font-size:.78rem;color:var(--off);margin:.4rem 0 0}
+.ob-note{font-size:.78rem;color:var(--accent);margin:.4rem 0 0}
+.ob-pill{font-size:.64rem;font-weight:700;letter-spacing:.04em;padding:.2rem .55rem;border-radius:999px;white-space:nowrap;background:#222;color:var(--off)}
+.ob-pill-to_contact{background:#20242b;color:#9fb0c4}
+.ob-pill-contacted{background:#132c46;color:#7db6f0}
+.ob-pill-awaiting{background:#2e2510;color:#e6c168}
+.ob-pill-interested{background:#12301d;color:#6ad493}
+.ob-pill-declined,.ob-pill-fell_through{background:#331717;color:#e08a8a}
+.ob-pill-confirmed{background:#28a745;color:#fff}
+.ob-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:.6rem}
+.ob-status{display:flex;align-items:center;gap:6px;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ob-select{padding:.35rem .5rem;min-width:150px;background:#0d0d0d;color:var(--off);border:1px solid var(--border);border-radius:6px;text-transform:none;letter-spacing:0}
+.ob-danger{border-color:#7a3030!important;color:#e08a8a!important}
+.ob-card-sum{display:block;font-size:.64rem;color:var(--muted);margin-top:.25rem}
+.ob-leg-sum{font-size:.74rem;color:var(--accent);margin:.25rem 0 0;font-weight:600}
