@@ -96,7 +96,7 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
       <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/02-route-builder-form.png?v=guide-audit-v3" alt="Configure the Route Builder form" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p>Every field in the builder feeds a different downstream system, so it&rsquo;s worth knowing what each one actually drives:</p>
 <ul>
-<li><b>Artist</b>: autocompletes from your roster; pulls genre/market data used to match compatible venues later.</li>
+<li><b>Artist</b>: is selected from your roster and pulls genre/market data used to match compatible venues later.</li>
 <li><b>Region</b>: scopes which cities and venues the AI considers when generating stops. A tighter region (e.g. "Pacific Northwest" vs "US West Coast") produces a denser, shorter run.</li>
 <li><b>Dates &amp; show count</b>: the engine spaces stops across the window, targeting your requested number of shows without back-to-back grueling drives where avoidable.</li>
 <li><b>Start / end city</b>: anchors the geographic shape of the whole route; everything else routes between these two points.</li>
@@ -114,7 +114,7 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
 <li>The <b>Confirmed</b> vs <b>Hold</b> marker is not cosmetic: it controls the anchor&rsquo;s booking state and pipeline position. Projected Revenue uses the best available amount for each stop, in this order: confirmed rate, offer, target rate, or suggested guarantee.</li>
 <li>Anchors typically carry the highest guarantee in the run: use them to set the financial floor, then let the rest of the route fill in around profitability.</li>
 </ul>
-<div class="tip"><b>Tip:</b> Add anchors before you hit Generate, not after: the routing engine uses them as fixed points when calculating the whole path, so anchoring first produces a tighter, more realistic itinerary.</div></div></details>
+<div class="tip"><b>Tip:</b> Add anchors before you click Generate Route, not after: the routing engine uses them as fixed points when calculating the whole path, so anchoring first produces a tighter, more realistic itinerary.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">4</span><h3>Generate the AI route leg list</h3></div>
       <p>Click <b>Generate Route</b>. The engine uses route constraints, mapping data and drive guidelines to output a day-by-day itinerary: <b>Los Angeles &rarr; San Francisco (anchor) &rarr; Sacramento &rarr; Portland &rarr; Seattle</b>. Each stop lands in the <b>Booking Pipeline</b> board (Prospects &rarr; Holds &rarr; Negotiating &rarr; Confirmed) with its target rate and projected net.</p>
@@ -144,7 +144,7 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
       <div class="step-head"><span class="step-num">6</span><h3>Compare transport: drive, one-way van, or fly</h3></div>
       <p>Before you commit to ground travel, open <b>Transport &amp; gear feasibility</b> in the builder. Set the <b>ground vehicle</b> (rented or band-owned) and <b>rental shape</b> (return to origin or one-way drop). If the gear is flight-ready, tick <b>Gear is flight-ready</b> and add each individual flight case with its real weight.</p>
       <p>Click <b>Compare transport options</b>. The planner compares <b>van round-trip</b>, <b>one-way van plus a flight home</b>, and <b>flying the whole tour</b>, then recommends the cheapest viable option. It uses available live pricing and identifies when fallback estimates are used, so the result can change between runs. Any case over <b>70&nbsp;lb</b> blocks the flight-only scenario and requires freight or ground transport.</p>
-      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>This is the tool that answers &ldquo;should we drive this whole thing, or is flying actually cheaper?&rdquo;, and it&rsquo;s doing real math with live pricing, not a rule of thumb.</p>
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>This tool answers &ldquo;should we drive this whole thing, or is flying actually cheaper?&rdquo; using real calculations and current pricing inputs, not a rule of thumb.</p>
 <ul>
 <li><b>Ground vehicle: rented vs owned</b>: if the band owns the van, rental-cost scenarios drop out entirely; you&rsquo;re only comparing fuel/dead-miles against flying.</li>
 <li><b>Rental shape</b> matters more than people expect: a <b>return-to-origin</b> rental means the van (and someone to drive it) has to go all the way back to the start city after the last show: that&rsquo;s extra rental days, extra fuel, and extra crew time for miles that earn nothing. A <b>one-way drop</b> avoids all of that but usually carries a drop fee from the rental company.</li>
@@ -155,7 +155,7 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
 <div class="tip"><b>Tip:</b> Re-run this any time party size, gear list, or the route&rsquo;s start/end cities change: the recommendation can flip, especially once a route gets long enough that weekly rental pricing kicks in.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">7</span><h3>Review with AI Oversight &amp; the Fix chat</h3></div>
-      <p>The Sacramento&rarr;Portland leg is a grueling 9-hour drive. Click <b>AI Oversight</b> to scan for risks and flags the long leg. Use the inline <b>Ask AI / Propose Fix</b> box: type &ldquo;<i>add a travel/off-day in Ashland, OR between Sacramento and Portland</i>&rdquo;, review the proposed change summary, and click <b>Apply</b>.</p>
+      <p>The Sacramento&rarr;Portland leg is a grueling 9-hour drive. Click <b>AI Oversight</b> to scan for risks. It flags the long leg. Use the inline <b>Ask AI / Propose Fix</b> box: type &ldquo;<i>add a travel/off-day in Ashland, OR between Sacramento and Portland</i>&rdquo;, review the proposed change summary, and click <b>Apply</b>.</p>
       
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p><b>AI Oversight</b> scans the whole generated route for risk patterns: not just long drives, but thin margins, day-of-week mismatches (a Tuesday stop in a market that only draws on weekends), and missing rest days between back-to-back long legs.</p>
 <p>The inline <b>Ask AI / Propose Fix</b> box is deliberately a two-step flow, not an instant edit:</p>
