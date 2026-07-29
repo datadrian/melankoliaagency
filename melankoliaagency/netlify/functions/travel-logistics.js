@@ -28,6 +28,7 @@ exports.handler=async(event)=>{
     if(a==='getTravelProviderStatus') return json(200,{success:true,data:getTravelProviderStatus()});
     if(a==='lookupFlightStatus') return json(200,{success:true,data:await lookupFlightStatus(b)});
     if(a==='searchFlightOffers') return json(200,{success:true,data:await searchFlightOffers(b)});
+    if(a==='transportPlan'||a==='transportOptimizer') return json(200,{success:true,data:await transportPlan(b)});
     if(a==='lookupTrainJourney') return json(200,{success:true,data:await lookupTrainJourney(b)});
     if(a==='checkFeasibility') return json(200,{success:true,data:await checkFeasibility({tour_id:b.tour_id,show_id:b.show_id,leg_index:b.leg_index})});
     if(a==='computeTravelBudget') return json(200,{success:true,data:await computeTravelBudget(b.tour_id)});
@@ -316,3 +317,238 @@ function humanMode(m){return String(m||'travel').replace(/_/g,' ').replace(/\b\w
 function label(l){return `${humanMode(l.leg_type)} ${l.origin_name||''}→${l.destination_name||''}`}
 function numOrNull(v){const n=Number(v); return Number.isFinite(n)?n:null;}
 function bad(message,status=400){const e=new Error(message); e.status=status; return e;}
+
+/* ============================================================
+   TRANSPORT OPTIMIZER — fly vs drive vs one-way rental
+   Live pricing via Gemini grounding now; Amadeus auto-swaps in
+   when AMADEUS_CLIENT_ID / AMADEUS_CLIENT_SECRET are configured.
+   ============================================================ */
+const LB_PER_KG = 2.20462;
+const EXCESS_BAG_FEE = 150;   // per checked piece 51-70 lbs (heavy-bag fee, typical US domestic)
+const NORMAL_BAG_FEE = 40;    // per checked piece <=50 lbs (2nd+ bag)
+const BAG_HARD_CAP_LBS = 70;  // airlines refuse checked baggage over this
+const BAG_FREE_LBS = 50;      // over this = excess/heavy fee
+const CREW_DAY_COST = 120;    // per person per extra travel/dead-mile day (food+lodging value)
+const VAN_DRIVE_MI_PER_DAY = 550; // realistic touring van day for the return dead-miles
+
+async function transportPlan(b={}){
+  const origin = String(b.origin||b.start_city||b.startCity||'').trim();
+  const end = String(b.end||b.end_city||b.endCity||'').trim() || origin;
+  const stops = Array.isArray(b.stops)? b.stops.map(s=>String(s).trim()).filter(Boolean) : [];
+  const partySize = Math.max(1, Number(b.party_size||b.partySize||3)||3);
+  const tourDays = Math.max(1, Number(b.tour_days||b.tourDays|| (stops.length? stops.length+2 : 7)));
+  const rentalType = String(b.rental_type||b.rentalType||'rented').toLowerCase(); // rented | owned
+  const oneWayAllowed = b.one_way_allowed!==false && b.oneWayAllowed!==false; // default allow
+  const flightReady = !!(b.flight_ready||b.flightReady);
+  const currency = String(b.currency||'USD').toUpperCase();
+  const distanceMi = Number(b.total_drive_miles||b.totalDriveMiles||0)||0; // one-direction origin->…->end
+  const returnMi = Number(b.return_miles||b.returnMiles|| (distanceMi? Math.round(haversineFallback(end,origin,distanceMi)) : 0)) || 0;
+
+  // gear pieces: [{label, lbs}] OR total kg fallback
+  let pieces = Array.isArray(b.gear_pieces||b.gearPieces) ? (b.gear_pieces||b.gearPieces).map(p=>({label:String(p.label||p.name||'Piece'),lbs:Math.round(Number(p.lbs||(p.kg?p.kg*LB_PER_KG:0))||0)})).filter(p=>p.lbs>0) : [];
+  const totalGearKg = Number(b.gear_weight_kg||b.gearWeightKg||0)||0;
+  if(!pieces.length && totalGearKg>0) pieces=[{label:'Total gear (est.)',lbs:Math.round(totalGearKg*LB_PER_KG)}];
+
+  const gear = analyzeGear(pieces);
+
+  // ---- Live prices (Gemini grounding; Amadeus for flights when configured) ----
+  const flightPerPerson = flightReady ? await liveFlightPrice(origin, end, partySize, b.depart_date||b.departDate) : null;
+  const rental = await liveRentalRates(origin, end, currency, oneWayAllowed);
+
+  const scenarios = [];
+
+  // Scenario 1: van RETURN-TO-ORIGIN (or owned vehicle, still must return)
+  if(true){
+    const weekly = rental.weekly_rate||0, daily=rental.daily_rate||0;
+    const returnDriveDays = returnMi>0 ? Math.max(1, Math.ceil(returnMi/VAN_DRIVE_MI_PER_DAY)) : 1;
+    const totalDaysNeeded = tourDays + returnDriveDays; // keep the van until it's back home
+    const rentalCost = rentalType==='owned' ? 0 : costFor(totalDaysNeeded, daily, weekly);
+    const fuelBack = Math.round(returnMi/8*4.25); // ~8mpg loaded van, ~$4.25/gal
+    const deadMileCrew = returnDriveDays*partySize*CREW_DAY_COST;
+    scenarios.push(scenario('van_return',
+      rentalType==='owned'?'Own/borrowed van — drive the whole loop back to origin':'Rent van, return to origin (round trip)',
+      rentalCost + fuelBack + deadMileCrew,
+      { extra_days: returnDriveDays, feasible:true,
+        breakdown:[
+          rentalType==='owned'?`Vehicle: owned (no rental)`:`Van rental ${totalDaysNeeded} days @ ${money(weekly||daily*7,currency)}/wk → ${money(rentalCost,currency)}`,
+          returnMi?`Return dead-miles: ${returnMi} mi → ~${returnDriveDays} day(s), fuel ~${money(fuelBack,currency)}`:'No significant return distance',
+          `Crew cost on return days: ${returnDriveDays}d × ${partySize} × ${money(CREW_DAY_COST,currency)} = ${money(deadMileCrew,currency)}`
+        ],
+        note: rentalType==='owned' ? 'You still absorb the dead-mile days getting the vehicle home.' : 'A weekly rate almost always beats paying day-by-day — this holds the van the whole trip incl. the drive home.'
+      }, currency));
+  }
+
+  // Scenario 2: ONE-WAY van + fly the crew home (needs one-way allowed)
+  if(oneWayAllowed && rentalType!=='owned'){
+    const oneWayDays = tourDays;
+    const daily=rental.daily_rate||0, weekly=rental.weekly_rate||0;
+    const rentalCost = costFor(oneWayDays, daily, weekly) + (rental.one_way_drop_fee||0);
+    const crewFlights = flightReady && flightPerPerson? flightPerPerson*partySize : (flightPerPerson||liveGuessFlight())*partySize;
+    const feasible = true; // crew can always fly home even if gear can't (gear goes in the one-way van drop or ships)
+    scenarios.push(scenario('one_way_van',
+      'One-way van (drop at end city) + fly crew home',
+      rentalCost + crewFlights,
+      { extra_days:0, feasible,
+        breakdown:[
+          `One-way van ${oneWayDays} days: ${money(costFor(oneWayDays,daily,weekly),currency)} + drop fee ${money(rental.one_way_drop_fee||0,currency)}`,
+          `Crew flights home: ${partySize} × ${money(flightPerPerson||liveGuessFlight(),currency)} = ${money(crewFlights,currency)}`,
+          `Saves the ${returnMi||'return'}-mile dead-drive and the extra rental days.`
+        ],
+        note:'Best when the return leg is long — you pay a drop fee instead of days of dead miles + fuel + crew time.'
+      }, currency));
+  }
+
+  // Scenario 3: FLY-ONLY (only if flight-ready AND every piece <= hard cap)
+  if(flightReady){
+    if(gear.max_piece_lbs>BAG_HARD_CAP_LBS || gear.pieces.length===0 && !totalGearKg){
+      scenarios.push(scenario('fly_only','Fly the whole tour (no van)', null,
+        { feasible:false, extra_days:0, breakdown:[
+          gear.max_piece_lbs>BAG_HARD_CAP_LBS? `Blocked: a piece weighs ${gear.max_piece_lbs} lbs (> ${BAG_HARD_CAP_LBS} lb airline hard cap). Must ship freight or drive.`:'No gear weights entered — cannot verify baggage feasibility.'
+        ], note:'Flying is ruled out by the gear.' }, currency));
+    } else {
+      const flightsPerLeg = flightPerPerson||liveGuessFlight();
+      const numAirLegs = Math.max(1, (stops.length? stops.length : 1)); // flights between each city pair
+      const airfare = flightsPerLeg*partySize*numAirLegs;
+      const bagFeesPerLeg = gear.excess_pieces*EXCESS_BAG_FEE + gear.normal_extra_pieces*NORMAL_BAG_FEE;
+      const bagTotal = bagFeesPerLeg*numAirLegs;
+      const groundLocal = numAirLegs*partySize*25; // airport transfers/local rides per city
+      scenarios.push(scenario('fly_only','Fly the whole tour (gear as checked cases)',
+        airfare + bagTotal + groundLocal,
+        { feasible:true, extra_days:0,
+          breakdown:[
+            `Airfare: ${partySize} pax × ${numAirLegs} legs × ${money(flightsPerLeg,currency)} = ${money(airfare,currency)}`,
+            `Gear baggage: ${gear.excess_pieces} heavy piece(s) @ ${money(EXCESS_BAG_FEE,currency)} + ${gear.normal_extra_pieces} std @ ${money(NORMAL_BAG_FEE,currency)}, × ${numAirLegs} legs = ${money(bagTotal,currency)}`,
+            `Local ground/transfers: ~${money(groundLocal,currency)}`
+          ],
+          note: gear.excess_pieces? `Note: ${gear.excess_pieces} case(s) are 51–70 lbs and incur heavy-bag fees on every leg.` : 'All cases are within the standard 50 lb limit.'
+        }, currency));
+    }
+  }
+
+  // rank feasible by total cost
+  const feasible = scenarios.filter(s=>s.feasible && s.total!=null).sort((a,b)=>a.total-b.total);
+  const recommended = feasible[0]||null;
+  if(recommended) recommended.recommended = true;
+
+  return {
+    currency,
+    inputs:{ origin, end, stops, party_size:partySize, tour_days:tourDays, rental_type:rentalType, one_way_allowed:oneWayAllowed, flight_ready:flightReady, return_miles:returnMi },
+    gear,
+    pricing_sources:{ flights:flightPerPerson?flightPerPerson.__source||'gemini_grounded':(flightReady?'gemini_grounded':'n/a — not flight ready'), rentals:rental.__source },
+    flight_per_person: flightPerPerson? (flightPerPerson.value||flightPerPerson) : null,
+    rental_rates: rental,
+    scenarios,
+    recommended: recommended? recommended.key : null,
+    summary: buildTransportSummary(scenarios, recommended, gear, {origin,end,rentalType,flightReady,currency,returnMi}),
+    checked_at: now()
+  };
+}
+
+function analyzeGear(pieces=[]){
+  const clean = pieces.map(p=>({label:p.label,lbs:Number(p.lbs)||0}));
+  const over = clean.filter(p=>p.lbs>BAG_HARD_CAP_LBS);
+  const excess = clean.filter(p=>p.lbs>BAG_FREE_LBS && p.lbs<=BAG_HARD_CAP_LBS);
+  // first bag per person is often the excess/normal; we treat every gear case as an EXTRA checked piece
+  const normalExtra = clean.filter(p=>p.lbs>0 && p.lbs<=BAG_FREE_LBS);
+  return {
+    pieces:clean,
+    count:clean.length,
+    total_lbs: clean.reduce((n,p)=>n+p.lbs,0),
+    max_piece_lbs: clean.reduce((m,p)=>Math.max(m,p.lbs),0),
+    over_hardcap: over.map(p=>p.label),
+    excess_pieces: excess.length,
+    normal_extra_pieces: normalExtra.length,
+    flight_blocked: over.length>0,
+    flight_ready_note: over.length? `${over.length} case(s) exceed the ${BAG_HARD_CAP_LBS} lb airline limit — flying requires freight/shipping for those.` : (excess.length? `${excess.length} case(s) are 51–70 lbs (heavy-bag fees apply).` : 'All cases within standard checked-bag limits.')
+  };
+}
+
+function costFor(days, daily, weekly){
+  daily=Number(daily)||0; weekly=Number(weekly)||0;
+  if(!weekly) return Math.round(daily*days);
+  const weeks=Math.floor(days/7), rem=days%7;
+  // weekly is almost always cheaper than 7×daily; use whichever is cheaper for the remainder
+  const remCost = Math.min(rem*daily, rem>=4? weekly : rem*daily);
+  return Math.round(weeks*weekly + remCost);
+}
+
+function scenario(key,label,total,extra={},currency='USD'){
+  return { key, label, total: total==null?null:Math.round(total), currency, feasible: extra.feasible!==false, extra_days: extra.extra_days||0, breakdown: extra.breakdown||[], note: extra.note||'' };
+}
+
+async function liveFlightPrice(origin, dest, adults, date){
+  // Amadeus first if configured
+  if(process.env.AMADEUS_CLIENT_ID && process.env.AMADEUS_CLIENT_SECRET){
+    try{
+      const oIata=await cityToIata(origin), dIata=await cityToIata(dest);
+      if(oIata&&dIata){
+        const res=await searchFlightOffers({origin_iata:oIata,destination_iata:dIata,departure_date:(date||plusDaysStr(21)),adults:Math.min(9,adults),max:5});
+        const prices=(res.offers||[]).map(o=>Number(o.price?.grandTotal||o.price?.total)).filter(n=>n>0);
+        if(prices.length){ const v=Math.round(Math.min(...prices)); const out=Object.assign(Object.create(null),{value:v}); out.value=v; out.__source='amadeus_live'; return out; }
+      }
+    }catch(_){}
+  }
+  // Gemini grounded (Google Flights style)
+  const g = await geminiPriceLookup(
+    `Find the current typical one-way economy airfare per person for a domestic/regional flight from ${origin} to ${dest} around ${date||'the next 3 weeks'}. Search Google Flights. Return ONLY JSON {"usd_per_person": <number>, "source":"..."} with a realistic single number (lowest common fare, not premium).`,
+    'usd_per_person');
+  const v = Math.round(g.value||liveGuessFlight());
+  const out={value:v}; out.__source = g.value? 'gemini_grounded':'fallback_estimate'; return out;
+}
+function liveGuessFlight(){ return 180; } // conservative US domestic one-way fallback
+
+async function liveRentalRates(origin, dest, currency, oneWayAllowed){
+  const g = await geminiPriceLookup(
+    `Find current cargo/passenger van (12–15 passenger or cargo van, e.g. Ford Transit) rental rates near ${origin}. Search Enterprise/Budget/U-Haul style providers. Return ONLY JSON {"daily_rate":<number>,"weekly_rate":<number>,"one_way_drop_fee":<number for dropping ${dest} instead of ${origin}, else 0>,"source":"..."} in ${currency}. Weekly should reflect the real multi-day discount (typically 4–5× the daily, not 7×).`,
+    'rental');
+  let daily=Number(g.daily_rate)||0, weekly=Number(g.weekly_rate)||0, drop=Number(g.one_way_drop_fee)||0;
+  if(!daily && !weekly){ daily=130; weekly=Math.round(daily*4.6); } // fallback US cargo van
+  if(!weekly) weekly=Math.round(daily*4.6);
+  if(!daily) daily=Math.round(weekly/4.6);
+  if(!oneWayAllowed) drop=0;
+  return { daily_rate:daily, weekly_rate:weekly, one_way_drop_fee: oneWayAllowed? (drop||Math.round(daily*1.8)) : 0, __source: g.__ok?'gemini_grounded':'fallback_estimate' };
+}
+
+async function geminiPriceLookup(prompt, shape){
+  const apiKey=process.env.GEMINI_API_KEY_V2||process.env.GEMINI_API_KEY;
+  const fallback = shape==='rental'? {__ok:false} : {value:0,__ok:false};
+  if(!apiKey) return fallback;
+  try{
+    const model=process.env.GEMINI_ROUTE_MODEL_FAST||'gemini-3.1-flash-lite';
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const ac=new AbortController(); const to=setTimeout(()=>ac.abort(),14000);
+    const r=await fetch(url,{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      contents:[{parts:[{text:prompt}]}], tools:[{google_search:{}}], generationConfig:{temperature:0.1,maxOutputTokens:512}
+    })}); clearTimeout(to);
+    const j=await r.json().catch(()=>({}));
+    const text=((j?.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('\n')).trim();
+    const m=text.match(/\{[\s\S]*\}/); if(!m) return fallback;
+    const obj=JSON.parse(m[0]); obj.__ok=true;
+    if(shape!=='rental'){ obj.value=Number(obj[shape]||obj.usd_per_person||obj.price||0)||0; }
+    return obj;
+  }catch(_){ return fallback; }
+}
+
+async function cityToIata(city){
+  // cheap grounded resolve; safe fallback null
+  const g=await geminiPriceLookup(`Return ONLY JSON {"iata":"XXX"} for the primary commercial airport IATA code serving ${city}.`,'iata_shape');
+  const code=String(g.iata||'').toUpperCase().replace(/[^A-Z]/g,''); return code.length===3? code : null;
+}
+
+function haversineFallback(a,b,oneWay){ return oneWay; } // return leg ≈ outbound distance when unknown
+function plusDaysStr(n){ const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function money(n,c='USD'){ const s=c==='EUR'?'€':'$'; return s+Math.round(Number(n)||0).toLocaleString('en-US'); }
+
+function buildTransportSummary(scenarios, rec, gear, ctx){
+  const lines=[];
+  if(!scenarios.length) return 'No transport scenarios could be computed — add gear weights and endpoints.';
+  if(gear.flight_blocked) lines.push(`⚠️ Flying is blocked: ${gear.flight_ready_note}`);
+  else if(!ctx.flightReady) lines.push(`Gear is not flight-ready (no flight cases) → flights are out; comparing ground options only.`);
+  if(rec){
+    lines.push(`✅ Cheapest viable: ${rec.label} — ${money(rec.total,ctx.currency)}.`);
+    const others=scenarios.filter(s=>s.key!==rec.key && s.total!=null).sort((a,b)=>a.total-b.total);
+    if(others[0]) lines.push(`Next best: ${others[0].label} — ${money(others[0].total,ctx.currency)} (${others[0].total>rec.total?'+':''}${money(others[0].total-rec.total,ctx.currency)}).`);
+  }
+  if(ctx.returnMi>200 && ctx.rentalType!=='owned') lines.push(`The ~${ctx.returnMi}-mile return to ${ctx.origin} is the swing factor — a one-way drop or flying home usually wins when it's this far.`);
+  return lines.join(' ');
+}

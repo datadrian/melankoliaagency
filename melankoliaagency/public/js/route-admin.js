@@ -201,6 +201,20 @@
               <div class="route-two-col"><label>Travel Party<input id="rtPartySize" type="number" min="1" class="form-input" value="${attr(seed.partySize||3)}"></label><label>Gear Weight KG<input id="rtGearWeight" type="number" min="0" class="form-input" value="${attr(seed.gearWeightKg||80)}"></label></div>
               <label>Travel Mode Preference<select id="rtTravelPreference" class="form-input"><option>drive if feasible</option><option>fly when distance is too long</option><option>train when possible</option><option>mixed / decide per leg</option></select></label>
               <label class="route-check-label"><input id="rtTravelingWithGear" type="checkbox" ${seed.travelingWithGear===false?'':'checked'}> Band is traveling with gear</label>
+              <div class="route-transport-gate">
+                <div class="route-form-step" style="margin-top:6px"><b>2b</b><span>Transport &amp; gear feasibility</span></div>
+                <div class="route-two-col">
+                  <label>Ground vehicle<select id="rtRentalType" class="form-input"><option value="rented">Rented van/car</option><option value="owned">Owned / borrowed</option></select></label>
+                  <label>Rental shape<select id="rtOneWay" class="form-input"><option value="return">Return to origin</option><option value="oneway">One-way OK (drop at end)</option></select></label>
+                </div>
+                <label class="route-check-label"><input id="rtFlightReady" type="checkbox" onchange="RouteAdmin.toggleFlightGear(this.checked)"> Gear is flight-ready (has flight cases)</label>
+                <div id="rtFlightGear" style="display:none">
+                  <p class="route-muted" style="font-size:12px;margin:4px 0">List each flightable case + weight. Over 50 lb = heavy-bag fee; over 70 lb can't fly (must ship/drive).</p>
+                  <div id="rtGearPieces"></div>
+                  <button type="button" class="btn-secondary btn-sm" onclick="RouteAdmin.addGearPiece()">+ Add case</button>
+                </div>
+                <div class="route-builder-actions" style="margin-top:8px"><button class="btn-secondary" type="button" onclick="RouteAdmin.transportCompare()">Compare transport options</button></div>
+              </div>
               <label>Backline / Hotel / Transport Assumptions<textarea id="rtLogisticsProfile" class="form-input form-textarea" rows="4" placeholder="Needs partial backline when flying; promoter hotel preferred; airport pickup if flying; can drive max 5.5h after a show; avoid Monday unless Tuesday drive is realistic…">${esc(seed.logisticsProfile||'')}</textarea></label>
               <div class="route-form-step"><b>03</b><span>Anchors + constraints</span></div>
               <label>Routing Preferences<textarea id="rtPreferences" class="form-input form-textarea" rows="4" placeholder="Avoid 6+ hour drives, prioritize 200–500 cap darkwave/EBM/post-punk rooms, avoid Mondays unless necessary…">${esc(seed.preferences||'')}</textarea></label>
@@ -1357,7 +1371,66 @@
 
   async function venueManagerSendToRoute(i){ const v=venueManagerRows[i]; const t=activeRoute(); if(!v) return; if(!t?.legs?.length) return toast('Open or generate a route first, then send venues into it.','error'); const answer=prompt('Send to which stop number?', '1'); if(answer===null) return; const idx=Math.max(0,Math.min(t.legs.length-1,Number(answer)-1||0)); const l=t.legs[idx]; l.candidate_venues=Array.isArray(l.candidate_venues)?l.candidate_venues:[]; const candidate={name:v.name,address:v.address,capacity:v.actual_capacity||v.capacity,booking_method:v.booking_email||v.booking_method||'master list',email:v.booking_email,phone:v.phone,website:v.website,instagram:v.instagram,fit_reason:v.notes||'Selected from Venue Manager.',outreach_angle:v.notes||'Master venue list option',crm_source:true,crm_id:v.id}; l.candidate_venues.unshift(candidate); if(!l.suggested_venue){ l.suggested_venue=v.name; l.venue_address=v.address||''; } if(t.id) await persistStop(idx,l); toast(`✓ ${v.name} added to stop ${idx+1}`,'success'); rerenderActiveRoute(); openStop(idx); }
 
-  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, draftAllFollowUps, matchAllFromCRM, autofillVenueFromCRM, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, askAboutCurrentReview, applyReviewPatch, dismissReviewPatch };
+
+  // ---- Transport & gear feasibility gate ----
+  let _gearPieces = [];
+  function toggleFlightGear(on){ const box=$('rtFlightGear'); if(box) box.style.display=on?'block':'none'; if(on && !_gearPieces.length){ addGearPiece(); addGearPiece(); } }
+  function addGearPiece(){ _gearPieces.push({label:'',lbs:''}); renderGearPieces(); }
+  function removeGearPiece(i){ _gearPieces.splice(i,1); renderGearPieces(); }
+  function renderGearPieces(){
+    const el=$('rtGearPieces'); if(!el) return;
+    el.innerHTML = _gearPieces.map((p,i)=>`<div class="route-two-col rt-gear-row" style="align-items:end;gap:8px"><label>Case<input class="form-input" value="${attr(p.label||'')}" placeholder="Synth in flight case" oninput="RouteAdmin._setGear(${i},'label',this.value)"></label><label>Lbs<input class="form-input" type="number" min="0" value="${attr(p.lbs||'')}" placeholder="48" oninput="RouteAdmin._setGear(${i},'lbs',this.value)"></label><button type="button" class="btn-secondary btn-sm" onclick="RouteAdmin.removeGearPiece(${i})" title="Remove">✕</button></div>`).join('');
+  }
+  function _setGear(i,k,v){ if(_gearPieces[i]) _gearPieces[i][k]= k==='lbs'? v.replace(/[^0-9.]/g,'') : v; }
+
+  async function transportCompare(){
+    const seed = formPayload();
+    const rentalType = val('rtRentalType')||'rented';
+    const oneWayAllowed = (val('rtOneWay')||'return')==='oneway';
+    const flightReady = !!$('rtFlightReady')?.checked;
+    const pieces = _gearPieces.map(p=>({label:p.label||'Case',lbs:Number(p.lbs)||0})).filter(p=>p.lbs>0);
+    // rough one-direction driving miles between start and end if generated legs exist
+    let driveMiles=0; const r=activeRoute&&activeRoute(); const legs=(r&&(r.legs||r.route_legs))||[];
+    legs.forEach(l=>{ if(l.drive_km) driveMiles+=Number(l.drive_km)*0.621371; });
+    driveMiles=Math.round(driveMiles);
+    const payload={ action:'transportPlan', origin:seed.startCity, end:seed.endCity||seed.startCity,
+      stops: legs.map(l=>l.city).filter(Boolean),
+      party_size:seed.partySize, tour_days: dayspan(seed.startDate,seed.endDate)||(legs.length+2),
+      rental_type:rentalType, one_way_allowed:oneWayAllowed, flight_ready:flightReady,
+      gear_pieces:pieces, gear_weight_kg: pieces.length?0:seed.gearWeightKg,
+      total_drive_miles:driveMiles, currency:seed.currency, depart_date:seed.startDate };
+    const out = toolOut(); if(out) out.innerHTML = loading('Pricing flights + van rentals (live web lookup)…');
+    try{
+      const data = await post(TRAVEL_API, payload);
+      if(out) out.innerHTML = renderTransportPlan(data);
+    }catch(e){ if(out) out.innerHTML = errorBox('Transport comparison failed', e.message); }
+  }
+  function dayspan(a,b){ if(!a||!b) return 0; const d=(new Date(b)-new Date(a))/86400000; return d>0?Math.round(d)+1:0; }
+  function renderTransportPlan(d){
+    if(!d) return errorBox('No data','Empty response');
+    const cur=d.currency||'USD';
+    const cards=(d.scenarios||[]).map(s=>{
+      const cost = s.total==null? '<span class="rt-x">not viable</span>' : `<b>${money(s.total,cur)}</b>`;
+      return `<div class="rt-scn ${s.recommended||d.recommended===s.key?'rt-best':''} ${s.feasible?'':'rt-dead'}">
+        <div class="rt-scn-head"><strong>${esc(s.label)}</strong>${(d.recommended===s.key)?'<span class="rt-badge">Cheapest viable</span>':''}</div>
+        <div class="rt-scn-cost">${cost}${s.extra_days?` <span class="route-muted">· +${s.extra_days} travel day(s)</span>`:''}</div>
+        <ul class="rt-scn-list">${(s.breakdown||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+        ${s.note?`<p class="rt-scn-note">${esc(s.note)}</p>`:''}
+      </div>`;
+    }).join('');
+    const g=d.gear||{};
+    const gearLine = g.count? `Gear: ${g.count} case(s), ${g.total_lbs} lbs total, heaviest ${g.max_piece_lbs} lbs. ${esc(g.flight_ready_note||'')}` : 'No flight gear entered.';
+    return `<div class="route-tool-card rt-transport">
+      <h3>Transport optimizer — fly vs drive vs one-way</h3>
+      <p class="rt-summary">${esc(d.summary||'')}</p>
+      <p class="route-muted" style="font-size:12px">${esc(gearLine)}</p>
+      <div class="rt-scn-grid">${cards}</div>
+      <p class="route-muted" style="font-size:11px;margin-top:8px">Live pricing — flights: ${esc(d.pricing_sources?.flights||'')}, rentals: ${esc(d.pricing_sources?.rentals||'')}. Amadeus live fares swap in automatically once the API key is added.</p>
+    </div>`;
+  }
+
+
+  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, draftAllFollowUps, matchAllFromCRM, autofillVenueFromCRM, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, transportCompare, toggleFlightGear, addGearPiece, removeGearPiece, _setGear, askAboutCurrentReview, applyReviewPatch, dismissReviewPatch };
   function csvCell(v){
     const s = v==null ? '' : String(v);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
