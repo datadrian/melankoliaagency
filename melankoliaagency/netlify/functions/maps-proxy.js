@@ -18,15 +18,30 @@ exports.handler = async e => {
       return json(200, await r.json());
     }
     if (action === 'route') {
-      const origin = b.params?.origin || b.origin;
-      const destination = b.params?.destination || b.destination;
-      const mode = String(b.params?.mode || b.mode || 'DRIVE').toUpperCase();
-      const travelMode = mode.includes('WALK') ? 'WALK' : (mode.includes('BICYCLE') || mode.includes('BIKE') ? 'BICYCLE' : 'DRIVE');
+      const P = b.params || b;
+      const mode = String(P.mode || 'DRIVE').toUpperCase();
+      const travelMode = mode.includes('WALK') ? 'WALK' : (mode.includes('BICYCLE') || mode.includes('BIKE') ? 'BICYCLE' : (mode.includes('TRANSIT')||mode.includes('TRAIN')||mode.includes('RAIL') ? 'TRANSIT' : 'DRIVE'));
+      // Accept either an address or a {lat,lng} for origin/destination
+      const waypoint = (addr, ll) => {
+        if (ll && (ll.lat!=null||ll.latitude!=null)) return { location:{ latLng:{ latitude:Number(ll.lat??ll.latitude), longitude:Number(ll.lng??ll.longitude) } } };
+        return { address: String(addr||'') };
+      };
+      const origin = waypoint(P.origin, P.originLatLng || (typeof P.origin==='object'?P.origin:null));
+      const destination = waypoint(P.destination, P.destLatLng || (typeof P.destination==='object'?P.destination:null));
+      const payload = { origin, destination, travelMode };
+      if (travelMode === 'DRIVE') payload.routingPreference = 'TRAFFIC_UNAWARE';
       const r = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
         method:'POST', headers:{'Content-Type':'application/json','X-Goog-Api-Key':key,'X-Goog-FieldMask':'routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline'},
-        body:JSON.stringify({origin:{address:origin},destination:{address:destination},travelMode})
+        body:JSON.stringify(payload)
       });
-      return json(200, await r.json());
+      const jr = await r.json();
+      // Normalize a compact shape the frontend can rely on
+      const route = (jr.routes||[])[0];
+      if (route) {
+        const secs = Number(String(route.duration||'0').replace('s','')) || 0;
+        return json(200, { success:true, distanceMeters: route.distanceMeters||0, durationSeconds: secs, encodedPolyline: route.polyline?.encodedPolyline||'', travelMode, raw: jr });
+      }
+      return json(200, { success:false, error: jr.error?.message || 'No route found', raw: jr, travelMode });
     }
     return json(400,{success:false,error:'Unknown maps action'});
   } catch(err) { return json(500,{success:false,error:err.message}); }
