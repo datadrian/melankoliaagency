@@ -81,6 +81,14 @@
   //  can initialize before that finishes — which caused the intermittent
   //  "Not authorized. Please log in." flash on first load).
   async function waitForSession(maxMs=4000){
+    // If the login gate is still background-verifying a restored session (the
+    // "optimistic reveal" path on a return visit), wait for that to settle first —
+    // firing our first request while it's still in flight is the main source of the
+    // intermittent "Not authorized" flash, since a token that's about to be evicted
+    // still momentarily reads as present in sessionStorage.
+    if(window.mkSessionVerified && typeof window.mkSessionVerified.then==='function'){
+      try{ await Promise.race([window.mkSessionVerified, new Promise(r=>setTimeout(r,2500))]); } catch(e){}
+    }
     if(typeof mkSessionToken!=='function') return '';
     const started=Date.now();
     let tok=mkSessionToken();
@@ -96,9 +104,11 @@
     root.innerHTML = loading('Loading route operations…');
     await waitForSession();
     let lastErr=null;
-    // Try up to 3 times; auth errors on the very first call after login are
-    // transient (token/session not yet propagated), so a short retry clears them.
-    for(let attempt=0; attempt<3; attempt++){
+    // Try several times; auth errors right after login/tab-switch are transient
+    // (token/session not yet propagated to sessionStorage or the login gate's
+    // background verify hasn't settled yet), so retrying with backoff clears them
+    // automatically instead of showing Adrian a scary error he has to click through.
+    for(let attempt=0; attempt<6; attempt++){
       try{
         tours = await api({action:'listTours'});
         renderHub();

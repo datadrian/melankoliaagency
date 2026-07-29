@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Melankolia Agency</title>
-  <link rel="stylesheet" href="/css/admin.css?v=stopdetail-fix-v1">
+  <link rel="stylesheet" href="/css/admin.css?v=stopdetail-fix-v2">
 </head>
 <body>
 
@@ -40,14 +40,17 @@
       const savedUser = sessionStorage.getItem(USER_KEY);
       if (savedToken && savedUser) {
         // Quick optimistic reveal while we verify in the background; if verify fails we re-gate.
+        // Other modules (e.g. Route Planner) can `await window.mkSessionVerified` before firing
+        // their first authenticated request, so they don't race this background verify call.
         let user; try { user = JSON.parse(savedUser); } catch (e) { user = null; }
         if (user) reveal(user);
-        fetch('/.netlify/functions/admin-users', {
+        window.mkSessionVerified = fetch('/.netlify/functions/admin-users', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'verify', session_token: savedToken })
         }).then(r => r.json()).then(d => {
           if (!d.success) { sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY); gate.style.display = 'flex'; window.MK_SESSION_USER = null; }
-        }).catch(() => {});
+          return d;
+        }).catch(() => null);
         if (user) return;
       }
 
@@ -922,7 +925,7 @@
 
   <script src="/js/data.js"></script>
   <script src="/js/admin.js?v=enrich-v2"></script>
-  <script src="/js/route-admin.js?v=stopdetail-fix-v1"></script>
+  <script src="/js/route-admin.js?v=stopdetail-fix-v2"></script>
   <script src="/js/advancing-admin.js?v=enrich-v2"></script>
 </body>
 </html>
