@@ -25,7 +25,7 @@ exports.handler = async (event) => {
       if (!city) { const err=new Error('city required'); err.status=400; throw err; }
       const parsed = await researchBacklineStructured(data, apiKey);
       return { ...parsed, researched_at:new Date().toISOString() };
-    })(), 16000, 'Deep grounded backline research timed out; returned fast planning fallback instead.');
+    })(), 24000, 'Deep grounded backline research timed out; returned fast planning fallback instead.');
     return json({ success:true, data:result }, 200, headers);
   } catch(e) {
     const data = body.data || body || {};
@@ -92,7 +92,7 @@ Return only strict JSON matching the schema. Keep terms concise and operational.
   const res = await callGemini(RESEARCH_MODEL, {
     contents:[{ parts:[{ text:prompt }] }],
     tools:[{ google_search:{} }],
-    generationConfig:{ temperature:0.05, maxOutputTokens:4096, responseMimeType:'application/json', responseSchema:backlineSchema }
+    generationConfig:{ temperature:0.05, maxOutputTokens:4096 }
   }, apiKey, 1);
   const parsed = parseJsonish(extractText(res));
   parsed.suppliers = Array.isArray(parsed.suppliers) ? parsed.suppliers : [];
@@ -153,7 +153,7 @@ ${(research.grounding||[]).join('\n')}
 Return only JSON matching the schema. Do not guess unverified details; use null/unknown when not confirmed.`;
   const res = await callGemini(PARSER_MODEL, {
     contents:[{ parts:[{ text:parsePrompt }] }],
-    generationConfig:{ temperature:0, maxOutputTokens:6144, responseMimeType:'application/json', responseSchema:backlineSchema }
+    generationConfig:{ temperature:0, maxOutputTokens:6144 }
   }, apiKey, 1);
   const parsed = parseJsonish(extractText(res));
   parsed.suppliers = Array.isArray(parsed.suppliers) ? parsed.suppliers : [];

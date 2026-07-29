@@ -7,6 +7,11 @@
   external_node_modules = ["firebase-admin", "@firebase/app", "@google-cloud/firestore", "@netlify/blobs"]
   included_files = ["netlify/functions/node_modules/**"]
 
+# Backline Finder does live grounded web research — allow it the full function
+# window instead of the 10s default so deep research lands instead of timing out.
+[functions."backline-search"]
+  timeout = 26
+
 # About page permanently removed — 301 to home at the edge (no flash, de-indexes).
 [[redirects]]
   from = "/about"
