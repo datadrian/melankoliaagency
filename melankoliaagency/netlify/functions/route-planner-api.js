@@ -96,6 +96,21 @@ exports.handler = async (event) => {
       return json(200, { success:true, docs: m.map(t => ({ id:t.id, id_json: JSON.stringify(t.id), len:String(t.id).length, codes:[...String(t.id)].map(c=>c.charCodeAt(0)) })) });
     }
 
+    if (a === 'debugGhost2') {
+      const PID=process.env.FIREBASE_PROJECT_ID;
+      const target=String(b.id||'guide-sacred-skin-westcoast');
+      const out={};
+      // raw GET the doc
+      const { _rawReq } = require('./_firebase');
+      try{ out.get = await _rawReq('GET', `/${TOURS}/${encodeURIComponent(target)}`); }catch(e){ out.get_err=e.message; }
+      // list subcollection ids under the doc
+      try{ out.subcols = await _rawReq('GET', `/${TOURS}/${encodeURIComponent(target)}:listCollectionIds`); }catch(e){ out.subcols_err=e.message; }
+      // raw DELETE + immediate raw GET
+      try{ out.del = await _rawReq('DELETE', `/${TOURS}/${encodeURIComponent(target)}`); out.del_ok=true; }catch(e){ out.del_err=e.message; }
+      try{ out.get_after = await _rawReq('GET', `/${TOURS}/${encodeURIComponent(target)}`); }catch(e){ out.get_after_err=e.message; }
+      return json(200, { success:true, out });
+    }
+
     if (a === 'hardDeleteTour') {
       // One-shot cleanup for ghost/custom-id tour docs that resist soft-delete.
       const target = String(b.id||'').trim();
