@@ -110,7 +110,8 @@
         await new Promise(r=>setTimeout(r, 400*(attempt+1)));
       }
     }
-    root.innerHTML = errorBox('Route Planner backend unavailable', (lastErr&&lastErr.message)||'Unknown error') +
+    const __dbg = ` | DEBUG token=${(typeof mkSessionToken==='function'?mkSessionToken():'N/A').slice(0,12)} user=${JSON.stringify(window.MK_SESSION_USER||null)} apiUrl=${ROUTE_API}`;
+    root.innerHTML = errorBox('Route Planner backend unavailable', ((lastErr&&lastErr.message)||'Unknown error') + __dbg) +
       `<div style="margin-top:10px"><button type="button" class="btn-secondary btn-sm" onclick="RouteAdmin.init()">Retry</button></div>`;
   }
 
