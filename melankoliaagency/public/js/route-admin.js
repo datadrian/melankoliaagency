@@ -1168,7 +1168,13 @@
     const el=$('routeMap'); if(!el) return;
     try{
       await ensureMap();
-      if(!map) map=new google.maps.Map(el,{center:continentView().center,zoom:continentView().zoom,mapTypeId:'roadmap',disableDefaultUI:false,styles:darkMapStyle()});
+      // Rebind the map to the CURRENT #routeMap element. `map` is module-level and may
+      // still point at a previous view's (now-removed) div after an SPA view swap — that
+      // left the saved-tour map stuck on "Loading route map…". Recreate when the container changed.
+      if(!map || (map.getDiv && map.getDiv()!==el)){
+        map=new google.maps.Map(el,{center:continentView().center,zoom:continentView().zoom,mapTypeId:'roadmap',disableDefaultUI:false,styles:darkMapStyle()});
+        mapMarkers=[]; mapLines=[];
+      }
       clearMap();
       const pts=[];
       for(const [i,l] of (legs||[]).entries()){
