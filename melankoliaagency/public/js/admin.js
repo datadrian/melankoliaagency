@@ -3189,7 +3189,7 @@ function renderCvProposals() {
       body = `<div class="disc-diff"><b>New CRM contact:</b> ${escapeHtml(a.name || '')}</div><div class="disc-fields"><span><b>Address:</b> ${escapeHtml(a.address || '\u2014')}</span><span><b>City:</b> ${escapeHtml(a.city || '\u2014')}</span><span><b>Country:</b> ${escapeHtml(a.country || '\u2014')}</span><span><b>Email:</b> ${escapeHtml(a.booking_email || '\u2014')}</span><span><b>Phone:</b> ${escapeHtml(a.phone || '\u2014')}</span></div>`;
     }
     const note = p.note ? `<p class="view-sub" style="margin:.3rem 0 0">${escapeHtml(p.note)}</p>` : '';
-    const editAction = p.type === 'merge' ? '' : `<button class="btn-secondary btn-sm" onclick="cvOpenEdit('${p.id}')">\u270e Edit</button>`;
+    const editAction = `<button class="btn-secondary btn-sm" onclick="cvOpenEdit('${p.id}')">\u270e Edit</button>`;
     const actions = canAct
       ? `${editAction}
          <button class="btn-primary btn-sm" onclick="cvApprove('${p.id}')">\u2713 Approve</button>
@@ -3221,6 +3221,7 @@ const CV_CONTACT_FIELDS = [
 ];
 let _cvEditId = null;
 let _cvEditOld = {};
+let _cvEditSources = [];
 
 function cvFirstContact(obj) {
   return (obj && Array.isArray(obj.contacts) && obj.contacts[0]) || {};
@@ -3255,12 +3256,27 @@ function cvProposedRecord(p) {
     contact_phone: ct.phone || '', contact_whatsapp: ct.whatsapp || ''
   };
 }
+function cvSourceList(p) {
+  if (p.type === 'merge') {
+    const before = p.before || {};
+    const rows = [];
+    if (before.primary) rows.push({ label:`Keep: ${before.primary.name || 'primary record'}`, record:cvOldRecord({ before:before.primary }) });
+    (before.losers || []).forEach(v => rows.push({ label:`Merge in: ${v.name || 'record'}`, record:cvOldRecord({ before:v }) }));
+    return rows;
+  }
+  return [{ label:'Old / current or source', record:cvOldRecord(p) }];
+}
 function cvOldValue(v) {
   return String(v || '').trim() ? escapeHtml(String(v)) : '<span class="cv-empty">Empty</span>';
 }
 function cvOldFieldRow(field, label) {
-  return `<div class="cv-old-field"><div class="cv-field-label"><span>${escapeHtml(label)}</span><button type="button" class="cv-copy-btn" onclick="cvCopyOldField('${field}')">Copy &rarr;</button></div><div class="cv-old-value">${cvOldValue(_cvEditOld[field])}</div></div>`;
+  const values = _cvEditSources.map((src, i) => ({ i, label:src.label, value:src.record[field] || '' }));
+  const shown = values.some(x => String(x.value).trim()) ? values.filter(x => String(x.value).trim()) : values.slice(0,1);
+  return `<div class="cv-old-field"><div class="cv-field-label"><span>${escapeHtml(label)}</span></div>${shown.map(x =>
+    `<div class="cv-source-value"><div>${_cvEditSources.length > 1 ? `<small>${escapeHtml(x.label)}</small>` : ''}<div class="cv-old-value">${cvOldValue(x.value)}</div></div><button type="button" class="cv-copy-btn" onclick="cvCopySourceField(${x.i},'${field}')">Copy &rarr;</button></div>`
+  ).join('')}</div>`;
 }
+
 function cvProposedFieldRow(field, label, value) {
   const textarea = field === 'notes';
   return `<label class="cv-new-field"><span>${escapeHtml(label)}</span>${textarea
@@ -3269,25 +3285,29 @@ function cvProposedFieldRow(field, label, value) {
 }
 function cvOpenEdit(id) {
   const p = _cvById(id);
-  if (!p || p.type === 'merge') return;
+  if (!p) return;
   _cvEditId = id;
-  _cvEditOld = cvOldRecord(p);
+  _cvEditSources = cvSourceList(p);
+  _cvEditOld = (_cvEditSources[0] && _cvEditSources[0].record) || {};
   const proposed = cvProposedRecord(p);
   const modal = document.getElementById('cvEditModal');
   const body = document.getElementById('cvEditBody');
   const subtitle = document.getElementById('cvEditSubtitle');
   if (!modal || !body) return;
-  const mode = p.type === 'restructure' ? 'Restructure legacy contact'
+  const mode = p.type === 'merge' ? 'Review merged contact'
+    : p.type === 'restructure' ? 'Restructure legacy contact'
     : /_new$/.test(p.type || '') ? 'Create new CRM contact'
     : 'Add missing data to existing CRM contact';
   document.getElementById('cvEditTitle').textContent = mode;
-  subtitle.textContent = /_new$/.test(p.type || '')
-    ? 'Source or extracted contact on the left; editable CRM proposal on the right.'
-    : 'Current CRM contact on the left; editable proposal on the right. Existing live fields remain protected.';
+  subtitle.textContent = p.type === 'merge'
+    ? 'Both source records are on the left; the editable merged proposal is on the right.'
+    : /_new$/.test(p.type || '')
+      ? 'Source or extracted contact on the left; editable CRM proposal on the right.'
+      : 'Current CRM contact on the left; editable proposal on the right. Existing live fields remain protected.';
   body.innerHTML = `
     <div class="cv-copy-toolbar">
-      <button type="button" class="btn-secondary btn-sm" onclick="cvCopyAllOld()">Copy all old values into empty proposed fields &rarr;</button>
-      <button type="button" class="btn-secondary btn-sm" onclick="cvCopyOldContact()">Copy old contact person into proposed contact &rarr;</button>
+      ${_cvEditSources.map((src,i) => `<button type="button" class="btn-secondary btn-sm" onclick="cvCopyAllSource(${i})">Copy empty fields from ${escapeHtml(src.label)} &rarr;</button>`).join('')}
+      ${_cvEditSources.map((src,i) => `<button type="button" class="btn-secondary btn-sm" onclick="cvCopySourceContact(${i})">Copy contact from ${escapeHtml(src.label)} &rarr;</button>`).join('')}
       <span>You can also select, copy and paste text normally.</span>
     </div>
     <div class="cv-compare-head"><div>OLD / CURRENT OR SOURCE</div><div>PROPOSED NEW CONTACT</div></div>
@@ -3301,31 +3321,39 @@ function cvOpenEdit(id) {
     </div></div>
     <p class="cv-safety-note">Safety rule: approval re-reads the live CRM and only fills missing fields. Existing non-empty CRM values are never overwritten.</p>`;
   const status = document.getElementById('cvEditStatus'); if (status) status.textContent = '';
+  modal.classList.toggle('cv-merge-mode', p.type === 'merge');
   modal.classList.add('open');
   document.body.classList.add('modal-open');
 }
 function cvToggleEdit(id) { cvOpenEdit(id); }
 function cvCloseEdit() {
-  const modal = document.getElementById('cvEditModal'); if (modal) modal.classList.remove('open');
+  const modal = document.getElementById('cvEditModal'); if (modal) { modal.classList.remove('open'); modal.classList.remove('cv-merge-mode'); }
   document.body.classList.remove('modal-open');
-  _cvEditId = null; _cvEditOld = {};
+  _cvEditId = null; _cvEditOld = {}; _cvEditSources = [];
 }
 function cvEditInput(field) { return document.querySelector(`#cvEditBody [data-cvfield="${field}"]`); }
-function cvCopyOldField(field) {
+function cvCopySourceField(sourceIndex, field) {
   const input = cvEditInput(field); if (!input) return;
-  input.value = _cvEditOld[field] || ''; input.focus();
+  const src = _cvEditSources[sourceIndex];
+  input.value = (src && src.record[field]) || ''; input.focus();
 }
-function cvCopyAllOld() {
+function cvCopyOldField(field) { cvCopySourceField(0, field); }
+function cvCopyAllSource(sourceIndex) {
+  const src = _cvEditSources[sourceIndex]; if (!src) return;
   [...CV_RECORD_FIELDS, ...CV_CONTACT_FIELDS].forEach(([field]) => {
     const input = cvEditInput(field);
-    if (input && !String(input.value || '').trim() && String(_cvEditOld[field] || '').trim()) input.value = _cvEditOld[field];
+    if (input && !String(input.value || '').trim() && String(src.record[field] || '').trim()) input.value = src.record[field];
   });
 }
-function cvCopyOldContact() {
+function cvCopyAllOld() { cvCopyAllSource(0); }
+function cvCopySourceContact(sourceIndex) {
+  const src = _cvEditSources[sourceIndex]; if (!src) return;
   CV_CONTACT_FIELDS.forEach(([field]) => {
-    const input = cvEditInput(field); if (input && String(_cvEditOld[field] || '').trim()) input.value = _cvEditOld[field];
+    const input = cvEditInput(field); if (input && String(src.record[field] || '').trim()) input.value = src.record[field];
   });
 }
+function cvCopyOldContact() { cvCopySourceContact(0); }
+
 async function cvSaveEditDialog() {
   const p = _cvById(_cvEditId); if (!p) return;
   const get = field => { const el = cvEditInput(field); return el ? String(el.value || '').trim() : ''; };

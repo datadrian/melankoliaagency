@@ -546,13 +546,19 @@ async function editProposal(pid, patch) {
   const p = await getDoc(COLL, pid);
   if (!p) return { success: false, error: 'Proposal not found' };
   if ((p.status || 'pending') !== 'pending') return { success: false, error: 'Only pending proposals can be edited' };
-  if (p.type === 'merge') return { success: false, error: 'Merge proposals are reviewed with Keep/Merge records and are not field-editable' };
-
   const incomingRecord = patch.record || patch.proposed_fields || {};
   const incomingContact = cleanEditedContact(patch.contact || (Array.isArray(patch.contacts) ? patch.contacts[0] : patch.new_contact));
   const after = { ...(p.after || {}) };
 
-  if (p.type === 'restructure') {
+  if (p.type === 'merge') {
+    for (const f of EDITABLE_RECORD_FIELDS) if (incomingRecord[f] !== undefined) after[f] = String(incomingRecord[f] || '').trim();
+    if (incomingContact) {
+      const contacts = Array.isArray(after.contacts) ? [...after.contacts] : [];
+      if (contacts.length) contacts[0] = { ...contacts[0], ...incomingContact, is_primary: true };
+      else contacts.push(incomingContact);
+      after.contacts = contacts;
+    }
+  } else if (p.type === 'restructure') {
     if (incomingRecord.name !== undefined) after.name = String(incomingRecord.name || '').trim();
     after.contacts = incomingContact ? [incomingContact] : [];
   } else if (p.type === 'google_contact_new' || p.type === 'contract_contact_new') {
@@ -634,6 +640,22 @@ async function approveProposal(pid) {
     }
     if (!losers.length) { await updateDoc(COLL, pid, { status: 'approved', updated_at: now(), note_extra: 'losers already gone' }); return { success: true, venue_id: p.target_venue_id, no_op: true }; }
     const merged = mergeVenues(primary, losers); // re-merge from LIVE data, not the stale preview
+    // Apply reviewed edits only where the freshly merged live record is still
+    // empty. Contact entries are matched and only gain missing details.
+    for (const f of EDITABLE_RECORD_FIELDS) {
+      if (!isFilled(merged[f]) && isFilled((p.after || {})[f])) merged[f] = p.after[f];
+    }
+    const mergedContacts = Array.isArray(merged.contacts) ? [...merged.contacts] : [];
+    for (const edited of ((p.after && p.after.contacts) || [])) {
+      const idx = mergedContacts.findIndex(ct =>
+        (edited.email && normEmail(ct.email) === normEmail(edited.email)) ||
+        (edited.phone && normPhone(ct.phone) === normPhone(edited.phone)) ||
+        (edited.name && normName(ct.name) === normName(edited.name))
+      );
+      if (idx < 0) mergedContacts.push(edited);
+      else for (const [k, v] of Object.entries(edited)) if (!isFilled(mergedContacts[idx][k]) && isFilled(v)) mergedContacts[idx][k] = v;
+    }
+    merged.contacts = mergedContacts;
     const res = await fetch(RAG_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upsert', venue: merged, skip_embeddings: true, agent_key: AGENT_KEY() }) });
     const j = await res.json().catch(() => ({}));
     if (!res.ok || !j.success) throw new Error('CRM write failed: ' + (j.error || res.status));

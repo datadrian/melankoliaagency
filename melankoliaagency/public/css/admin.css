@@ -2378,3 +2378,9 @@ body.modal-open{overflow:hidden;}
   .cv-edit-footer{align-items:flex-start;flex-direction:column;}
   .cv-edit-footer>div{margin-left:0;width:100%;justify-content:flex-end;}
 }
+.cv-source-value{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.25rem 0;border-top:1px solid rgba(255,255,255,.06);}
+.cv-source-value:first-of-type{border-top:0;}
+.cv-source-value>div{min-width:0;flex:1;}
+.cv-source-value small{display:block;color:var(--accent);font-size:.59rem;line-height:1.2;margin-bottom:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cv-source-value .cv-copy-btn{flex:0 0 auto;}
+#cvEditModal.cv-merge-mode .cv-old-field,#cvEditModal.cv-merge-mode .cv-new-field{min-height:92px;}
