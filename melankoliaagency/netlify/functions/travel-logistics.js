@@ -352,7 +352,9 @@ async function transportPlan(b={}){
   const gear = analyzeGear(pieces);
 
   // ---- Live prices (Gemini grounding; Amadeus for flights when configured) ----
-  const flightPerPerson = flightReady ? await liveFlightPrice(origin, end, partySize, b.depart_date||b.departDate) : null;
+  const _fpObj = flightReady ? await liveFlightPrice(origin, end, partySize, b.depart_date||b.departDate) : null;
+  const flightPerPerson = _fpObj ? (Number(_fpObj.value!=null?_fpObj.value:_fpObj)||0) : null;
+  const flightSource = _fpObj ? (_fpObj.__source||'gemini_grounded') : 'n/a — not flight ready';
   const rental = await liveRentalRates(origin, end, currency, oneWayAllowed);
 
   const scenarios = [];
@@ -434,8 +436,8 @@ async function transportPlan(b={}){
     currency,
     inputs:{ origin, end, stops, party_size:partySize, tour_days:tourDays, rental_type:rentalType, one_way_allowed:oneWayAllowed, flight_ready:flightReady, return_miles:returnMi },
     gear,
-    pricing_sources:{ flights:flightPerPerson?flightPerPerson.__source||'gemini_grounded':(flightReady?'gemini_grounded':'n/a — not flight ready'), rentals:rental.__source },
-    flight_per_person: flightPerPerson? (flightPerPerson.value||flightPerPerson) : null,
+    pricing_sources:{ flights:flightSource, rentals:rental.__source },
+    flight_per_person: flightPerPerson!=null? flightPerPerson : null,
     rental_rates: rental,
     scenarios,
     recommended: recommended? recommended.key : null,
