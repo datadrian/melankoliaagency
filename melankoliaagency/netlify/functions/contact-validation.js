@@ -393,19 +393,25 @@ async function importGoogleContacts(csvText, preParsed) {
 
 // ---------- list / stats ----------
 async function listProposals(b) {
-  let docs = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 1000 }).catch(() => []);
+  let docs = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000 }).catch(() => []);
   const status = b.status || 'pending';
   if (status !== 'all') docs = docs.filter(d => (d.status || 'pending') === status);
   if (b.type && b.type !== 'all') docs = docs.filter(d => d.type === b.type);
   return { success: true, data: docs, count: docs.length };
 }
 async function statsProposals() {
-  const docs = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 1000 }).catch(() => []);
+  const docs = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000 }).catch(() => []);
   const s = { pending: 0, approved: 0, rejected: 0, restructure: 0, merge: 0, google_contact_update: 0, google_contact_new: 0, total: docs.length };
   docs.forEach(d => {
     const st = d.status || 'pending'; if (s[st] != null) s[st]++;
     if (st === 'pending' && s[d.type] != null) s[d.type]++;
   });
+  const restructureTargets = docs.filter(d => (d.status || 'pending') === 'pending' && d.type === 'restructure').map(d => d.target_venue_id).filter(Boolean);
+  const mergeSignatures = docs.filter(d => (d.status || 'pending') === 'pending' && d.type === 'merge').map(d => sigOf(d.target_venue_id, d.merge_venue_ids));
+  s.unique_restructure_targets = new Set(restructureTargets).size;
+  s.duplicate_restructure_proposals = restructureTargets.length - s.unique_restructure_targets;
+  s.unique_merge_signatures = new Set(mergeSignatures).size;
+  s.duplicate_merge_proposals = mergeSignatures.length - s.unique_merge_signatures;
   return { success: true, data: s };
 }
 
