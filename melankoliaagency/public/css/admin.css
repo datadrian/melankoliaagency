@@ -2249,3 +2249,12 @@ details.ob-group[open]>summary{margin-bottom:.6rem}
 .rt-scn-list{margin:0;padding-left:16px;font-size:12px;color:#b9b9b9;line-height:1.5}
 .rt-scn-list li{margin-bottom:3px}
 .rt-scn-note{font-size:12px;color:#8a8a8a;margin:8px 0 0;font-style:italic}
+
+/* Leg-row action feedback: flash the AI/tool output panel when a row button
+   (Details, Backline, Contact Finder, etc.) renders its result further down. */
+@keyframes routeToolFlash {
+  0%   { box-shadow: 0 0 0 0 rgba(200,169,110,0.0); }
+  25%  { box-shadow: 0 0 0 2px rgba(200,169,110,0.85), 0 0 24px rgba(200,169,110,0.35); }
+  100% { box-shadow: 0 0 0 0 rgba(200,169,110,0.0); }
+}
+.route-tool-flash { animation: routeToolFlash 1.1s ease-out; border-radius: 12px; }

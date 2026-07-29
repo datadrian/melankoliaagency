@@ -408,6 +408,20 @@
 
   function renderWorkbench(t){ return `<div class="route-workbench-grid"><button onclick="RouteAdmin.reviewCurrentRoute()"><strong>AI oversight</strong><span>Show saved review; regenerate only if requested.</span></button><button onclick="RouteAdmin.optimizeCurrent()"><strong>Optimize route</strong><span>Reorder without losing holds/deals.</span></button><button onclick="RouteAdmin.estimateBudget()"><strong>Estimate budget</strong><span>Rates, guarantees, costs, break-even.</span></button><button onclick="RouteAdmin.renderVenueBoard()"><strong>Venue board</strong><span>Find, add, select, and email venues city by city.</span></button><button onclick="RouteAdmin.backlineAllStops()"><strong>Backline finder</strong><span>Research suppliers, venue backline, pickup/delivery terms.</span></button><button onclick="RouteAdmin.renderTravelHotelModule()"><strong>Travel + hotels</strong><span>Flights, trains, drives, hotels, links, costs, band guidance.</span></button><button onclick="RouteAdmin.renderTravelOpsBoard()"><strong>Travel Ops Board</strong><span>Today/tomorrow moves, missing hotels, confirmations, risk flags.</span></button><button onclick="RouteAdmin.renderTravelAlertCenter()"><strong>Travel Alert Center</strong><span>Resolve, assign, and jump into critical travel issues.</span></button><button onclick="RouteAdmin.chatAgent()"><strong>Ask booking AI</strong><span>Routing, buyer, hold, and deal strategy.</span></button><button onclick="RouteAdmin.analyzeCurrentAnchors()"><strong>Analyze pipeline</strong><span>Show saved analysis; regenerate only if requested.</span></button></div><div id="routeAiOutput"></div>`; }
   function toolOut(){ return $('routeAiOutput') || $('routeToolOutput') || $('routeDetailTools'); }
+  // Scroll the AI/tool output panel into view and briefly highlight it, so a
+  // click on a leg-row button (Details, Backline, Contact Finder, etc.) gives
+  // clear feedback — the output renders in the workbench panel further down the
+  // page, which previously made those buttons feel like they did nothing.
+  function focusToolOut(){
+    const out = toolOut(); if(!out) return out;
+    try{
+      const card = out.firstElementChild || out;
+      card.scrollIntoView({behavior:'smooth', block:'center'});
+      card.classList.add('route-tool-flash');
+      setTimeout(()=>card.classList.remove('route-tool-flash'), 1200);
+    }catch(e){}
+    return out;
+  }
   function renderAnalysisCard(title,data){ return `<div class="route-tool-card"><h3>${esc(title)}</h3>${renderObject(data)}${renderSuggestedActions(data?.suggested_actions||[])}</div>`; }
   function niceKey(k){ return String(k||'').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase()); }
   function compactObjTitle(o={}){ return o.label || o.title || o.issue || o.risk || o.change || o.action || o.city || o.stop || o.verdict || ''; }
@@ -533,6 +547,7 @@
       <div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.saveStopEdits(${idx})">Save Stop Edits</button><button class="btn-secondary" onclick="RouteAdmin.insertBlankDayAfter(${idx})">Add Blank Day After</button>${l.day_off?`<button class="btn-secondary" onclick="RouteAdmin.convertBlankDayToProspect(${idx})">Convert To Prospect</button>`:''}<button class="btn-secondary" onclick="RouteAdmin.venueFinderForStop(${idx})">Find Promoters/Venues</button><button class="btn-secondary" onclick="RouteAdmin.backlineForStop(${idx})">Backline Finder</button><button class="btn-secondary" onclick="RouteAdmin.manualVenueForm(${idx})">Manual Add Contact</button><button class="btn-secondary" onclick="RouteAdmin.generateEmail(${idx})">Generate Email</button></div>
       ${renderBacklineMini(l)}${renderOutreachBoard(l,idx)}
     </div>`;
+    focusToolOut();
   }
   function saveStopEdits(idx){
     const t=activeRoute(); const l=t?.legs?.[idx]; if(!l) return;
@@ -630,7 +645,7 @@
   }
   async function backlineForStop(idx){
     const t=activeRoute(); const l=t?.legs?.[idx]; if(!l) return;
-    const out=toolOut(); out.innerHTML=loading(`Researching backline options for ${l.city}…`);
+    const out=focusToolOut(); out.innerHTML=loading(`Researching backline options for ${l.city}…`);
     try{
       const data=await post(BACKLINE_API,{data:{artist:t.artist,city:l.city,country:l.country,venue:l.suggested_venue,date:l.date,backline_needed:l.backline_needed,gear_requirements:t.logisticsProfile||t.logistics_profile||t.gearProfile||''}});
       l.backline_research=data; l.backline_options=data.suppliers||[]; l.venue_backline=data.venue_backline||[]; l.backline_next_questions=data.open_questions||[];
@@ -664,7 +679,7 @@
 
   async function venueFinderForStop(idx){
     const t=activeRoute(); const l=t?.legs?.[idx]; if(!l) return;
-    const out=toolOut(); out.innerHTML=loading(`Running grounded Venue Finder for ${l.city}…`);
+    const out=focusToolOut(); out.innerHTML=loading(`Running grounded Venue Finder for ${l.city}…`);
     try{
       l.candidate_venues = await runGroundedContactFinder([l.city,l.country].filter(Boolean).join(', '),'darkwave, EBM, post-punk, industrial, goth, synth',600);
       await Promise.allSettled(l.candidate_venues.map(v=>upsertVenueToMaster(v,l,'route_venue_finder')));
@@ -989,7 +1004,7 @@
   }
   async function suggestVenues(idx){
     const t=currentGenerated||currentTour; const leg=t?.legs?.[idx]; if(!leg) return;
-    const out=toolOut(); out.innerHTML=loading(`Finding contacts in ${leg.city}…`);
+    const out=focusToolOut(); out.innerHTML=loading(`Finding contacts in ${leg.city}…`);
     try{
       const data=await ai('suggest_venues',{artist:t.artist,city:leg.city,country:leg.country,genre_context:'darkwave, EBM, post-punk, industrial, underground',capacity:'150-600',tour:t});
       const venues=data.venues||data.suggestions||data.recommendations||(Array.isArray(data)?data:[]);
@@ -1138,14 +1153,14 @@
   async function generateEmail(idx, venueOverride='', venueData=null){
     const t=currentGenerated||currentTour; const leg=t?.legs?.[idx]; if(!leg) return;
     const venueName = venueOverride || leg.suggested_venue;
-    const out=toolOut(); out.innerHTML=loading(`Generating branded email for ${venueName||leg.city}…`);
+    const out=focusToolOut(); out.innerHTML=loading(`Generating branded email for ${venueName||leg.city}…`);
     try{ const email=await post(EMAIL_API,{emailType:'booking_inquiry',data:{artist:t.artist,artistContext:findArtistContext(t.artist),tour:t,city:leg.city,country:leg.country,venue:venueName,venueData,date:leg.date,deal:leg.deal_suggestion,rate_target_usd:leg.rate_target_usd,travel_mode:leg.travel_mode_recommendation,booking_context:leg.public_booking_context||''}}); out.innerHTML=renderEmailOutput(email, `Booking Inquiry Email — ${venueName||leg.city}`); }
     catch(e){ out.innerHTML=errorBox('Email generation failed',e.message); }
   }
   async function adviseDeal(idx){
     const t=currentGenerated||currentTour; const leg=t?.legs?.[idx]; if(!leg) return;
     const offer = prompt(`Offer/deal to evaluate for ${leg.city}:`, leg.deal_suggestion || ''); if(offer===null) return;
-    const out=toolOut(); out.innerHTML=loading('Evaluating deal…');
+    const out=focusToolOut(); out.innerHTML=loading('Evaluating deal…');
     try{ out.innerHTML=`<div class="route-tool-card"><h3>Deal Advisor — ${esc(leg.city)}</h3>${renderObject(await ai('advise_deal',{artist:t.artist,tour:t,city:leg.city,country:leg.country,venue:leg.suggested_venue,offer}))}</div>`; }
     catch(e){ out.innerHTML=errorBox('Deal advisor failed',e.message); }
   }
