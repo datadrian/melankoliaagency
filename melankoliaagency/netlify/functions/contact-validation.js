@@ -53,7 +53,7 @@ exports.handler = async (event) => {
     if (b.action === 'purge') {
       if (!isAgent) return json(403, { success: false, error: 'purge requires agent_key' });
       const t0 = Date.now();
-      const all = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 1000, mask: ['status'] }).catch(() => []);
+      const all = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000, mask: ['status','type'] }).catch(() => []);
       // Bug history: this used to be `(!b.status || status===b.status) || (ids && ids.includes(...))`
       // which meant "no status given" ALWAYS matched everything, regardless of `ids` — a single
       // purge-by-id call with no status wiped the ENTIRE queue once (2026-07-29). Fixed: ids and
@@ -61,13 +61,15 @@ exports.handler = async (event) => {
       // if NEITHER is given, match nothing (a purge call must say what it's purging).
       const hasIds = Array.isArray(b.ids) && b.ids.length > 0;
       const hasStatus = !!b.status;
-      if (!hasIds && !hasStatus) return json(400, { success: false, error: 'purge requires ids[] and/or status' });
+      const hasType = !!b.type;
+      if (!hasIds && !hasStatus && !hasType) return json(400, { success: false, error: 'purge requires ids[], status, and/or type' });
       let del = 0, more = false;
       for (const d of all) {
         if ((Date.now() - t0) > 18000) { more = true; break; }
         const statusOk = !hasStatus || (d.status || 'pending') === b.status;
         const idsOk = !hasIds || b.ids.includes(d.id);
-        if (statusOk && idsOk) { await require('./_firebase').deleteDoc(COLL, d.id).catch(() => {}); del++; }
+        const typeOk = !hasType || d.type === b.type;
+        if (statusOk && idsOk && typeOk) { await require('./_firebase').deleteDoc(COLL, d.id).catch(() => {}); del++; }
       }
       return json(200, { success: true, deleted: del, more });
     }
@@ -97,6 +99,23 @@ function normName(x) {
     .replace(/[^a-z0-9]+/g, ' ').trim();
 }
 function normPhone(s) { return String(s || '').replace(/[^0-9]/g, ''); }
+function isPlausiblePhone(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return false;
+  // Reject calendar dates/ranges that were historically imported into `phone`,
+  // e.g. "6.-9.6.2025", "09/06/2025", or "6-9 June 2025".
+  if (/\b\d{1,2}\s*[.\/-]\s*\d{1,2}\s*[.\/-]\s*\d{2,4}\b/.test(raw)) return false;
+  if (/\b\d{1,2}\s*[-–]\s*\d{1,2}\s*[.\/-]\s*\d{1,2}\s*[.\/-]\s*\d{2,4}\b/.test(raw)) return false;
+  if (/\b\d{1,2}\s*[-–]\s*\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{2,4}\b/i.test(raw)) return false;
+  const digits = normPhone(raw);
+  if (digits.length < 7 || digits.length > 15) return false;
+  // Phone fields may contain labels such as "tel" or "mobile", but reject
+  // arbitrary prose/month values. The punctuation itself is phone-safe.
+  const words = raw.match(/[a-z]+/gi) || [];
+  const allowed = new Set(['tel','telephone','phone','mobile','mob','cell','office','fax','whatsapp','wa','ext','extension']);
+  if (words.some(w => !allowed.has(w.toLowerCase()))) return false;
+  return true;
+}
 function normEmail(s) { return String(s || '').trim().toLowerCase(); }
 
 const BIZ_WORDS = /\b(club|bar|hall|theatre|theater|lounge|room|agency|booking|bookings|records|recordings|live|presents|productions|production|music|sounds|promotions|festival|collective|events|entertainment|studio|studios|society|association|assoc|llc|inc|ltd|gmbh|kollektiv|verein|company|co\.|group|network|arts|gallery|café|cafe|pub|tavern|warehouse|space|venue|dj|crew|label|management|mgmt|hq|house|hotel|center|centre)\b/i;
@@ -226,8 +245,8 @@ function findDuplicateClusters(venues) {
   venues.forEach(v => {
     const emails = uniqArr([].concat(v.booking_email ? [v.booking_email] : [], v.emails || []).map(normEmail));
     emails.forEach(e => { if (!e) return; if (!byEmail.has(e)) byEmail.set(e, []); byEmail.get(e).push(v); });
-    const phones = uniqArr([].concat(v.phone ? [v.phone] : [], v.phones || []).map(normPhone));
-    phones.forEach(p => { if (!p || p.length < 7) return; if (!byPhone.has(p)) byPhone.set(p, []); byPhone.get(p).push(v); });
+    const phones = uniqArr([].concat(v.phone ? [v.phone] : [], v.phones || []).filter(isPlausiblePhone).map(normPhone));
+    phones.forEach(p => { if (!p) return; if (!byPhone.has(p)) byPhone.set(p, []); byPhone.get(p).push(v); });
     const key = normName(v.name) + '|' + normName(v.city);
     if (normName(v.name) && normName(v.city)) { if (!byNameCity.has(key)) byNameCity.set(key, []); byNameCity.get(key).push(v); }
   });
@@ -596,7 +615,7 @@ async function findLiveDuplicateFast(candidate) {
     const v = hits.find(x => x && !x.deleted_at);
     if (v) return { venue: v, matched_on: 'email' };
   }
-  const phones = uniqArr([c.phone, ...(c.phones || [])]).filter(isFilled);
+  const phones = uniqArr([c.phone, ...(c.phones || [])]).filter(isPlausiblePhone);
   for (const phone of phones) {
     const hits = await queryDocs(VENUES, 'phone', phone, { limit: 5 }).catch(() => []);
     const v = hits.find(x => x && !x.deleted_at);
@@ -649,7 +668,7 @@ async function approveProposal(pid) {
     for (const edited of ((p.after && p.after.contacts) || [])) {
       const idx = mergedContacts.findIndex(ct =>
         (edited.email && normEmail(ct.email) === normEmail(edited.email)) ||
-        (edited.phone && normPhone(ct.phone) === normPhone(edited.phone)) ||
+        (isPlausiblePhone(edited.phone) && isPlausiblePhone(ct.phone) && normPhone(ct.phone) === normPhone(edited.phone)) ||
         (edited.name && normName(ct.name) === normName(edited.name))
       );
       if (idx < 0) mergedContacts.push(edited);
