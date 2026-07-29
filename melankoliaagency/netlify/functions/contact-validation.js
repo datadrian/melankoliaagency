@@ -41,6 +41,10 @@ exports.handler = async (event) => {
     if (b.action === 'reject') return json(200, await rejectProposal(b.id, b.reason || ''));
     if (b.action === 'bulk_reject') return json(200, await bulkReject(b.ids || []));
     if (b.action === 'import_google_contacts') return json(200, await importGoogleContacts(b.csv || '', b.contacts || null));
+    if (b.action === 'import_contract_contacts') {
+      if (!isAgent) return json(403, { success: false, error: 'contract import requires agent_key' });
+      return json(200, await importContractContacts(b.contacts || []));
+    }
     if (b.action === 'purge') {
       if (!isAgent) return json(403, { success: false, error: 'purge requires agent_key' });
       const t0 = Date.now();
@@ -391,6 +395,79 @@ async function importGoogleContacts(csvText, preParsed) {
   return { success: true, scanned, matched, staged_new: stagedNew, staged_update: stagedUpdate, truncated, more: truncated };
 }
 
+// ---------- Google Drive contract import ----------
+// Receives already-extracted promoter/buyer counterparties from the agent's
+// read-only Drive pass. Stages only; never writes CRM here. A contract source
+// key makes repeated Drive scans idempotent. Matching order: email, phone,
+// organization, then person name. Updates contain ONLY fields empty on the
+// live CRM record; approval re-reads live data before the rag-venues upsert.
+async function importContractContacts(contacts) {
+  if (!Array.isArray(contacts)) throw new Error('contacts[] required');
+  const rows = contacts.slice(0, 200).filter(x => x && (x.organization || x.promoter_person_name || x.email || x.phone || x.address));
+  const venues = await listVenues();
+  const byEmail = new Map(), byPhone = new Map(), byName = new Map();
+  venues.forEach(v => {
+    uniqArr([].concat(v.booking_email ? [v.booking_email] : [], v.emails || []).map(normEmail)).forEach(e => { if (e) byEmail.set(e, v); });
+    uniqArr([].concat(v.phone ? [v.phone] : [], v.phones || []).map(normPhone)).forEach(p => { if (p && p.length >= 7) byPhone.set(p, v); });
+    if (normName(v.name)) byName.set(normName(v.name), v);
+    (v.contacts || []).forEach(ct => {
+      if (ct.email) byEmail.set(normEmail(ct.email), v);
+      if (ct.phone && normPhone(ct.phone).length >= 7) byPhone.set(normPhone(ct.phone), v);
+      if (ct.name) byName.set(normName(ct.name), v);
+    });
+  });
+  const existing = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000, mask: ['type', 'contract_key'] }).catch(() => []);
+  const seen = new Set(existing.filter(p => /^contract_contact_/.test(p.type || '')).map(p => p.contract_key).filter(Boolean));
+  let matched = 0, stagedUpdate = 0, stagedNew = 0, skipped = 0;
+  for (const ct of rows) {
+    const sourceIds = uniqArr(ct.source_file_ids || (ct.drive_file_id ? [ct.drive_file_id] : []));
+    const key = String(ct.contract_key || sourceIds.join('|') || normEmail(ct.email) || normPhone(ct.phone) || normName(ct.organization || ct.promoter_person_name)).trim();
+    if (!key || seen.has(key)) { skipped++; continue; }
+    let venue = null;
+    if (ct.email) venue = byEmail.get(normEmail(ct.email)) || null;
+    if (!venue && ct.phone) venue = byPhone.get(normPhone(ct.phone)) || null;
+    if (!venue && ct.organization) venue = byName.get(normName(ct.organization)) || null;
+    if (!venue && ct.promoter_person_name) venue = byName.get(normName(ct.promoter_person_name)) || null;
+    const source = { drive_file_ids: sourceIds, file_names: uniqArr(ct.file_names || (ct.file_name ? [ct.file_name] : [])), contract_references: uniqArr(ct.contract_references || (ct.contract_number ? [ct.contract_number] : [])), event_or_venue: ct.event_or_venue || '', evidence_notes: ct.evidence_notes || '' };
+    if (venue) {
+      matched++;
+      const fields = {};
+      for (const f of ['address','city','region','country','website']) if (!isFilled(venue[f]) && isFilled(ct[f])) fields[f] = ct[f];
+      const incoming = (ct.promoter_person_name || ct.email || ct.phone) ? { name: ct.promoter_person_name || '', title: ct.title || 'Promoter / Buyer', email: ct.email || '', phone: ct.phone || '', is_primary: false } : null;
+      const alreadyHas = incoming && (venue.contacts || []).some(x => (incoming.email && normEmail(x.email) === normEmail(incoming.email)) || (incoming.phone && normPhone(x.phone) === normPhone(incoming.phone)) || (incoming.name && normName(x.name) === normName(incoming.name)));
+      const newContact = alreadyHas ? null : incoming;
+      if (!Object.keys(fields).length && !newContact) { skipped++; seen.add(key); continue; }
+      await createDoc(COLL, {
+        type: 'contract_contact_update', status: 'pending', contract_key: key,
+        target_venue_id: venue.id, before: trimSnapshot(venue),
+        after: { proposed_fields: fields, new_contact: newContact }, contract_source: source,
+        extracted_contact: ct, confidence: ct.confidence || 'medium',
+        note: `Matched contract counterparty to CRM record "${venue.name}". Only missing CRM fields are proposed.`,
+        created_at: now(), updated_at: now()
+      }, id());
+      stagedUpdate++;
+    } else {
+      await createDoc(COLL, {
+        type: 'contract_contact_new', status: 'pending', contract_key: key,
+        target_venue_id: null, before: null,
+        after: {
+          name: ct.organization || ct.event_or_venue || ct.promoter_person_name || 'Unknown', contact_type: 'promoter',
+          city: ct.city || '', region: ct.region || '', country: ct.country || '', address: ct.address || '', website: ct.website || '',
+          booking_email: ct.email || '', phone: ct.phone || '', emails: ct.email ? [ct.email] : [], phones: ct.phone ? [ct.phone] : [],
+          contacts: (ct.promoter_person_name || ct.email || ct.phone) ? [{ name: ct.promoter_person_name || '', title: ct.title || 'Promoter / Buyer', email: ct.email || '', phone: ct.phone || '', is_primary: true }] : [],
+          notes: source.contract_references.length ? `Contract reference(s): ${source.contract_references.join(', ')}` : '', source_file: 'google_drive_contract'
+        },
+        contract_source: source, extracted_contact: ct, confidence: ct.confidence || 'medium',
+        note: 'No CRM match found — proposing a new promoter/contact record from a signed or issued contract.',
+        created_at: now(), updated_at: now()
+      }, id());
+      stagedNew++;
+    }
+    seen.add(key);
+  }
+  return { success: true, scanned: rows.length, matched, staged_update: stagedUpdate, staged_new: stagedNew, skipped };
+}
+
 // ---------- list / stats ----------
 async function listProposals(b) {
   let docs = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000 }).catch(() => []);
@@ -401,7 +478,7 @@ async function listProposals(b) {
 }
 async function statsProposals() {
   const docs = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000 }).catch(() => []);
-  const s = { pending: 0, approved: 0, rejected: 0, restructure: 0, merge: 0, google_contact_update: 0, google_contact_new: 0, total: docs.length };
+  const s = { pending: 0, approved: 0, rejected: 0, restructure: 0, merge: 0, google_contact_update: 0, google_contact_new: 0, contract_contact_update: 0, contract_contact_new: 0, total: docs.length };
   docs.forEach(d => {
     const st = d.status || 'pending'; if (s[st] != null) s[st]++;
     if (st === 'pending' && s[d.type] != null) s[d.type]++;
@@ -470,10 +547,16 @@ async function approveProposal(pid) {
     return { success: true, venue_id: primary.id, merged_count: losers.length };
   }
 
-  if (p.type === 'google_contact_update') {
+  if (p.type === 'google_contact_update' || p.type === 'contract_contact_update') {
     const venue = await getDoc(VENUES, p.target_venue_id);
     if (!venue) throw new Error('Target venue no longer exists');
-    const payload = { ...venue, ...(p.after.proposed_fields || {}) };
+    // Re-check LIVE CRM values at approval time: only apply a proposed field if
+    // it is still empty now. This prevents a stale Google/contract proposal from
+    // overwriting information added after staging.
+    const payload = { ...venue };
+    for (const [field, value] of Object.entries(p.after.proposed_fields || {})) {
+      if (!isFilled(venue[field]) && isFilled(value)) payload[field] = value;
+    }
     if (p.after.new_contact) {
       const dup = (payload.contacts || []).some(ct => normEmail(ct.email) === normEmail(p.after.new_contact.email) || (p.after.new_contact.name && normName(ct.name) === normName(p.after.new_contact.name)));
       if (!dup) payload.contacts = [...(payload.contacts || []), p.after.new_contact];
@@ -485,7 +568,7 @@ async function approveProposal(pid) {
     return { success: true, venue_id: p.target_venue_id };
   }
 
-  if (p.type === 'google_contact_new') {
+  if (p.type === 'google_contact_new' || p.type === 'contract_contact_new') {
     const payload = { ...p.after };
     const res = await fetch(RAG_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upsert', venue: payload, skip_embeddings: true, agent_key: AGENT_KEY() }) });
     const j = await res.json().catch(() => ({}));
