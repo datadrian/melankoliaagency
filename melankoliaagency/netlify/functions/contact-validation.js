@@ -72,6 +72,10 @@ exports.handler = async (event) => {
       if (!isAgent) return json(403, { success: false, error: 'gmail queue requires agent_key' });
       return json(200, await failGmailQueue(b.id, b.error || 'Gmail enrichment failed'));
     }
+    if (b.action === 'stage_external_enrichment') {
+      if (!isAgent) return json(403, { success: false, error: 'staging enrichment requires agent_key' });
+      return json(200, await stageExternalEnrichment(b.id, b.fields || {}, b.contacts || [], b.evidence || {}));
+    }
     if (b.action === 'purge') {
       if (!isAgent) return json(403, { success: false, error: 'purge requires agent_key' });
       const t0 = Date.now();
@@ -432,6 +436,34 @@ async function failGmailQueue(qid, error) {
   await updateDoc(GMAIL_QUEUE,qid,{status:'failed',last_error:evidenceValue(error),retry_count:Number(q.retry_count||0)+1,updated_at:now()});
   return {success:true};
 }
+async function stageExternalEnrichment(pid, rawFields, rawContacts, rawEvidence) {
+  if (!pid) throw new Error('proposal id required');
+  const p = await getDoc(COLL,pid); if (!p) throw new Error('proposal not found');
+  if ((p.status || 'pending') !== 'pending') throw new Error('proposal is no longer pending');
+  const after = { ...(p.after || {}) }, fields = {};
+  for (const [field,value] of Object.entries(rawFields || {})) {
+    if (EDITABLE_RECORD_FIELDS.includes(field) && isFilled(value) && !isFilled(after[field])) {
+      fields[field] = evidenceValue(value); after[field] = fields[field];
+    }
+  }
+  const contacts = Array.isArray(after.contacts) ? after.contacts.map(c => ({...c})) : [];
+  for (const incomingRaw of (Array.isArray(rawContacts) ? rawContacts : [])) {
+    const incoming = cleanEditedContact(incomingRaw); if (!incoming) continue;
+    const key = contactKey(incoming); let ix = contacts.findIndex(c => key && contactKey(c) === key);
+    if (ix < 0 && incoming.email) ix = contacts.findIndex(c => normEmail(c.email) === normEmail(incoming.email));
+    if (ix < 0) contacts.push({...incoming,contact_key:key});
+    else for (const [field,value] of Object.entries(incoming)) if (!isFilled(contacts[ix][field]) && isFilled(value)) contacts[ix][field]=value;
+  }
+  after.contacts = contacts;
+  const evidence = { ...(p.research_evidence || {}) };
+  for (const [field,ev] of Object.entries(rawEvidence || {})) {
+    const snippet=evidenceValue(ev && ev.snippet); if(!snippet) continue;
+    evidence[field]={ source:['web','gmail','official_site','registry'].includes(ev.source)?ev.source:'web', confidence:['high','medium','low'].includes(ev.confidence)?ev.confidence:'medium', snippet, source_urls:uniqArr((ev.source_urls||[]).map(evidenceValue)).slice(0,5) };
+  }
+  await updateDoc(COLL,pid,{after,research_evidence:evidence,updated_at:now()});
+  return {success:true,fields_staged:Object.keys(fields),contacts_staged:contacts.length};
+}
+
 
 // ---------- scan ----------
 async function runScan(options) {
