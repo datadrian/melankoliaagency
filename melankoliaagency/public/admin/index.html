@@ -101,6 +101,7 @@
         <a href="#" class="sidebar-link" data-view="bookings" data-module="bookings"><span class="icon">◈</span> Booking Requests</a>
         <a href="#" class="sidebar-link" data-view="venues" data-module="venues"><span class="icon">⌖</span> Contact Manager</a>
         <a href="#" class="sidebar-link" data-view="discovery" data-module="discovery"><span class="icon">✉</span> Contact Discovery</a>
+        <a href="#" class="sidebar-link" data-view="validation" data-module="validation"><span class="icon">✓</span> Contact Validation</a>
         <a href="#" class="sidebar-link" data-view="routes" data-module="routes"><span class="icon">◇</span> Route Planner</a>
         <a href="#" class="sidebar-link" data-view="emails" data-module="emails"><span class="icon">✉</span> Email Generator</a>
         <a href="#" class="sidebar-link" data-view="advancing" data-module="advancing"><span class="icon">◇</span> Advancing</a>
@@ -617,11 +618,51 @@
             <label class="disc-deep-toggle" title="Deep also opens each Linktree/link-in-bio page and scrapes it (slower). Off = fast Gemini lookup only."><input type="checkbox" id="discDeepToggle" checked> Deep</label>
             <button class="btn-secondary" onclick="enrichAllIncomplete()" title="Hunt the web to fill missing info on all incomplete pending contacts">🔎 Enrich all incomplete</button>
             <button class="btn-primary" onclick="bulkApproveProposals()">✓ Approve selected</button>
+            <button class="btn-danger" onclick="rejectAllPendingDiscovery()" title="Reject every pending proposal — use this to wipe a bad/interrupted import so you can re-scan cleanly">✕ Reject all pending</button>
           </div>
         </div>
         <div class="disc-enrich-progress" id="discEnrichProgress"></div>
 
         <div id="discList" class="disc-list"><p class="muted">Loading proposals…</p></div>
+      </div>
+
+      <!-- CONTACT VALIDATION -->
+      <div class="view" id="view-validation">
+        <div class="view-head">
+          <h1>Contact Validation</h1>
+          <p class="view-sub">Mass CRM hygiene: consolidate contacts into the new multi-contact structure, catch person-names filed as company names, and find/merge duplicate records — all staged for your approval.</p>
+        </div>
+
+        <div class="disc-scanbar">
+          <div class="disc-scan-note">
+            Runs entirely against your existing Contact Manager data — no inbox access needed. Nothing changes until you approve a proposal below.
+          </div>
+          <div class="disc-scan-actions">
+            <label class="disc-deep-toggle"><input type="checkbox" id="cvRestructureToggle" checked> Restructure contacts</label>
+            <label class="disc-deep-toggle"><input type="checkbox" id="cvDedupeToggle" checked> Find duplicates</label>
+            <button class="btn-primary" id="cvScanBtn" onclick="runContactValidationScan()">▶ Run validation</button>
+          </div>
+        </div>
+        <div id="cvScanStatus" class="disc-status" style="display:none"></div>
+
+        <div class="disc-toolbar">
+          <div class="disc-stats" id="cvStats">—</div>
+          <div class="disc-filters">
+            <button class="chip active" data-cvfilter="pending" onclick="setCvFilter('pending', this)">Pending</button>
+            <button class="chip" data-cvfilter="restructure" onclick="setCvFilter('restructure', this)">Restructure</button>
+            <button class="chip" data-cvfilter="merge" onclick="setCvFilter('merge', this)">Merge/dup</button>
+            <button class="chip" data-cvfilter="approved" onclick="setCvFilter('approved', this)">Approved</button>
+            <button class="chip" data-cvfilter="rejected" onclick="setCvFilter('rejected', this)">Rejected</button>
+          </div>
+          <div class="disc-bulk">
+            <button class="btn-secondary" onclick="cvSelectAll(true)">Select all</button>
+            <button class="btn-secondary" onclick="cvSelectAll(false)">None</button>
+            <button class="btn-primary" onclick="cvBulkApprove()">✓ Approve selected</button>
+            <button class="btn-danger" onclick="cvBulkReject()">✕ Reject selected</button>
+          </div>
+        </div>
+
+        <div id="cvList" class="disc-list"><p class="muted">Click "Run validation" to scan.</p></div>
       </div>
 
       <div class="view" id="view-routes">

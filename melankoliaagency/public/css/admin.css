@@ -2044,6 +2044,10 @@ select.form-input option { background: #111; }
 .venue-manager-card p { color:var(--muted); font-size:.75rem; line-height:1.5; margin:.45rem 0; max-width:900px; }
 .venue-manager-card em { color:var(--text); font-style:normal; font-size:.7rem; }
 @media (max-width:900px){ .venue-manager-card{grid-template-columns:1fr}.venue-manager-card .route-stop-actions{justify-content:flex-start} }
+.vm-contacts{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.4rem}
+.vm-contact-chip{display:inline-flex;gap:4px;align-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 8px;font-size:.68rem;color:var(--text)}
+.vm-contact-chip b{color:var(--accent)}
+
 
 /* ===== Contact Discovery (dark/gold — matches rest of admin) ===== */
 .disc-scanbar{display:flex;justify-content:space-between;align-items:center;gap:1.5rem;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;flex-wrap:wrap}
@@ -2069,6 +2073,11 @@ select.form-input option { background: #111; }
 .disc-badge.new{background:#132c46;color:#7db6f0}
 .disc-badge.update{background:#2e2510;color:#e6c168}
 .disc-badge.lowconf{background:#331717;color:#e08a8a}
+.disc-badge.conf-high{background:#173321;color:#7fd99a}
+.disc-badge.conf-medium{background:#2e2510;color:#e6c168}
+.disc-badge.conf-low{background:#331717;color:#e08a8a}
+.disc-card-head{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-bottom:.4rem}
+
 .disc-name{font-weight:600;font-size:.92rem;color:var(--white)}
 .disc-sub{font-size:.76rem;color:var(--muted);margin-top:.15rem}
 .disc-fields{display:flex;flex-wrap:wrap;gap:.35rem .9rem;margin-top:.55rem;font-size:.74rem;color:var(--off)}

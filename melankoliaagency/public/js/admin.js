@@ -433,6 +433,7 @@ function showView(name) {
   if (name === 'settings')  renderBackupManager();
   if (name === 'pages')     renderPageEditor();
   if (name === 'discovery') initContactDiscovery();
+  if (name === 'validation') initContactValidation();
 }
 
 document.querySelectorAll('.sidebar-link[data-view]').forEach(link => {
@@ -3064,4 +3065,182 @@ async function teamDeleteUser(id, username) {
     showToast('✓ Login deleted', 'success');
     renderTeamAccess();
   } catch (e) { showToast('✗ ' + e.message, 'error'); }
+}
+
+/* ==================== CONTACT VALIDATION ==================== */
+const CONTACT_VALIDATION_API = '/.netlify/functions/contact-validation';
+let _cvFilter = 'pending';
+let _cvProposals = [];
+
+async function cvCall(payload) {
+  const res = await fetch(CONTACT_VALIDATION_API, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_token: mkSessionToken(), ...payload }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || j.success === false) throw new Error(j.error || 'request failed');
+  return j;
+}
+function showCvStatus(msg, kind) {
+  const el = document.getElementById('cvScanStatus');
+  if (!el) return;
+  el.style.display = 'block';
+  el.className = 'disc-status ' + (kind || '');
+  el.innerHTML = msg;
+}
+function initContactValidation() {
+  loadCvProposals();
+  refreshCvStats();
+}
+async function refreshCvStats() {
+  try {
+    const j = await cvCall({ action: 'stats' });
+    const s = j.data || {};
+    const el = document.getElementById('cvStats');
+    if (el) el.innerHTML = `<b>${s.pending || 0}</b> pending &middot; ${s.restructure || 0} restructure &middot; ${s.merge || 0} merge/dup &middot; ${s.approved || 0} approved &middot; ${s.rejected || 0} rejected`;
+  } catch (e) { /* silent */ }
+}
+function setCvFilter(f, btn) {
+  _cvFilter = f;
+  document.querySelectorAll('#view-validation .disc-filters .chip').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  loadCvProposals();
+}
+async function loadCvProposals() {
+  const host = document.getElementById('cvList');
+  if (host) host.innerHTML = '<p class="muted">Loading\u2026</p>';
+  try {
+    let payload = { action: 'list' };
+    if (_cvFilter === 'restructure' || _cvFilter === 'merge') { payload.status = 'pending'; payload.type = _cvFilter; }
+    else payload.status = _cvFilter;
+    const j = await cvCall(payload);
+    _cvProposals = j.data || [];
+    renderCvProposals();
+    refreshCvStats();
+  } catch (e) {
+    if (host) host.innerHTML = `<p class="disc-status err">Couldn't load: ${escapeHtml(e.message)}</p>`;
+  }
+}
+async function runContactValidationScan() {
+  const btn = document.getElementById('cvScanBtn');
+  const restructure = document.getElementById('cvRestructureToggle').checked;
+  const dedupe = document.getElementById('cvDedupeToggle').checked;
+  if (btn) { btn.disabled = true; btn.textContent = '\u25b6 Scanning\u2026'; }
+  showCvStatus('Scanning the Contact Manager for restructure &amp; duplicate candidates\u2026', 'working');
+  try {
+    const j = await cvCall({ action: 'scan', options: { restructure, dedupe } });
+    showCvStatus(`Scanned ${j.scanned} contacts \u2014 staged ${j.restructure_staged} restructure and ${j.merge_staged} merge proposals.`, 'ok');
+    loadCvProposals();
+  } catch (e) {
+    showCvStatus('Scan failed: ' + e.message, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '\u25b6 Run validation'; }
+  }
+}
+function _cvById(id) { return (_cvProposals || []).find(p => p.id === id); }
+function cvContactRow(c) {
+  return `<div class="disc-venue-chip">${escapeHtml(c.name || '(no name)')}${c.title ? ' \u2014 ' + escapeHtml(c.title) : ''}${c.email ? ' \u00b7 ' + escapeHtml(c.email) : ''}${c.phone ? ' \u00b7 ' + escapeHtml(c.phone) : ''}${c.is_primary ? ' <span class="disc-badge">primary</span>' : ''}</div>`;
+}
+function renderCvProposals() {
+  const host = document.getElementById('cvList');
+  if (!host) return;
+  if (!_cvProposals.length) { host.innerHTML = '<p class="muted">Nothing here yet.</p>'; return; }
+  host.innerHTML = _cvProposals.map(p => {
+    const confBadge = `<span class="disc-badge conf-${p.confidence || 'medium'}">${p.confidence || 'medium'}</span>`;
+    const typeBadge = p.type === 'merge' ? '<span class="disc-badge">\u2696 Merge</span>' : '<span class="disc-badge">\u2699 Restructure</span>';
+    const canAct = (p.status || 'pending') === 'pending';
+    let body = '';
+    if (p.type === 'restructure') {
+      const nameChange = p.after.name && p.after.name !== p.before.name
+        ? `<div class="disc-diff"><b>Name:</b> <s>${escapeHtml(p.before.name || '')}</s> \u2192 <b>${escapeHtml(p.after.name || '')}</b></div>` : '';
+      const flag = p.after.needs_manual_name ? '<div class="disc-status err" style="display:block;margin:.4rem 0">\u26a0 Needs the real company name \u2014 edit before approving.</div>' : '';
+      body = `${nameChange}${flag}<div class="disc-venues"><b>Contacts on this record:</b>${(p.after.contacts || []).map(cvContactRow).join('')}</div>`;
+    } else {
+      const losersNames = (p.before.losers || []).map(l => l.name).join(', ');
+      body = `<div class="disc-diff"><b>Keep:</b> ${escapeHtml(p.before.primary && p.before.primary.name || '')} &nbsp; <b>Merge in &amp; archive:</b> ${escapeHtml(losersNames)}</div>`;
+    }
+    const note = p.note ? `<p class="view-sub" style="margin:.3rem 0 0">${escapeHtml(p.note)}</p>` : '';
+    const actions = canAct
+      ? `<button class="btn-secondary btn-sm" onclick="cvToggleEdit('${p.id}')">\u270e Edit</button>
+         <button class="btn-primary btn-sm" onclick="cvApprove('${p.id}')">\u2713 Approve</button>
+         <button class="btn-secondary btn-sm" onclick="cvReject('${p.id}')">\u2717 Reject</button>`
+      : `<span class="disc-badge">${p.status}</span>`;
+    return `<div class="disc-card">
+      <div class="disc-card-head">
+        <label><input type="checkbox" class="cv-check" data-pid="${p.id}" ${canAct ? '' : 'disabled'}></label>
+        ${typeBadge}${confBadge}
+      </div>
+      ${body}${note}
+      <div class="disc-edit" id="cvEdit-${p.id}" style="display:none"></div>
+      <div class="disc-actions">${actions}</div>
+    </div>`;
+  }).join('');
+}
+function cvSelectAll(on) {
+  document.querySelectorAll('#cvList .cv-check:not(:disabled)').forEach(cb => { cb.checked = on; });
+}
+function cvToggleEdit(id) {
+  const box = document.getElementById('cvEdit-' + id);
+  if (!box) return;
+  if (box.style.display !== 'none') { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const p = _cvById(id); if (!p || p.type !== 'restructure') return;
+  const a = p.after || {};
+  const c = (a.contacts && a.contacts[0]) || {};
+  box.innerHTML = `<div class="disc-egrid">
+    <label class="disc-ef"><span>Company name</span><input data-cvk="name" value="${escapeHtml(a.name || '')}"></label>
+    <label class="disc-ef"><span>Contact person</span><input data-cvk="cname" value="${escapeHtml(c.name || '')}"></label>
+    <label class="disc-ef"><span>Title</span><input data-cvk="ctitle" value="${escapeHtml(c.title || '')}"></label>
+    <label class="disc-ef"><span>Email</span><input data-cvk="cemail" value="${escapeHtml(c.email || '')}"></label>
+    <label class="disc-ef"><span>Phone</span><input data-cvk="cphone" value="${escapeHtml(c.phone || '')}"></label>
+  </div>
+  <button class="btn-primary btn-sm" onclick="cvSaveEdit('${id}')">Save</button>`;
+}
+async function cvSaveEdit(id) {
+  const box = document.getElementById('cvEdit-' + id);
+  if (!box) return;
+  const get = k => (box.querySelector(`[data-cvk="${k}"]`) || {}).value || '';
+  const contacts = [{ name: get('cname'), title: get('ctitle'), email: get('cemail'), phone: get('cphone'), is_primary: true }];
+  try {
+    await cvCall({ action: 'edit', id, after: { name: get('name'), contacts } });
+    box.style.display = 'none'; box.innerHTML = '';
+    loadCvProposals();
+  } catch (e) { alert('Save failed: ' + e.message); }
+}
+async function cvApprove(id) {
+  try { await cvCall({ action: 'approve', id }); loadCvProposals(); }
+  catch (e) { showCvStatus('Approve failed: ' + e.message, 'err'); }
+}
+async function cvReject(id) {
+  try { await cvCall({ action: 'reject', id }); loadCvProposals(); }
+  catch (e) { showCvStatus('Reject failed: ' + e.message, 'err'); }
+}
+async function cvBulkApprove() {
+  const ids = Array.from(document.querySelectorAll('#cvList .cv-check:checked')).map(cb => cb.dataset.pid);
+  if (!ids.length) { showCvStatus('Select at least one first.', 'err'); return; }
+  showCvStatus(`Approving ${ids.length}\u2026`, 'working');
+  try {
+    const j = await cvCall({ action: 'bulk_approve', ids });
+    showCvStatus(`Approved ${j.approved}, ${j.failed} failed.`, j.failed ? 'err' : 'ok');
+    loadCvProposals();
+  } catch (e) { showCvStatus('Bulk approve failed: ' + e.message, 'err'); }
+}
+async function cvBulkReject() {
+  const ids = Array.from(document.querySelectorAll('#cvList .cv-check:checked')).map(cb => cb.dataset.pid);
+  if (!ids.length) { showCvStatus('Select at least one first.', 'err'); return; }
+  if (!confirm(`Reject ${ids.length} proposal(s)?`)) return;
+  try {
+    await cvCall({ action: 'bulk_reject', ids });
+    loadCvProposals();
+  } catch (e) { showCvStatus('Bulk reject failed: ' + e.message, 'err'); }
+}
+
+/* Mass-reject for Contact Discovery — wipe a bad/interrupted import to re-scan cleanly. */
+async function rejectAllPendingDiscovery() {
+  if (!confirm('Reject ALL pending Contact Discovery proposals? Use this when an import got interrupted and you want to re-scan cleanly. This cannot be undone (rejected items are kept for history but will not be re-proposed automatically).')) return;
+  showDiscStatus('Rejecting all pending proposals\u2026', 'working');
+  try {
+    const j = await proposalsCall({ action: 'bulk_reject_pending', status: 'pending' });
+    showDiscStatus(`Rejected ${j.rejected} pending proposals. You can re-run the scan now.`, 'ok');
+    loadProposals();
+  } catch (e) { showDiscStatus('Reject all failed: ' + e.message, 'err'); }
 }

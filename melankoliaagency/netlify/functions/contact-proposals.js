@@ -50,6 +50,7 @@ exports.handler = async (event) => {
     if (b.action === 'approve') return json(200, await withGuard(approveProposal(b.id)));
     if (b.action === 'bulk_approve') return json(200, await withGuard(bulkApprove(b.ids || [])));
     if (b.action === 'reject') return json(200, await withGuard(rejectProposal(b.id, b.reason || '')));
+    if (b.action === 'bulk_reject_pending') return json(200, await withGuard(bulkRejectPending(b.status || 'pending', b.source || '')));
     return json(400, { success: false, error: 'Unknown action' });
   } catch (e) {
     return json(500, { success: false, error: e.message || 'error' });
@@ -219,6 +220,19 @@ async function bulkApprove(ids) {
   return { success: true, approved: ok, failed: results.length - ok, deduped, results };
 }
 
+async function bulkRejectPending(status, source) {
+  // Mass-reject — used when an import/scan needs to be aborted and re-run cleanly.
+  // Only touches proposals matching `status` (default pending) and, if given, `source`.
+  const docs = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 1000 }).catch(() => []);
+  let n = 0;
+  for (const d of docs) {
+    if ((d.status || 'pending') !== status) continue;
+    if (source && d.source !== source) continue;
+    await updateDoc(COLL, d.id, { status: 'rejected', reject_reason: 'bulk_reject (import restart)', updated_at: now() }).catch(() => {});
+    n++;
+  }
+  return { success: true, rejected: n };
+}
 async function rejectProposal(pid, reason) {
   if (!pid) throw new Error('id required');
   await updateDoc(COLL, pid, { status: 'rejected', reject_reason: reason || '', updated_at: now() });

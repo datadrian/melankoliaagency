@@ -16,7 +16,7 @@ const now = () => new Date().toISOString();
 const token = () => crypto.randomBytes(24).toString('hex');
 const norm = (s) => String(s || '').trim().toLowerCase();
 
-const ALL_MODULES = ['artists', 'videos', 'bookings', 'venues', 'discovery', 'routes', 'emails', 'advancing', 'bands', 'pages', 'settings'];
+const ALL_MODULES = ['artists', 'videos', 'bookings', 'venues', 'discovery', 'validation', 'routes', 'emails', 'advancing', 'bands', 'pages', 'settings'];
 
 function hashPassword(password, salt) {
   const s = salt || crypto.randomBytes(16).toString('hex');
