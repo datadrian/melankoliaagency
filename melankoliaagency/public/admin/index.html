@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Melankolia Agency</title>
-  <link rel="stylesheet" href="/css/admin.css?v=disc-dark-v1">
+  <link rel="stylesheet" href="/css/admin.css?v=contact-edit-v1">
 </head>
 <body>
 
@@ -709,6 +709,21 @@
     </main>
   </div>
 
+  <!-- CONTACT VALIDATION COMPARISON EDITOR -->
+  <div class="modal-overlay" id="cvEditModal" onclick="if(event.target===this)cvCloseEdit()">
+    <div class="modal modal-wide cv-edit-modal" role="dialog" aria-modal="true" aria-labelledby="cvEditTitle">
+      <div class="modal-header">
+        <div><h2 id="cvEditTitle">Edit proposed contact</h2><p class="cv-edit-sub" id="cvEditSubtitle"></p></div>
+        <button class="modal-close" onclick="cvCloseEdit()" aria-label="Close">&#10005;</button>
+      </div>
+      <div class="modal-body" id="cvEditBody"></div>
+      <div class="cv-edit-footer">
+        <span id="cvEditStatus"></span>
+        <div><button class="btn-secondary" onclick="cvCloseEdit()">Cancel</button><button class="btn-primary" id="cvEditSaveBtn" onclick="cvSaveEditDialog()">Save proposed contact</button></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ARTIST MODAL (kept for add/edit) -->
   <div class="modal-overlay" id="artistModal">
     <div class="modal modal-wide">
@@ -981,7 +996,7 @@
   </div>
 
   <script src="/js/data.js"></script>
-  <script src="/js/admin.js?v=contact-bulk-v1"></script>
+  <script src="/js/admin.js?v=contact-edit-v1"></script>
   <script src="/js/route-admin.js?v=ux-reorg-v3"></script>
   <script src="/js/advancing-admin.js?v=enrich-v2"></script>
 </body>

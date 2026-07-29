@@ -532,20 +532,47 @@ async function statsProposals() {
   return { success: true, data: s };
 }
 
+const EDITABLE_RECORD_FIELDS = ['name','contact_type','address','city','region','country','market','website','booking_email','phone','instagram','booking_method','notes'];
+function cleanEditedContact(c) {
+  if (!c || !(c.name || c.email || c.phone || c.whatsapp || c.title)) return null;
+  return {
+    name: String(c.name || '').trim(), title: String(c.title || '').trim(),
+    email: String(c.email || '').trim(), phone: String(c.phone || '').trim(),
+    whatsapp: String(c.whatsapp || '').trim(), is_primary: c.is_primary !== false,
+  };
+}
 async function editProposal(pid, patch) {
   if (!pid) throw new Error('id required');
   const p = await getDoc(COLL, pid);
   if (!p) return { success: false, error: 'Proposal not found' };
   if ((p.status || 'pending') !== 'pending') return { success: false, error: 'Only pending proposals can be edited' };
+  if (p.type === 'merge') return { success: false, error: 'Merge proposals are reviewed with Keep/Merge records and are not field-editable' };
+
+  const incomingRecord = patch.record || patch.proposed_fields || {};
+  const incomingContact = cleanEditedContact(patch.contact || (Array.isArray(patch.contacts) ? patch.contacts[0] : patch.new_contact));
   const after = { ...(p.after || {}) };
-  if (patch.name !== undefined) after.name = String(patch.name || '').trim();
-  if (Array.isArray(patch.contacts)) {
-    after.contacts = patch.contacts.filter(c => c && (c.name || c.email || c.phone)).map(c => ({
-      name: String(c.name || '').trim(), title: String(c.title || '').trim(),
-      email: String(c.email || '').trim(), phone: String(c.phone || '').trim(),
-      whatsapp: String(c.whatsapp || '').trim(), is_primary: !!c.is_primary,
-    }));
+
+  if (p.type === 'restructure') {
+    if (incomingRecord.name !== undefined) after.name = String(incomingRecord.name || '').trim();
+    after.contacts = incomingContact ? [incomingContact] : [];
+  } else if (p.type === 'google_contact_new' || p.type === 'contract_contact_new') {
+    for (const f of EDITABLE_RECORD_FIELDS) if (incomingRecord[f] !== undefined) after[f] = String(incomingRecord[f] || '').trim();
+    after.emails = after.booking_email ? [after.booking_email] : [];
+    after.phones = after.phone ? [after.phone] : [];
+    after.contacts = incomingContact ? [incomingContact] : [];
+  } else if (p.type === 'google_contact_update' || p.type === 'contract_contact_update' || p.type === 'email_contact_update') {
+    const proposed = {};
+    for (const f of EDITABLE_RECORD_FIELDS) {
+      // Existing CRM values remain protected at approval time. The dialog edits
+      // only proposed additions, never target IDs or current record fields.
+      if (incomingRecord[f] !== undefined && isFilled(incomingRecord[f])) proposed[f] = String(incomingRecord[f]).trim();
+    }
+    after.proposed_fields = proposed;
+    after.new_contact = incomingContact;
+  } else {
+    return { success: false, error: 'This proposal type is not editable' };
   }
+
   await updateDoc(COLL, pid, { after, updated_at: now(), edited: true });
   return { success: true, after };
 }

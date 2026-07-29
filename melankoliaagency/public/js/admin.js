@@ -3189,8 +3189,9 @@ function renderCvProposals() {
       body = `<div class="disc-diff"><b>New CRM contact:</b> ${escapeHtml(a.name || '')}</div><div class="disc-fields"><span><b>Address:</b> ${escapeHtml(a.address || '\u2014')}</span><span><b>City:</b> ${escapeHtml(a.city || '\u2014')}</span><span><b>Country:</b> ${escapeHtml(a.country || '\u2014')}</span><span><b>Email:</b> ${escapeHtml(a.booking_email || '\u2014')}</span><span><b>Phone:</b> ${escapeHtml(a.phone || '\u2014')}</span></div>`;
     }
     const note = p.note ? `<p class="view-sub" style="margin:.3rem 0 0">${escapeHtml(p.note)}</p>` : '';
+    const editAction = p.type === 'merge' ? '' : `<button class="btn-secondary btn-sm" onclick="cvOpenEdit('${p.id}')">\u270e Edit</button>`;
     const actions = canAct
-      ? `<button class="btn-secondary btn-sm" onclick="cvToggleEdit('${p.id}')">\u270e Edit</button>
+      ? `${editAction}
          <button class="btn-primary btn-sm" onclick="cvApprove('${p.id}')">\u2713 Approve</button>
          <button class="btn-secondary btn-sm" onclick="cvReject('${p.id}')">\u2717 Reject</button>`
       : `<span class="disc-badge">${p.status}</span>`;
@@ -3208,33 +3209,141 @@ function renderCvProposals() {
 function cvSelectAll(on) {
   document.querySelectorAll('#cvList .cv-check:not(:disabled)').forEach(cb => { cb.checked = on; });
 }
-function cvToggleEdit(id) {
-  const box = document.getElementById('cvEdit-' + id);
-  if (!box) return;
-  if (box.style.display !== 'none') { box.style.display = 'none'; box.innerHTML = ''; return; }
-  const p = _cvById(id); if (!p || p.type !== 'restructure') return;
+const CV_RECORD_FIELDS = [
+  ['name','Company / organization'], ['contact_type','Contact type'],
+  ['address','Address'], ['city','City'], ['region','Region / state'], ['country','Country'],
+  ['market','Market'], ['website','Website'], ['booking_email','Booking email'], ['phone','Main phone'],
+  ['instagram','Instagram'], ['booking_method','Booking method'], ['notes','Notes']
+];
+const CV_CONTACT_FIELDS = [
+  ['contact_name','Contact person'], ['contact_title','Title / role'],
+  ['contact_email','Contact email'], ['contact_phone','Contact phone'], ['contact_whatsapp','WhatsApp']
+];
+let _cvEditId = null;
+let _cvEditOld = {};
+
+function cvFirstContact(obj) {
+  return (obj && Array.isArray(obj.contacts) && obj.contacts[0]) || {};
+}
+function cvOldRecord(p) {
+  const src = p.before || p.google_contact || p.extracted_contact || {};
+  const ct = cvFirstContact(src);
+  const googlePerson = p.google_contact && src.org ? src.name : '';
+  return {
+    name: src.name || src.org || src.organization || src.event_or_venue || '',
+    contact_type: src.contact_type || src.type || '',
+    address: src.address || '', city: src.city || '', region: src.region || '', country: src.country || '',
+    market: src.market || '', website: src.website || '',
+    booking_email: src.booking_email || src.email || (src.emails && src.emails[0]) || '',
+    phone: src.phone || (src.phones && src.phones[0]) || '',
+    instagram: src.instagram || '', booking_method: src.booking_method || '', notes: src.notes || src.evidence_notes || '',
+    contact_name: ct.name || src.contact_name || src.promoter_person_name || googlePerson || '',
+    contact_title: ct.title || src.contact_title || src.title || '',
+    contact_email: ct.email || src.booking_email || src.email || (src.emails && src.emails[0]) || '',
+    contact_phone: ct.phone || src.phone || (src.phones && src.phones[0]) || '',
+    contact_whatsapp: ct.whatsapp || src.whatsapp || ''
+  };
+}
+function cvProposedRecord(p) {
   const a = p.after || {};
-  const c = (a.contacts && a.contacts[0]) || {};
-  box.innerHTML = `<div class="disc-egrid">
-    <label class="disc-ef"><span>Company name</span><input data-cvk="name" value="${escapeHtml(a.name || '')}"></label>
-    <label class="disc-ef"><span>Contact person</span><input data-cvk="cname" value="${escapeHtml(c.name || '')}"></label>
-    <label class="disc-ef"><span>Title</span><input data-cvk="ctitle" value="${escapeHtml(c.title || '')}"></label>
-    <label class="disc-ef"><span>Email</span><input data-cvk="cemail" value="${escapeHtml(c.email || '')}"></label>
-    <label class="disc-ef"><span>Phone</span><input data-cvk="cphone" value="${escapeHtml(c.phone || '')}"></label>
-  </div>
-  <button class="btn-primary btn-sm" onclick="cvSaveEdit('${id}')">Save</button>`;
+  const isUpdate = /_update$/.test(p.type || '');
+  const record = isUpdate ? (a.proposed_fields || {}) : a;
+  const ct = a.new_contact || cvFirstContact(a);
+  return {
+    ...record,
+    contact_name: ct.name || '', contact_title: ct.title || '', contact_email: ct.email || '',
+    contact_phone: ct.phone || '', contact_whatsapp: ct.whatsapp || ''
+  };
 }
-async function cvSaveEdit(id) {
-  const box = document.getElementById('cvEdit-' + id);
-  if (!box) return;
-  const get = k => (box.querySelector(`[data-cvk="${k}"]`) || {}).value || '';
-  const contacts = [{ name: get('cname'), title: get('ctitle'), email: get('cemail'), phone: get('cphone'), is_primary: true }];
+function cvOldValue(v) {
+  return String(v || '').trim() ? escapeHtml(String(v)) : '<span class="cv-empty">Empty</span>';
+}
+function cvOldFieldRow(field, label) {
+  return `<div class="cv-old-field"><div class="cv-field-label"><span>${escapeHtml(label)}</span><button type="button" class="cv-copy-btn" onclick="cvCopyOldField('${field}')">Copy &rarr;</button></div><div class="cv-old-value">${cvOldValue(_cvEditOld[field])}</div></div>`;
+}
+function cvProposedFieldRow(field, label, value) {
+  const textarea = field === 'notes';
+  return `<label class="cv-new-field"><span>${escapeHtml(label)}</span>${textarea
+    ? `<textarea data-cvfield="${field}" rows="3">${escapeHtml(value || '')}</textarea>`
+    : `<input data-cvfield="${field}" value="${escapeHtml(value || '')}">`}</label>`;
+}
+function cvOpenEdit(id) {
+  const p = _cvById(id);
+  if (!p || p.type === 'merge') return;
+  _cvEditId = id;
+  _cvEditOld = cvOldRecord(p);
+  const proposed = cvProposedRecord(p);
+  const modal = document.getElementById('cvEditModal');
+  const body = document.getElementById('cvEditBody');
+  const subtitle = document.getElementById('cvEditSubtitle');
+  if (!modal || !body) return;
+  const mode = p.type === 'restructure' ? 'Restructure legacy contact'
+    : /_new$/.test(p.type || '') ? 'Create new CRM contact'
+    : 'Add missing data to existing CRM contact';
+  document.getElementById('cvEditTitle').textContent = mode;
+  subtitle.textContent = /_new$/.test(p.type || '')
+    ? 'Source or extracted contact on the left; editable CRM proposal on the right.'
+    : 'Current CRM contact on the left; editable proposal on the right. Existing live fields remain protected.';
+  body.innerHTML = `
+    <div class="cv-copy-toolbar">
+      <button type="button" class="btn-secondary btn-sm" onclick="cvCopyAllOld()">Copy all old values into empty proposed fields &rarr;</button>
+      <button type="button" class="btn-secondary btn-sm" onclick="cvCopyOldContact()">Copy old contact person into proposed contact &rarr;</button>
+      <span>You can also select, copy and paste text normally.</span>
+    </div>
+    <div class="cv-compare-head"><div>OLD / CURRENT OR SOURCE</div><div>PROPOSED NEW CONTACT</div></div>
+    <div class="cv-compare-section"><h3>Organization record</h3><div class="cv-compare-grid">
+      <div class="cv-old-column">${CV_RECORD_FIELDS.map(([f,l]) => cvOldFieldRow(f,l)).join('')}</div>
+      <div class="cv-new-column">${CV_RECORD_FIELDS.map(([f,l]) => cvProposedFieldRow(f,l,proposed[f])).join('')}</div>
+    </div></div>
+    <div class="cv-compare-section"><h3>Contact person</h3><div class="cv-compare-grid">
+      <div class="cv-old-column">${CV_CONTACT_FIELDS.map(([f,l]) => cvOldFieldRow(f,l)).join('')}</div>
+      <div class="cv-new-column">${CV_CONTACT_FIELDS.map(([f,l]) => cvProposedFieldRow(f,l,proposed[f])).join('')}</div>
+    </div></div>
+    <p class="cv-safety-note">Safety rule: approval re-reads the live CRM and only fills missing fields. Existing non-empty CRM values are never overwritten.</p>`;
+  const status = document.getElementById('cvEditStatus'); if (status) status.textContent = '';
+  modal.classList.add('open');
+  document.body.classList.add('modal-open');
+}
+function cvToggleEdit(id) { cvOpenEdit(id); }
+function cvCloseEdit() {
+  const modal = document.getElementById('cvEditModal'); if (modal) modal.classList.remove('open');
+  document.body.classList.remove('modal-open');
+  _cvEditId = null; _cvEditOld = {};
+}
+function cvEditInput(field) { return document.querySelector(`#cvEditBody [data-cvfield="${field}"]`); }
+function cvCopyOldField(field) {
+  const input = cvEditInput(field); if (!input) return;
+  input.value = _cvEditOld[field] || ''; input.focus();
+}
+function cvCopyAllOld() {
+  [...CV_RECORD_FIELDS, ...CV_CONTACT_FIELDS].forEach(([field]) => {
+    const input = cvEditInput(field);
+    if (input && !String(input.value || '').trim() && String(_cvEditOld[field] || '').trim()) input.value = _cvEditOld[field];
+  });
+}
+function cvCopyOldContact() {
+  CV_CONTACT_FIELDS.forEach(([field]) => {
+    const input = cvEditInput(field); if (input && String(_cvEditOld[field] || '').trim()) input.value = _cvEditOld[field];
+  });
+}
+async function cvSaveEditDialog() {
+  const p = _cvById(_cvEditId); if (!p) return;
+  const get = field => { const el = cvEditInput(field); return el ? String(el.value || '').trim() : ''; };
+  const record = Object.fromEntries(CV_RECORD_FIELDS.map(([field]) => [field, get(field)]));
+  const contact = { name:get('contact_name'), title:get('contact_title'), email:get('contact_email'), phone:get('contact_phone'), whatsapp:get('contact_whatsapp'), is_primary:true };
+  const btn = document.getElementById('cvEditSaveBtn');
+  const status = document.getElementById('cvEditStatus');
+  if (btn) btn.disabled = true; if (status) status.textContent = 'Saving…';
   try {
-    await cvCall({ action: 'edit', id, after: { name: get('name'), contacts } });
-    box.style.display = 'none'; box.innerHTML = '';
-    loadCvProposals();
-  } catch (e) { alert('Save failed: ' + e.message); }
+    await cvCall({ action:'edit', id:p.id, record, contact });
+    cvCloseEdit();
+    showCvStatus('Proposed contact updated. Review it once more before approving.', 'ok');
+    await loadCvProposals();
+  } catch (e) {
+    if (status) status.textContent = 'Save failed: ' + e.message;
+  } finally { if (btn) btn.disabled = false; }
 }
+
 async function cvApprove(id) {
   try { await cvCall({ action: 'approve', id }); loadCvProposals(); }
   catch (e) { showCvStatus('Approve failed: ' + e.message, 'err'); }
