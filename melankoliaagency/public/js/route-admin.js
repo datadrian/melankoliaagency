@@ -425,11 +425,31 @@
       <div class="route-leg-day"><b>${esc(l.day||i+1)}</b><span>${esc(l.day_of_week||'')}</span></div>
       <div class="route-leg-main"><strong>${esc(l.city||'TBD')}</strong><span>${esc([l.date,l.country].filter(Boolean).join(' · '))}</span>${l.suggested_venue?`<em>${esc(l.suggested_venue)}</em>`:''}${(l.candidate_venues||[]).length?`<p class="ob-leg-sum">🎯 ${esc(outreachSummaryText(l))}</p>`:''}${l.notes?`<p>${esc(l.notes)}</p>`:''}</div>
       <div class="route-leg-meta"><span>${esc(type)}</span>${statusBadge(status)}<span>Rate: ${esc(money(rate,currencyOf(activeRoute())))}</span><span>${l.drive_time_text?esc(`Drive: ${l.drive_time_text}${l.drive_km?` · ${l.drive_km} km`:''}`):esc(l.travel_mode_recommendation||'travel TBD')}</span><span>${esc(l.hotel_responsibility?('Hotel: '+l.hotel_responsibility):'Hotel TBD')}</span><span>${l.locked?'Locked':'Not locked'}</span></div>
-      <div class="route-leg-actions">${!l.day_off?`<button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.openStop(${i})">Details</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.venueFinderForStop(${i},event)">Contact Finder</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.backlineForStop(${i})">Backline</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.suggestVenues(${i})">Fast Contacts</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.generateEmail(${i})">Email</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.adviseDeal(${i})">Deal</button>`:''}</div>
+      <div class="route-leg-actions">${!l.day_off?`<button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.openStop(${i})">Details</button><span class="route-btn-divider"></span><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.suggestVenues(${i})" title="Instant — matches from your CRM">Fast Contacts</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.venueFinderForStop(${i},event)" title="Live web search, ~20s">Contact Finder</button><span class="route-btn-divider"></span><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.generateEmail(${i})">Email</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.adviseDeal(${i})">Deal</button><span class="route-btn-divider"></span><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.backlineForStop(${i},{evt:event})" title="Live web search, ~30-60s">Backline</button>`:''}</div>
     </article>`;
   }
 
-  function renderWorkbench(t){ return `<div class="route-workbench-grid"><button onclick="RouteAdmin.reviewCurrentRoute()"><strong>AI oversight</strong><span>Show saved review; regenerate only if requested.</span></button><button onclick="RouteAdmin.optimizeCurrent()"><strong>Optimize route</strong><span>Reorder without losing holds/deals.</span></button><button onclick="RouteAdmin.estimateBudget()"><strong>Estimate budget</strong><span>Rates, guarantees, costs, break-even.</span></button><button onclick="RouteAdmin.renderVenueBoard()"><strong>Venue board</strong><span>Find, add, select, and email venues city by city.</span></button><button onclick="RouteAdmin.backlineAllStops()"><strong>Backline finder</strong><span>Research suppliers, venue backline, pickup/delivery terms.</span></button><button onclick="RouteAdmin.renderTravelHotelModule()"><strong>Travel + hotels</strong><span>Flights, trains, drives, hotels, links, costs, band guidance.</span></button><button onclick="RouteAdmin.renderTravelOpsBoard()"><strong>Travel Ops Board</strong><span>Today/tomorrow moves, missing hotels, confirmations, risk flags.</span></button><button onclick="RouteAdmin.renderTravelAlertCenter()"><strong>Travel Alert Center</strong><span>Resolve, assign, and jump into critical travel issues.</span></button><button onclick="RouteAdmin.chatAgent()"><strong>Ask booking AI</strong><span>Routing, buyer, hold, and deal strategy.</span></button><button onclick="RouteAdmin.analyzeCurrentAnchors()"><strong>Analyze pipeline</strong><span>Show saved analysis; regenerate only if requested.</span></button></div><div id="routeAiOutput"></div>`; }
+  // Grouped to follow the actual workflow — plan the route first, then find
+  // contacts, then handle logistics, then keep watch — instead of one flat
+  // grid of 10 similarly-styled tiles in a fairly arbitrary order.
+  function renderWorkbench(t){ return `
+    <div class="route-workbench-group"><h4 class="route-workbench-group-label">Plan &amp; analyze</h4><div class="route-workbench-grid">
+      <button onclick="RouteAdmin.reviewCurrentRoute()"><strong>AI oversight</strong><span>Show saved review; regenerate only if requested.</span></button>
+      <button onclick="RouteAdmin.optimizeCurrent()"><strong>Optimize route</strong><span>Reorder without losing holds/deals.</span></button>
+      <button onclick="RouteAdmin.estimateBudget()"><strong>Estimate budget</strong><span>Rates, guarantees, costs, break-even.</span></button>
+      <button onclick="RouteAdmin.analyzeCurrentAnchors()"><strong>Analyze pipeline</strong><span>Show saved analysis; regenerate only if requested.</span></button>
+    </div></div>
+    <div class="route-workbench-group"><h4 class="route-workbench-group-label">Find contacts &amp; ask AI</h4><div class="route-workbench-grid">
+      <button onclick="RouteAdmin.renderVenueBoard()"><strong>Venue board</strong><span>Find, add, select, and email venues city by city.</span></button>
+      <button onclick="RouteAdmin.chatAgent()"><strong>Ask booking AI</strong><span>Routing, buyer, hold, and deal strategy.</span></button>
+    </div></div>
+    <div class="route-workbench-group"><h4 class="route-workbench-group-label">Logistics</h4><div class="route-workbench-grid">
+      <button onclick="RouteAdmin.backlineAllStops()"><strong>Backline finder</strong><span>Research suppliers, venue backline, pickup/delivery terms.</span></button>
+      <button onclick="RouteAdmin.renderTravelHotelModule()"><strong>Travel + hotels</strong><span>Flights, trains, drives, hotels, links, costs, band guidance.</span></button>
+      <button onclick="RouteAdmin.renderTravelOpsBoard()"><strong>Travel Ops Board</strong><span>Today/tomorrow moves, missing hotels, confirmations, risk flags.</span></button>
+      <button onclick="RouteAdmin.renderTravelAlertCenter()"><strong>Travel Alert Center</strong><span>Resolve, assign, and jump into critical travel issues.</span></button>
+    </div></div>
+    <div id="routeAiOutput"></div>`; }
   function toolOut(){ return $('routeAiOutput') || $('routeToolOutput') || $('routeDetailTools'); }
   // Auto-widen the AI workbench panel when it renders something dense (Stop Detail,
   // Outreach Board, Venue Board, Backline results, Travel modules) so those forms/boards
@@ -594,7 +614,7 @@
       </div>
       <label>Next Action<textarea id="stopNextAction" class="form-input form-textarea" rows="2">${esc(l.next_action||'')}</textarea></label>
       <label>Internal Notes<textarea id="stopNotes" class="form-input form-textarea" rows="3">${esc(l.notes||'')}</textarea></label>
-      <div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.saveStopEdits(${idx})">Save Stop Edits</button><button class="btn-secondary" onclick="RouteAdmin.insertBlankDayAfter(${idx})">Add Blank Day After</button>${l.day_off?`<button class="btn-secondary" onclick="RouteAdmin.convertBlankDayToProspect(${idx})">Convert To Prospect</button><button class="btn-secondary" onclick="RouteAdmin.removeBlankDay(${idx})">Remove Blank Day</button>`:''}<button class="btn-secondary" onclick="RouteAdmin.venueFinderForStop(${idx},event)">Search Web For New Contacts</button><button class="btn-secondary" onclick="RouteAdmin.backlineForStop(${idx})">Backline Finder</button><button class="btn-secondary" onclick="RouteAdmin.manualVenueForm(${idx})">Manual Add Contact</button><button class="btn-secondary" onclick="RouteAdmin.generateEmail(${idx})">Generate Email</button></div>
+      <div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.saveStopEdits(${idx})">Save Stop Edits</button><span class="route-btn-divider"></span><button class="btn-secondary" onclick="RouteAdmin.manualVenueForm(${idx})" title="Instant — add a contact you already have">Manual Add Contact</button><button class="btn-secondary" onclick="RouteAdmin.venueFinderForStop(${idx},event)" title="Live web search, ~20s">Search Web For New Contacts</button><span class="route-btn-divider"></span><button class="btn-secondary" onclick="RouteAdmin.generateEmail(${idx})">Generate Email</button><span class="route-btn-divider"></span><button class="btn-secondary" onclick="RouteAdmin.backlineForStop(${idx},{evt:event})" title="Live web search, ~30-60s">Backline Finder</button><span class="route-btn-divider"></span><button class="btn-secondary" onclick="RouteAdmin.insertBlankDayAfter(${idx})">Add Blank Day After</button>${l.day_off?`<button class="btn-secondary" onclick="RouteAdmin.convertBlankDayToProspect(${idx})">Convert To Prospect</button><button class="btn-secondary" onclick="RouteAdmin.removeBlankDay(${idx})">Remove Blank Day</button>`:''}</div>
       <div id="stopOutreachAnchor">${renderBacklineMini(l)}${renderOutreachBoard(l,idx)}</div>
       <div id="marketVenuesPanel" class="route-stop-venues"></div>
     </div>`;
@@ -702,11 +722,22 @@
   // every ~2.2s until it's done. This is what fixed the old "FALLBACK MODE"
   // issue — the previous synchronous call could get cut off by the
   // platform's ~10-26s function limit whenever a search ran a bit long.
-  async function backlineForStop(idx){
+  // batch=true is used internally by backlineAllStops() — it renders its own
+  // persistent progress panel and must NOT let each stop's own focusToolOut()
+  // yank the page around; that used to fire once per stop (every 10-90s,
+  // however long that city's live web search took), which looked like the
+  // page randomly jumping/flashing with no explanation while a multi-stop
+  // run was in progress.
+  async function backlineForStop(idx, opts={}){
+    const batch = opts===true || opts.batch; // back-compat: old callers passed `true` for batch
+    const evt = opts && opts.evt;
     const t=activeRoute(); const l=t?.legs?.[idx]; if(!l) return;
-    const out=focusToolOut();
+    const btn = evt?.currentTarget;
+    let btnRestore=null;
+    if(btn && !batch){ btnRestore=btn.innerHTML; btn.disabled=true; btn.innerHTML='⏳ Researching… (~30-60s)'; }
+    const out = batch ? toolOut() : focusToolOut();
     let waited=0;
-    out.innerHTML=loading(`Researching backline options for ${l.city}…`);
+    if(!batch) out.innerHTML=loading(`Researching backline options for ${l.city}… (live web search, usually 20-60s)`);
     try{
       const started=await postFull(BACKLINE_API,{action:'start',data:{artist:t.artist,city:l.city,country:l.country,venue:l.suggested_venue,date:l.date,backline_needed:l.backline_needed,gear_requirements:t.logisticsProfile||t.logistics_profile||t.gearProfile||''}});
       const jobId=started.job_id;
@@ -715,23 +746,43 @@
         await sleepMs(2200); waited+=2.2;
         const poll=await postFull(BACKLINE_API,{action:'status',job_id:jobId});
         if(poll.status==='done'){ data=poll.data; warning=poll.warning||''; break; }
-        out.innerHTML=loading(`Researching backline options for ${l.city}… (${Math.round(waited)}s — live web search in progress)`);
+        if(!batch) out.innerHTML=loading(`Researching backline options for ${l.city}… (${Math.round(waited)}s — live web search in progress)`);
+        else updateBacklineBatchProgress(idx,'researching',Math.round(waited));
       }
       if(!data) throw new Error('Backline research is taking unusually long — try again in a moment.');
       l.backline_research=data; l.backline_options=data.suppliers||[]; l.venue_backline=data.venue_backline||[]; l.backline_next_questions=data.open_questions||[];
       l.backline_notes=[data.summary,data.recommended_plan].filter(Boolean).join(' · ');
       if(t.id) await persistStop(idx,l);
-      out.innerHTML=renderBacklineResult(data,idx);
-      toast(t.id?'✓ Backline research saved to stop':'✓ Backline research attached to draft stop','success');
-    }catch(e){ out.innerHTML=errorBox('Backline Finder failed', e.message); }
+      if(!batch){ out.innerHTML=renderBacklineResult(data,idx); toast(t.id?'✓ Backline research saved to stop':'✓ Backline research attached to draft stop','success'); }
+      else updateBacklineBatchProgress(idx,'done');
+    }catch(e){ if(!batch) out.innerHTML=errorBox('Backline Finder failed', e.message); else { updateBacklineBatchProgress(idx,'failed'); throw e; } }
+    finally { if(btn && btnRestore!==null){ btn.disabled=false; btn.innerHTML=btnRestore; } }
+  }
+  let _backlineBatchRows=[];
+  function backlineBatchRowHtml({l,i},state){
+    const icon = state==='done' ? '✓' : state==='failed' ? '✗' : state==='researching' ? '⏳' : '·';
+    const label = state==='done' ? 'Done' : state==='failed' ? 'Failed — will use fast fallback' : state==='researching' ? 'Searching the web…' : 'Waiting';
+    return `<div class="route-backline-batch-row route-backline-batch-${state}" id="backlineBatchRow${i}"><span class="rbb-icon">${icon}</span><b>${esc(l.city||'Stop '+(i+1))}</b><span class="rbb-state">${label}</span></div>`;
+  }
+  function updateBacklineBatchProgress(idx,state,secs){
+    const row=_backlineBatchRows.find(x=>x.i===idx); if(!row) return;
+    row.state=state;
+    const el=$('backlineBatchRow'+idx); if(!el) return;
+    const html=backlineBatchRowHtml({l:row.l,i:idx},state);
+    el.outerHTML = secs!=null && state==='researching'
+      ? html.replace('Searching the web…', `Searching the web… (${secs}s)`)
+      : html;
   }
   async function backlineAllStops(){
     const t=activeRoute(); if(!t?.legs?.length) return;
     const stops=t.legs.map((l,i)=>({l,i})).filter(x=>!x.l.day_off);
-    const out=toolOut(); out.innerHTML=loading(`Researching backline logistics for ${stops.length} stops…`);
+    if(!stops.length) return toast('No touring stops to research (all days are marked off).','error');
+    _backlineBatchRows = stops.map(s=>({...s,state:'waiting'}));
+    const out=focusToolOut();
+    out.innerHTML = `<div class="route-tool-card"><h3>Backline Finder — researching ${stops.length} stop${stops.length>1?'s':''}</h3><p class="route-muted">Each city runs a live web search for backline suppliers and venue house gear — this can take up to ~60s per stop, so a full run may take a few minutes. You can leave this open or check back; progress below updates as each stop finishes.</p><div id="backlineBatchList">${_backlineBatchRows.map(r=>backlineBatchRowHtml(r,'waiting')).join('')}</div></div>`;
     let ok=0, failed=0;
-    for(const {l,i} of stops){ try{ await backlineForStop(i); ok++; }catch(e){ failed++; } }
-    out.innerHTML=`<div class="route-tool-card"><h3>Backline research complete</h3><p>${ok} stops researched${failed?`, ${failed} failed`:''}. Open a stop to view saved backline logistics.</p></div>`;
+    for(const {l,i} of stops){ updateBacklineBatchProgress(i,'researching',0); try{ await backlineForStop(i,{batch:true}); ok++; }catch(e){ failed++; } }
+    out.innerHTML=`<div class="route-tool-card"><h3>Backline research complete</h3><p>${ok} stop${ok!==1?'s':''} researched${failed?`, ${failed} failed (used fast fallback instead)`:''}. Open a stop's Details to view its saved backline logistics, or use "Backline" on any leg row for a one-off re-check.</p></div>`;
   }
   function showBacklineResult(idx){ const t=activeRoute(); const l=t?.legs?.[idx]; if(!l?.backline_research) return toast('No saved backline research for this stop yet.','error'); toolOut().innerHTML=renderBacklineResult(l.backline_research,idx); }
 

@@ -30,10 +30,10 @@ exports.handler = async (event) => {
     'Content-Type': 'application/json'
   };
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
-  if (event.httpMethod !== 'POST') return json({ success: false, error: 'POST only' }, 405, headers);
+  if (event.httpMethod !== 'POST') return json(405, { success: false, error: 'POST only' }, headers);
 
   let body = {};
-  try { body = JSON.parse(event.body || '{}'); } catch { return json({ success: false, error: 'Invalid JSON' }, 400, headers); }
+  try { body = JSON.parse(event.body || '{}'); } catch { return json(400, { success: false, error: 'Invalid JSON' }, headers); }
 
   // Back-compat: old frontend bundles call with no `action`, just {data:{...}}.
   const action = body.action || (body.data ? 'start' : (body.job_id ? 'status' : ''));
@@ -42,7 +42,7 @@ exports.handler = async (event) => {
     if (action === 'start') {
       const data = body.data || body;
       const city = clean(data.city || data.location);
-      if (!city) return json({ success: false, error: 'city required' }, 400, headers);
+      if (!city) return json(400, { success: false, error: 'city required' }, headers);
 
       const id = jobId();
       await createDoc(COLL, { status: 'pending', input: data, created_at: now(), updated_at: now() }, id);
@@ -59,14 +59,14 @@ exports.handler = async (event) => {
       }).catch(() => {});
       await Promise.race([trigger, new Promise(r => setTimeout(r, 4000))]);
 
-      return json({ success: true, job_id: id, status: 'pending' }, 200, headers);
+      return json(200, { success: true, job_id: id, status: 'pending' }, headers);
     }
 
     if (action === 'status') {
       const id = body.job_id;
-      if (!id) return json({ success: false, error: 'job_id required' }, 400, headers);
+      if (!id) return json(400, { success: false, error: 'job_id required' }, headers);
       let doc = await getDoc(COLL, id);
-      if (!doc) return json({ success: false, error: 'Unknown job_id' }, 404, headers);
+      if (!doc) return json(404, { success: false, error: 'Unknown job_id' }, headers);
 
       if (doc.status !== 'done') {
         const ageMs = Date.now() - new Date(doc.created_at || 0).getTime();
@@ -78,16 +78,16 @@ exports.handler = async (event) => {
           const warning = 'Background research did not report back in time; returned fast planning fallback instead.';
           const result = fallbackBackline(doc.input || {}, warning);
           await updateDoc(COLL, id, { status: 'done', result, warning, updated_at: now() }).catch(() => {});
-          return json({ success: true, status: 'done', warning, data: result }, 200, headers);
+          return json(200, { success: true, status: 'done', warning, data: result }, headers);
         }
-        return json({ success: true, status: 'pending' }, 200, headers);
+        return json(200, { success: true, status: 'pending' }, headers);
       }
 
-      return json({ success: true, status: 'done', warning: doc.warning || '', data: doc.result }, 200, headers);
+      return json(200, { success: true, status: 'done', warning: doc.warning || '', data: doc.result }, headers);
     }
 
-    return json({ success: false, error: 'Unknown action' }, 400, headers);
+    return json(400, { success: false, error: 'Unknown action' }, headers);
   } catch (e) {
-    return json({ success: false, error: e.message || 'Backline search failed' }, 500, headers);
+    return json(500, { success: false, error: e.message || 'Backline search failed' }, headers);
   }
 };
