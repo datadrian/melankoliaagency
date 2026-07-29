@@ -103,7 +103,7 @@ function mergeVenues(primary, losers) {
   return merged;
 }
 
-const VENUE_MASK = ['name','city','country','region','address','market','contact_type','contact_name','contact_title','booking_email','phone','emails','phones','whatsapp','website','instagram','facebook','twitter','tiktok','youtube','linkedin','soundcloud','spotify','bandcamp','telegram','other_socials','booking_method','relationship_status','genre_affinity','associated_venues','contacts','quality_flags','notes','capacity','actual_capacity','rating','buyer_status','deleted_at','merged_into','created_at','updated_at'];
+const VENUE_MASK = ['name','city','country','region','address','market','contact_type','contact_name','contact_title','booking_email','phone','emails','phones','whatsapp','website','instagram','facebook','twitter','tiktok','youtube','linkedin','soundcloud','spotify','bandcamp','telegram','other_socials','booking_method','relationship_status','genre_affinity','associated_venues','contacts','quality_flags','notes','capacity','actual_capacity','rating','buyer_status','deleted_at','merged_into','created_at','updated_at','source_file'];
 async function listVenues() {
   return (await listDocs(VENUES, { orderBy: 'updated_at desc', pageSize: 2000, mask: VENUE_MASK })).filter(v => !v.deleted_at);
 }
@@ -131,7 +131,13 @@ async function runScan(options) {
       if (restructureSeen.has(v.id)) continue;
       const hasPersonFields = v.contact_name || v.booking_email || v.phone || (v.emails && v.emails.length) || (v.phones && v.phones.length);
       if (!hasPersonFields) continue;
-      const personAsCompany = looksLikePerson(v.name) && !v.contact_name;
+      // Only flag "name looks like a person" for records that actually came through
+      // Contact Discovery (source_file === 'contact_discovery') — that's the one
+      // pipeline known to sometimes put a person's name straight into `name` with no
+      // separate contact_name. Legacy-imported venues (~1,121 records, no source_file)
+      // legitimately have real venue names here even when they match the word-shape
+      // heuristic (e.g. "Mad Planet", "Pie Shop", "Ground Control") — never flag those.
+      const personAsCompany = v.source_file === 'contact_discovery' && looksLikePerson(v.name) && !v.contact_name;
       const suggestedName = personAsCompany ? inferCompanyName(v) : '';
       const contactEntry = {
         name: v.contact_name || (personAsCompany ? v.name : '') || '',
