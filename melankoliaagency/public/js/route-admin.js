@@ -990,7 +990,7 @@
     return post(RAG_VENUES_API,{action:'upsert',skip_embeddings:true,venue});
   }
   function venueRating(r){ const n=Number(r||0); return n?`${'★'.repeat(Math.max(1,Math.min(5,n)))}${'☆'.repeat(5-Math.max(1,Math.min(5,n)))}`:'not rated'; }
-  function venueCard(v,i){ return `<article class="venue-manager-card"><div><strong>${esc(v.name||'Venue')}</strong><span>${esc([v.contact_type||'contact',v.city,v.country,v.capacity?`cap ${v.capacity}`:'cap unknown',venueRating(v.rating)].filter(Boolean).join(' · '))}</span><p>${esc(v.notes||v.rag_text||'')}</p><em>${esc([v.booking_email||v.booking_method,v.phone,v.relationship_status].filter(Boolean).join(' · '))}</em></div><div class="route-stop-actions"><button class="btn-secondary btn-sm" onclick="VenueManager.edit(${i})">Edit</button><button class="btn-secondary btn-sm" onclick="VenueManager.sendToRoute(${i})">Send To Current Route</button>${v.website?`<a class="btn-secondary btn-sm" href="${attr(v.website)}" target="_blank">Site</a>`:''}</div></article>`; }
+  function venueCard(v,i){ return `<article class="venue-manager-card"><div><strong>${esc(v.name||'Venue')}</strong><span>${esc([v.contact_type||'contact',v.city,v.country,v.capacity?`cap ${v.capacity}`:'cap unknown',venueRating(v.rating)].filter(Boolean).join(' · '))}</span><p>${esc(v.notes||v.rag_text||'')}</p><em>${esc([v.booking_email||v.booking_method,v.phone,v.relationship_status].filter(Boolean).join(' · '))}</em></div><div class="route-stop-actions"><button class="btn-secondary btn-sm" onclick="VenueManager.edit(${i})">Edit</button><button class="btn-secondary btn-sm" onclick="VenueManager.sendToRoute(${i})">Send To Current Route</button><button class="btn-secondary btn-sm" onclick="VenueManager.enrich(${i},false)" title="Fast: Gemini web lookup for missing fields (~3s)">⚡ Fast find</button><button class="btn-secondary btn-sm" onclick="VenueManager.enrich(${i},true)" title="Deep: also opens the Linktree / website and scrapes it (~10s)">🔎 Deep find</button>${v.website?`<a class="btn-secondary btn-sm" href="${attr(v.website)}" target="_blank">Site</a>`:''}</div></article>`; }
   function renderVenueManager(rows=venueManagerRows,note=''){
     const root=$('venueAdminShell'); if(!root) return;
     venueManagerRows=Array.isArray(rows)?rows:[];
@@ -1036,6 +1036,44 @@
   function venueManagerNew(){ venueManagerEdit(-1); }
   function venueManagerCancel(){ const el=$('venueManagerForm'); if(el) el.innerHTML=''; }
   async function venueManagerSave(){ const venue={id:val('vmEditId')||undefined,contact_type:val('vmEditType')||'venue',name:val('vmEditName'),city:val('vmEditCity'),country:val('vmEditCountry'),actual_capacity:val('vmEditCapacity'),capacity:val('vmEditCapacity'),rating:val('vmEditRating'),relationship_status:val('vmEditRelationship'),booking_email:val('vmEditEmail'),phone:val('vmEditPhone'),website:val('vmEditWebsite'),notes:val('vmEditNotes'),last_found_source:'manual_venue_manager'}; if(!venue.name||!venue.city) return toast('Name and city are required.','error'); const saved=await post(RAG_VENUES_API,{action:'upsert',skip_embeddings:true,venue}); toast('✓ Contact saved to master list','success'); venueManagerRows=[saved,...venueManagerRows.filter(v=>v.id!==saved.id)]; venueManagerAllRows=[saved,...venueManagerAllRows.filter(v=>v.id!==saved.id)]; renderVenueManager(venueManagerRows,'Contact saved.'); }
+  // Individual, on-demand enrichment for a master CRM contact. Never bulk here.
+  // Only-empty: sends the live record so the enricher proposes only fields that are
+  // currently blank, then writes them back through the SAME rag-venues upsert path.
+  const CONTACT_ENRICH_API='/.netlify/functions/contact-enrich';
+  async function venueManagerEnrich(i, deep){
+    const v=venueManagerRows[i]; if(!v) return;
+    const candidate={
+      name:v.name, org:v.name, venue_name:v.name, contact_type:v.contact_type,
+      email:v.booking_email||v.email||'', phone:v.phone||'', website:v.website||'',
+      instagram:v.instagram||'', facebook:v.facebook||'', twitter:v.twitter||'',
+      tiktok:v.tiktok||'', youtube:v.youtube||'', soundcloud:v.soundcloud||'',
+      spotify:v.spotify||'', bandcamp:v.bandcamp||'', telegram:v.telegram||'', whatsapp:v.whatsapp||'',
+      city:v.city||'', region:v.region||'', country:v.country||'', address:v.address||'',
+      booking_method:v.booking_method||''
+    };
+    toast(`${deep?'🔎 Deep':'⚡ Fast'} hunting for missing info on ${v.name||'contact'}…`,'success');
+    let res;
+    try{ res=await post(CONTACT_ENRICH_API,{candidate,deep:!!deep}); }
+    catch(e){ return toast('Enrich failed: '+e.message,'error'); }
+    const patch=res.patch||{};
+    // map enricher fields -> CRM fields (email -> booking_email)
+    const map={email:'booking_email',emails:'emails',phone:'phone',phones:'phones',website:'website',instagram:'instagram',facebook:'facebook',twitter:'twitter',tiktok:'tiktok',youtube:'youtube',linkedin:'linkedin',soundcloud:'soundcloud',spotify:'spotify',bandcamp:'bandcamp',telegram:'telegram',whatsapp:'whatsapp',city:'city',region:'region',country:'country',address:'address',booking_method:'booking_method'};
+    const changes={}; Object.keys(patch).forEach(k=>{ const f=map[k]||k; const cur=v[f]; const empty=cur==null||(typeof cur==='string'&&!cur.trim())||(Array.isArray(cur)&&!cur.length); if(empty) changes[f]=patch[k]; });
+    const keys=Object.keys(changes);
+    if(!keys.length){ return toast(deep?'No new info found (deep hunt).':'Nothing found fast — try Deep find.','info'); }
+    const summary=keys.map(k=>`${k}: ${Array.isArray(changes[k])?changes[k].join(', '):changes[k]}`).join('\n');
+    if(!confirm(`Add these ${keys.length} field(s) to ${v.name}?\n(only blank fields are filled — nothing is overwritten)\n\n${summary}`)) return;
+    const merged={...v,...changes,last_found_source:'contact_enricher'};
+    let saved;
+    try{ saved=await post(RAG_VENUES_API,{action:'upsert',skip_embeddings:true,venue:merged}); }
+    catch(e){ return toast('Save failed: '+e.message,'error'); }
+    const rec=saved&&saved.id?saved:merged;
+    venueManagerRows=venueManagerRows.map(r=>r.id===v.id?rec:r);
+    venueManagerAllRows=venueManagerAllRows.map(r=>r.id===v.id?rec:r);
+    updateVenueManagerResults(venueManagerRows,`✓ Enriched ${v.name} — added ${keys.join(', ')}.`);
+    toast(`✨ Filled ${keys.length} field(s) on ${v.name}`,'success');
+  }
+
   async function venueManagerSendToRoute(i){ const v=venueManagerRows[i]; const t=activeRoute(); if(!v) return; if(!t?.legs?.length) return toast('Open or generate a route first, then send venues into it.','error'); const answer=prompt('Send to which stop number?', '1'); if(answer===null) return; const idx=Math.max(0,Math.min(t.legs.length-1,Number(answer)-1||0)); const l=t.legs[idx]; l.candidate_venues=Array.isArray(l.candidate_venues)?l.candidate_venues:[]; const candidate={name:v.name,address:v.address,capacity:v.actual_capacity||v.capacity,booking_method:v.booking_email||v.booking_method||'master list',email:v.booking_email,phone:v.phone,website:v.website,instagram:v.instagram,fit_reason:v.notes||'Selected from Venue Manager.',outreach_angle:v.notes||'Master venue list option',crm_source:true,crm_id:v.id}; l.candidate_venues.unshift(candidate); if(!l.suggested_venue){ l.suggested_venue=v.name; l.venue_address=v.address||''; } if(t.id) await persistStop(idx,l); toast(`✓ ${v.name} added to stop ${idx+1}`,'success'); rerenderActiveRoute(); openStop(idx); }
 
   window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, askAboutCurrentReview };
@@ -1192,6 +1230,6 @@
     const c=document.getElementById('vmExCustom'); if(c) c.style.display = preset==='custom' ? '' : 'none';
     venueManagerExportPreview();
   }
-  window.VenueManager = { init:initVenueManager, load:venueManagerLoad, search:venueManagerSearch, findWeb:venueManagerFinder, edit:venueManagerEdit, newVenue:venueManagerNew, cancelEdit:venueManagerCancel, save:venueManagerSave, sendToRoute:venueManagerSendToRoute, filter:venueManagerFilter, exportCsv:venueManagerExportDialog, _exRun:venueManagerRunExport, _exToggleCustom:venueManagerExportToggleCustom };
+  window.VenueManager = { init:initVenueManager, load:venueManagerLoad, search:venueManagerSearch, findWeb:venueManagerFinder, edit:venueManagerEdit, newVenue:venueManagerNew, cancelEdit:venueManagerCancel, save:venueManagerSave, sendToRoute:venueManagerSendToRoute, filter:venueManagerFilter, exportCsv:venueManagerExportDialog, enrich:venueManagerEnrich, _exRun:venueManagerRunExport, _exToggleCustom:venueManagerExportToggleCustom };
   document.addEventListener('DOMContentLoaded',()=>{ if($('routeAdminShell')) initRoutePlannerAdmin(); if($('venueAdminShell')) initVenueManager(); });
 })();

@@ -19,6 +19,20 @@ const ALL_LOOKUP_FIELDS = [...SOCIAL_FIELDS,'email','phone','city','region','cou
 const now = () => new Date().toISOString();
 const clean = (s) => String(s == null ? '' : s).trim();
 const isEmpty = (v) => v == null || (typeof v === 'string' && !v.trim()) || (Array.isArray(v) && v.length === 0);
+// Strict single-address validator — rejects concatenated/truncated junk so a
+// malformed email can never reach the review queue.
+const EMAIL_RE = /^[A-Za-z0-9](?:[A-Za-z0-9._%+\-]*[A-Za-z0-9])?@[A-Za-z0-9](?:[A-Za-z0-9.\-]*[A-Za-z0-9])?\.[A-Za-z]{2,24}$/;
+function validEmail(e) {
+  const v = clean(e).toLowerCase().replace(/^mailto:/, '').replace(/[?#].*$/, '').replace(/[.,;:]+$/, '');
+  if (!v || v.length > 254 || v.includes(' ') || (v.match(/@/g) || []).length !== 1) return '';
+  if (v.includes('..')) return '';
+  return EMAIL_RE.test(v) ? v : '';
+}
+function validPhone(p) {
+  const v = clean(p);
+  const digits = (v.match(/\d/g) || []).length;
+  return (digits >= 7 && digits <= 15) ? v : '';
+}
 
 function withGuard(promise, ms = 22000) {
   return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('enrich timed out')), ms))]);
@@ -74,7 +88,7 @@ function scrapePage(html) {
   (html.match(/tel:([+0-9()\-.\s]{6,})/gi) || []).forEach(m => out.phones.push(m.replace(/tel:/i, '').trim()));
   (html.match(/href=["']([^"']+)["']/gi) || []).forEach(h => { const u = h.replace(/^href=["']/i, '').replace(/["']$/, ''); if (/^https?:/i.test(u)) out.links.push(u); });
   const bad = /\.(png|jpe?g|gif|svg|webp)$|sentry|example\.com|@2x|wixpress|\.wix/i;
-  out.emails = [...new Set(out.emails.map(e => e.toLowerCase()))].filter(e => !bad.test(e));
+  out.emails = [...new Set(out.emails.map(e => e.toLowerCase()))].filter(e => !bad.test(e)).map(validEmail).filter(Boolean);
   out.phones = [...new Set(out.phones)];
   out.links = [...new Set(out.links)];
   return out;
@@ -158,12 +172,12 @@ async function enrich(candidate, deep) {
   SOCIAL_FIELDS.forEach(f => { if (isEmpty(c[f]) && found[f]) patch[f] = found[f]; });
   ['city','region','country','address','booking_method'].forEach(f => { if (isEmpty(c[f]) && found[f]) patch[f] = found[f]; });
 
-  const emailPool = [...new Set([found.booking_email, ...scrapedEmails].map(clean).filter(Boolean))];
+  const emailPool = [...new Set([found.booking_email, ...scrapedEmails].map(validEmail).filter(Boolean))];
   if (emailPool.length && isEmpty(c.email) && isEmpty(c.emails)) {
     patch.email = emailPool[0];
     if (emailPool.length > 1) patch.emails = emailPool;
   }
-  const phonePool = [...new Set([found.phone, ...scrapedPhones].map(clean).filter(Boolean))];
+  const phonePool = [...new Set([found.phone, ...scrapedPhones].map(validPhone).filter(Boolean))];
   if (phonePool.length && isEmpty(c.phone) && isEmpty(c.phones)) {
     patch.phone = phonePool[0];
     if (phonePool.length > 1) patch.phones = phonePool;
