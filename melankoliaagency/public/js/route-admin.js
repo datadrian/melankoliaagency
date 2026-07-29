@@ -876,27 +876,40 @@
       const daysLeft=-dd; // deadline in future => positive
       if(daysLeft<=10) holdList.push({city:l.city,i,deadline:l.hold_deadline,daysLeft});
     });
+    // Urgent, time-sensitive items (follow-ups due, holds expiring) surface FIRST —
+    // above the stat overview — since they need action today, whereas the stats
+    // are just context for scanning.
     const nudgeBanner = nudgeList.length? `<div class="ob-nudge-banner"><div class="ob-nudge-top"><b>⏰ ${nudgeList.length} follow-up${nudgeList.length>1?'s':''} due</b> (contacted 7+ days ago, no confirmation)<button class="btn-primary btn-sm" onclick="RouteAdmin.draftAllFollowUps()">✉ Draft all follow-ups</button></div><div class="ob-nudge-list">${nudgeList.sort((a,b)=>b.days-a.days).slice(0,12).map(n=>`<button class="ob-nudge-chip" onclick="RouteAdmin.openStop(${n.i})">${esc(n.name||'Venue')} · ${esc(n.city||'')} · ${n.days}d</button>`).join('')}</div></div>`:'';
     const holdBanner = holdList.length? `<div class="ob-nudge-banner ob-hold-banner"><b>⏳ ${holdList.length} hold deadline${holdList.length>1?'s':''} approaching</b> (no venue confirmed yet)<div class="ob-nudge-list">${holdList.sort((a,b)=>a.daysLeft-b.daysLeft).map(h=>`<button class="ob-nudge-chip ${h.daysLeft<0?'overdue':''}" onclick="RouteAdmin.openStop(${h.i})">${esc(h.city||'City')} · ${h.daysLeft<0?`${-h.daysLeft}d overdue`:`${h.daysLeft}d left`} (${esc(h.deadline)})</button>`).join('')}</div></div>`:'';
-    out.innerHTML=`<div class="route-tool-card route-outreach-board"><h3>Tour Outreach — all cities</h3>
-      <p>Every date with its venues by outreach stage. Confirm one and the rest stay parked as backups; act on any venue right here.</p>
-      <div class="route-stop-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.matchAllFromCRM()">↺ Match contacts from CRM</button></div>
-      <div class="ops-stat-grid">
-        ${statTile('Confirmed cities',`${citiesConfirmed}/${stops.length}`)}
-        ${statTile('Cities still open',citiesOpen)}
+    // Stat tiles grouped into CITIES (tour-level progress) vs VENUES (pipeline
+    // volume) — previously all 6 sat in one flat row mixing the two units,
+    // which reads as a jumble of numbers rather than two clear questions
+    // ("how many cities are locked?" / "how much outreach is in flight?").
+    out.innerHTML=`<div class="route-tool-card route-outreach-board"><div class="route-tool-head"><h3>Tour Outreach — all cities</h3><div class="route-stop-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderVenueBoard()" title="See every city's candidates side by side">⇄ Venue Board</button></div></div>
+      <p>Every date with its venues by outreach stage. Confirm one and the rest stay parked as backups; act on any venue right here. Confirmed cities are collapsed below — click to expand.</p>
+      ${nudgeBanner}
+      ${holdBanner}
+      <div class="ob-stat-group"><h5 class="route-workbench-group-label">Cities</h5><div class="ops-stat-grid ops-stat-grid-3">
+        ${statTile('Confirmed',`${citiesConfirmed}/${stops.length}`)}
+        ${statTile('Still open',citiesOpen)}
         ${statTile('No venues yet',citiesNoVenue)}
+      </div></div>
+      <div class="ob-stat-group"><h5 class="route-workbench-group-label">Venues</h5><div class="ops-stat-grid ops-stat-grid-3">
         ${statTile('To contact',toC)}
         ${statTile('In conversation',convo)}
         ${statTile('Follow-ups due',nudges)}
-      </div>
-      ${nudgeBanner}
-      ${holdBanner}
+      </div></div>
+      <div class="route-stop-actions ob-crm-row"><button class="btn-secondary btn-sm" onclick="RouteAdmin.matchAllFromCRM()">↺ Auto-fill missing contact details from CRM</button><span class="route-muted route-help-inline">Only fills empty fields (email, phone, socials) on venues you already have — never overwrites anything.</span></div>
       ${stops.map(({l,i})=>{
         const vs=Array.isArray(l.candidate_venues)?l.candidate_venues:[];
         const c=vs.length?outreachCounts(l):null;
         const state = !vs.length ? 'empty' : (c.confirmed?'confirmed':'open');
         const tag = state==='confirmed'?`<span class="ob-city-tag confirmed">✅ ${esc(l.confirmed_venue||l.suggested_venue||'Confirmed')}</span>` : state==='empty'?'<span class="ob-city-tag empty">No venues yet</span>':`<span class="ob-city-tag open">${esc(outreachSummaryText(l))}</span>`;
-        return `<section class="ob-city ob-city-${state}"><div class="ob-city-head"><div><b>${i+1}. ${esc(l.city||'TBD')}</b><span>${esc([l.date,l.country].filter(Boolean).join(' · '))}</span></div>${tag}<div class="ob-city-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.venueFinderForStop(${i})">Find</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.manualVenueForm(${i})">Add</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.openStop(${i})">Open stop</button></div></div>${vs.length?renderOutreachBoard(l,i):'<div class="route-ai-empty">No venues attached to this date yet.</div>'}</section>`;
+        // Confirmed cities collapse by default (nothing left to do there) so the
+        // page reads as "what needs my attention" first; open/empty cities stay
+        // expanded. stopPropagation on the action buttons keeps them from also
+        // toggling the disclosure when clicked.
+        return `<details class="ob-city ob-city-${state}" ${state==='confirmed'?'':'open'}><summary class="ob-city-head"><div><b>${i+1}. ${esc(l.city||'TBD')}</b><span>${esc([l.date,l.country].filter(Boolean).join(' · '))}</span></div>${tag}<div class="ob-city-actions"><button class="btn-secondary btn-sm" onclick="event.preventDefault();event.stopPropagation();RouteAdmin.venueFinderForStop(${i},event)" title="Live web search, ~20s">Search Web</button><button class="btn-secondary btn-sm" onclick="event.preventDefault();event.stopPropagation();RouteAdmin.manualVenueForm(${i})">Add</button><button class="btn-secondary btn-sm" onclick="event.preventDefault();event.stopPropagation();RouteAdmin.openStop(${i})">Open stop</button></div></summary>${vs.length?renderOutreachBoard(l,i):'<div class="route-ai-empty">No venues attached to this date yet.</div>'}</details>`;
       }).join('')}</div>`;
   }
 
@@ -949,11 +962,22 @@
     rerenderActiveRoute(); renderTourOutreach();
   }
 
+  // Priority order for sorting a city's candidate list — confirmed pick first
+  // (it's the answer), then active conversations, then still-to-contact, then
+  // dead ends last — instead of raw insertion order, which could bury a
+  // confirmed or in-conversation venue under whatever was added most recently.
+  const _VBOARD_RANK = {confirmed:0, interested:1, awaiting:2, contacted:3, to_contact:4, declined:5, fell_through:6};
   function renderVenueBoard(){
     const t=activeRoute(); const out=toolOut();
     if(!t?.legs?.length){ out.innerHTML=errorBox('No active route','Generate or open a route first.'); return; }
     const stops=t.legs.map((l,i)=>({l,i})).filter(x=>!x.l.day_off);
-    out.innerHTML=`<div class="route-tool-card route-venue-board"><h3>Venue Finder Board</h3><p>Research, manually add, or select venue options for every listed city. Saved tours persist each venue move to Firestore.</p><div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.researchVenuesAllStops()">Research All Cities</button></div>${stops.map(({l,i})=>`<section class="route-venue-city"><div class="route-venue-city-head"><div><b>${esc(i+1)}. ${esc(l.city||'TBD')}</b><span>${esc([l.date,l.country].filter(Boolean).join(' · '))}</span></div><div><button class="btn-secondary btn-sm" onclick="RouteAdmin.venueFinderForStop(${i})">Find Venues</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.manualVenueForm(${i})">Manual Add</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.openStop(${i})">Stop Detail</button></div></div>${Array.isArray(l.candidate_venues)&&l.candidate_venues.length?l.candidate_venues.slice(0,8).map((v,vi)=>`<div class="route-venue-row"><strong>${esc(v.name||'Venue')}</strong><span>${esc(venueMeta(v))}</span><p>${esc(v.fit_reason||v.reason||v.outreach_angle||'')}</p><div class="route-venue-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.useCandidateVenue(${i},${vi})">Use Venue</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.generateVenueEmail(${i},${vi})">Email</button>${v.website?`<a class="btn-secondary btn-sm" href="${attr(v.website)}" target="_blank">Site</a>`:''}</div></div>`).join(''):'<div class="route-ai-empty">No venue options yet. Use Find Venues or Manual Add.</div>'}</section>`).join('')}</div>`;
+    out.innerHTML=`<div class="route-tool-card route-venue-board"><div class="route-tool-head"><h3>Venue Finder Board</h3><div class="route-stop-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTourOutreach()" title="Track outreach stage, confirm, and follow up">⇄ Outreach Board</button></div></div><p>Every city's candidates side by side — quick to scan and pick from. Research, manually add, or select a venue here; switch to the Outreach Board to track status and send follow-ups.</p><div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.researchVenuesAllStops()">Research All Cities</button></div>${stops.map(({l,i})=>{
+      const vs=Array.isArray(l.candidate_venues)?l.candidate_venues:[];
+      const sorted=[...vs].sort((a,b)=>(_VBOARD_RANK[vStatus(a)]??9)-(_VBOARD_RANK[vStatus(b)]??9));
+      const shown=sorted.slice(0,8);
+      const summary=vs.length?`<span class="route-venue-city-summary">${esc(outreachSummaryText(l))}</span>`:'';
+      return `<section class="route-venue-city"><div class="route-venue-city-head"><div><b>${esc(i+1)}. ${esc(l.city||'TBD')}</b><span>${esc([l.date,l.country].filter(Boolean).join(' · '))}</span>${summary}</div><div><button class="btn-secondary btn-sm" onclick="RouteAdmin.venueFinderForStop(${i},event)" title="Live web search, ~20s">Search Web</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.manualVenueForm(${i})">Manual Add</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.openStop(${i})">Stop Detail</button></div></div>${shown.length?shown.map((v,vi0)=>{ const vi=vs.indexOf(v); const st=vStatus(v); return `<div class="route-venue-row"><div class="ob-row-head"><strong>${esc(v.name||'Venue')}</strong><span class="ob-pill ob-pill-${st}">${esc(OUTREACH_LABEL[st]||st)}</span></div><span>${esc(venueMeta(v))}</span><p>${esc(v.fit_reason||v.reason||v.outreach_angle||'')}</p><div class="route-venue-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.useCandidateVenue(${i},${vi})" title="Set as this stop's primary pick">Use Venue</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.generateVenueEmail(${i},${vi})">Email</button>${v.website?`<a class="btn-secondary btn-sm" href="${attr(v.website)}" target="_blank">Site</a>`:''}</div></div>`; }).join(''):'<div class="route-ai-empty">No venue options yet. Use Search Web or Manual Add.</div>'}${vs.length>8?`<p class="route-muted route-help-inline">+${vs.length-8} more — see the <a href="javascript:void 0" onclick="RouteAdmin.openStop(${i})">full Stop Detail</a>.</p>`:''}</section>`;
+    }).join('')}</div>`;
   }
   async function assistantAsk(){
     const input=$('routeAssistantInput'); const log=$('routeAssistantLog'); const q=(input?.value||'').trim(); if(!q) return;
