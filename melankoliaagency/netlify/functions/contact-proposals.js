@@ -30,6 +30,23 @@ exports.handler = async (event) => {
     const isAdmin = auth.ok;
     if (!isAdmin && !isAgent) return json(401, { success: false, error: auth.error || 'Unauthorized' });
 
+    if (b.action === '_repair') {
+      const ids = Array.isArray(b.ids) ? b.ids : [];
+      let repaired = 0, ok = 0, missing = 0;
+      for (const pid of ids) {
+        const d = await getDoc(COLL, pid);
+        if (!d) { missing++; continue; }
+        if (d.status && d.created_at) { ok++; continue; }
+        await updateDoc(COLL, pid, {
+          status: d.status || 'pending',
+          type: d.type || 'new',
+          created_at: d.created_at || d._createTime || now(),
+          source: d.source || 'gmail',
+        });
+        repaired++;
+      }
+      return json(200, { success: true, repaired, already_ok: ok, missing, total: ids.length });
+    }
     if (b.action === '_inspect') {
       const d = await getDoc(COLL, b.id);
       if (!d) return json(200, { success:true, found:false });
