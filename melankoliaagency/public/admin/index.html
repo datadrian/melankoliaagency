@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Melankolia Agency</title>
-  <link rel="stylesheet" href="/css/admin.css?v=enrich-v1">
+  <link rel="stylesheet" href="/css/admin.css?v=enrich-v2">
 </head>
 <body>
 
@@ -611,6 +611,7 @@
           <div class="disc-bulk">
             <button class="btn-secondary" onclick="discSelectAll(true)">Select all</button>
             <button class="btn-secondary" onclick="discSelectAll(false)">None</button>
+            <label class="disc-deep-toggle" title="Deep also opens each Linktree/link-in-bio page and scrapes it (slower). Off = fast Gemini lookup only."><input type="checkbox" id="discDeepToggle" checked> Deep</label>
             <button class="btn-secondary" onclick="enrichAllIncomplete()" title="Hunt the web to fill missing info on all incomplete pending contacts">🔎 Enrich all incomplete</button>
             <button class="btn-primary" onclick="bulkApproveProposals()">✓ Approve selected</button>
           </div>
@@ -920,8 +921,8 @@
   </div>
 
   <script src="/js/data.js"></script>
-  <script src="/js/admin.js?v=enrich-v1"></script>
+  <script src="/js/admin.js?v=enrich-v2"></script>
   <script src="/js/route-admin.js?v=csv-filters-v1"></script>
-  <script src="/js/advancing-admin.js?v=enrich-v1"></script>
+  <script src="/js/advancing-admin.js?v=enrich-v2"></script>
 </body>
 </html>

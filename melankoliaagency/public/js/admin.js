@@ -2445,7 +2445,7 @@ const CONTACT_ENRICH_API = '/.netlify/functions/contact-enrich';
 async function enrichCall(payload) {
   const res = await fetch(CONTACT_ENRICH_API, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ session_token: mkSessionToken(), deep: true, ...payload }),
+    body: JSON.stringify({ session_token: mkSessionToken(), ...payload }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || j.success === false) throw new Error(j.error || 'enrich failed');
@@ -2453,16 +2453,21 @@ async function enrichCall(payload) {
 }
 // Hunt the web for a single pending proposal, then apply only-empty fields via the
 // existing `edit` action (review-queue flow) and refresh the list.
-async function enrichProposal(id, silent) {
-  const btn = document.querySelector(`.disc-enrich-btn[onclick*="${id}"]`);
-  if (btn) { btn.disabled = true; btn.textContent = '\ud83d\udd0e Hunting\u2026'; }
+async function enrichProposal(id, silent, deep) {
+  if (deep === undefined) deep = true;
+  const btns = Array.from(document.querySelectorAll(`.disc-enrich-btn[data-pid="${id}"]`));
+  const labels = btns.map(b => b.textContent);
+  btns.forEach(b => { b.disabled = true; });
+  const active = btns.find(b => b.dataset.mode === (deep ? 'deep' : 'fast'));
+  if (active) active.textContent = deep ? '\ud83d\udd0e Deep hunting\u2026' : '\u26a1 Finding\u2026';
+  const restore = () => btns.forEach((b, k) => { b.disabled = false; b.textContent = labels[k]; });
   try {
-    const j = await enrichCall({ proposal_id: id });
+    const j = await enrichCall({ proposal_id: id, deep: deep });
     const patch = j.patch || {};
     const keys = Object.keys(patch);
     if (!keys.length) {
-      if (!silent) showToast('No new info found for this contact', 'info');
-      if (btn) { btn.disabled = false; btn.textContent = '\ud83d\udd0e Find missing info'; }
+      if (!silent) showToast(deep ? 'No new info found (deep hunt)' : 'Nothing found fast \u2014 try Deep', 'info');
+      restore();
       return { filled: 0 };
     }
     await proposalsCall({ action: 'edit', id, candidate: patch });
@@ -2473,11 +2478,10 @@ async function enrichProposal(id, silent) {
     return { filled: keys.length, keys };
   } catch (e) {
     if (!silent) showToast('Enrich failed: ' + e.message, 'error');
-    if (btn) { btn.disabled = false; btn.textContent = '\ud83d\udd0e Find missing info'; }
+    restore();
     return { filled: 0, error: e.message };
   }
-}
-// Bulk: enrich every pending proposal that is missing key fields, sequentially.
+}// Bulk: enrich every pending proposal that is missing key fields, sequentially.
 const _ENRICH_KEYS = ['website','booking_email','email','emails','phone','phones','instagram','city','country'];
 function _isIncomplete(p) {
   const c = p.candidate || {};
@@ -2486,14 +2490,16 @@ function _isIncomplete(p) {
   return !c.website || !hasEmail || !hasPhone || !c.instagram || !c.city;
 }
 async function enrichAllIncomplete() {
+  const deep = !!(document.getElementById('discDeepToggle') || {}).checked;
   const targets = (_discProposals || []).filter(p => (p.status||'pending')==='pending' && _isIncomplete(p));
   if (!targets.length) return showToast('No incomplete pending contacts to enrich', 'info');
-  if (!confirm(`Hunt the web to fill missing info on ${targets.length} incomplete contact${targets.length===1?'':'s'}? This runs one at a time and can take a minute or two.`)) return;
+  const mode = deep ? 'DEEP (opens Linktree pages, ~10s each)' : 'FAST (Gemini only, ~2s each)';
+  if (!confirm(`Hunt the web to fill missing info on ${targets.length} incomplete contact${targets.length===1?'':'s'}?\nMode: ${mode}\nRuns one at a time.`)) return;
   const bar = document.getElementById('discEnrichProgress');
   let done = 0, filled = 0;
   for (const p of targets) {
     if (bar) bar.textContent = `Enriching ${done+1}/${targets.length}\u2026 (${filled} fields filled)`;
-    const r = await enrichProposal(p.id, true);
+    const r = await enrichProposal(p.id, true, deep);
     if (r && r.filled) filled += r.filled;
     done++;
     await new Promise(r => setTimeout(r, 300));
@@ -2560,7 +2566,8 @@ function renderProposals() {
     const actions = pending ? `
       <button class="btn-primary" onclick="approveProposal('${p.id}')">\u2713 Approve</button>
       <button class="btn-ghost" onclick="toggleEditProposal('${p.id}')">\u270e Edit</button>
-      <button class="btn-ghost disc-enrich-btn" onclick="enrichProposal('${p.id}')" title="Hunt the web (Gemini + Linktree) for missing fields">\ud83d\udd0e Find missing info</button>
+      <button class="btn-ghost disc-enrich-btn" data-pid="${p.id}" data-mode="fast" onclick="enrichProposal('${p.id}', false, false)" title="Fast: Gemini web lookup only (~2s)">\u26a1 Fast find</button>
+      <button class="btn-ghost disc-enrich-btn" data-pid="${p.id}" data-mode="deep" onclick="enrichProposal('${p.id}', false, true)" title="Deep: also opens the Linktree / link-in-bio page and scrapes it (~10s)">\ud83d\udd0e Deep find</button>
       <button class="btn-secondary" onclick="rejectProposal('${p.id}')">\u2715 Reject</button>` :
       `<span class="disc-sub">${escapeHtml(p.status)}</span>`;
     return `<div class="disc-card">

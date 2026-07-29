@@ -2150,3 +2150,7 @@ select.form-input option { background: #111; }
 /* Contact Discovery — enrich (web lookup) */
 .disc-enrich-btn{white-space:nowrap;}
 .disc-enrich-progress{font-size:.85rem;color:#6b6b6b;margin:.35rem 0 0;min-height:1em;}
+
+/* Contact Discovery — fast/deep enrich toggle */
+.disc-deep-toggle{display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;color:#4b4b4b;user-select:none;cursor:pointer;}
+.disc-deep-toggle input{margin:0;}
