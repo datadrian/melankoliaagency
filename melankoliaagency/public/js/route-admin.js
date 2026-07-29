@@ -561,6 +561,7 @@
     const out = toolOut();
     const candidates = Array.isArray(l.candidate_venues) ? l.candidate_venues : [];
     out.innerHTML = `<div class="route-tool-card route-stop-detail"><h3>Stop Detail — ${esc(l.city || 'TBD')}</h3>
+      <div id="marketVenuesPanel" class="route-stop-venues route-stop-venues-top"></div>
       <div class="route-stop-grid">
         <label>Date<input id="stopDate" class="form-input" value="${attr(l.date||'')}"></label>
         <label>City<input id="stopCity" class="form-input" value="${attr(l.city||'')}"></label>
@@ -586,7 +587,6 @@
       <label>Internal Notes<textarea id="stopNotes" class="form-input form-textarea" rows="3">${esc(l.notes||'')}</textarea></label>
       <div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.saveStopEdits(${idx})">Save Stop Edits</button><button class="btn-secondary" onclick="RouteAdmin.insertBlankDayAfter(${idx})">Add Blank Day After</button>${l.day_off?`<button class="btn-secondary" onclick="RouteAdmin.convertBlankDayToProspect(${idx})">Convert To Prospect</button><button class="btn-secondary" onclick="RouteAdmin.removeBlankDay(${idx})">Remove Blank Day</button>`:''}<button class="btn-secondary" onclick="RouteAdmin.venueFinderForStop(${idx})">Find Promoters/Venues</button><button class="btn-secondary" onclick="RouteAdmin.backlineForStop(${idx})">Backline Finder</button><button class="btn-secondary" onclick="RouteAdmin.manualVenueForm(${idx})">Manual Add Contact</button><button class="btn-secondary" onclick="RouteAdmin.generateEmail(${idx})">Generate Email</button></div>
       ${renderBacklineMini(l)}${renderOutreachBoard(l,idx)}
-      <div id="marketVenuesPanel" class="route-stop-venues"></div>
     </div>`;
     focusToolOut();
     if(!l.day_off) loadMarketVenues(idx);
@@ -746,7 +746,9 @@
       if(t.id) await persistStop(idx,l);
       rerenderActiveRoute();
       openStop(idx);
-      toast(t.id?'✓ Venue Finder results saved to Firestore':'✓ Venue Finder results attached to stop','success');
+      const n=(l.candidate_venues||[]).length;
+      if(n>0) toast(t.id?`✓ Venue Finder found ${n} new contact${n===1?'':'s'}, saved to Firestore`:`✓ Venue Finder found ${n} new contact${n===1?'':'s'}`,'success');
+      else toast(`Live web search found nothing new for ${l.city} — see "Promoters/Venues in ${l.city}" above, pulled straight from your CRM`,'error');
     } catch(e){ out.innerHTML=errorBox('Venue Finder failed',e.message); }
   }
 

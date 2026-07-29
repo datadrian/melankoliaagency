@@ -1953,6 +1953,8 @@ select.form-input option { background: #111; }
 .route-check-label input { accent-color:var(--accent); }
 .route-stop-actions { display:flex; gap:.55rem; flex-wrap:wrap; margin:.9rem 0; }
 .route-stop-venues { margin-top:1rem; border-top:1px solid var(--border); padding-top:1rem; }
+.route-stop-venues-top { margin-top:0; margin-bottom:1.25rem; border-top:none; border:1px solid var(--gold,#c8a96e); border-radius:6px; padding:1rem; background:rgba(200,169,110,0.06); }
+.route-stop-venues-top:empty { display:none; }
 .route-stop-venues h4 { color:var(--white); font-size:.75rem; letter-spacing:.12em; text-transform:uppercase; margin:0 0 .65rem; }
 @media (max-width:980px){ .route-stop-grid{grid-template-columns:1fr 1fr} }
 @media (max-width:640px){ .route-stop-grid{grid-template-columns:1fr} }
