@@ -660,6 +660,43 @@
     try{ if(t.id) await persistStop(idx,l); toast(t.id?'✓ Manual venue added, saved, and added to Contact Manager':'✓ Manual venue added to draft and Contact Manager','success'); rerenderActiveRoute(); openStop(idx); }
     catch(e){ toast('Manual venue save failed: '+e.message,'error'); }
   }
+  function daysSince(d){ if(!d) return null; const t=Date.parse(d); if(isNaN(t)) return null; return Math.floor((Date.now()-t)/86400000); }
+  function nudgeDue(v){ const st=vStatus(v); if(!['contacted','awaiting'].includes(st)) return false; const d=daysSince(v.outreach_date); return d!==null && d>=7; }
+  function renderTourOutreach(){
+    const t=activeRoute(); const out=toolOut();
+    if(!t?.legs?.length){ out.innerHTML=errorBox('No active route','Generate or open a route first.'); return; }
+    const stops=t.legs.map((l,i)=>({l,i})).filter(x=>!x.l.day_off);
+    let tot=0,toC=0,convo=0,declined=0,confirmedVenues=0,nudges=0,citiesConfirmed=0,citiesNoVenue=0,citiesOpen=0;
+    const nudgeList=[];
+    stops.forEach(({l,i})=>{
+      const vs=Array.isArray(l.candidate_venues)?l.candidate_venues:[];
+      if(!vs.length){ citiesNoVenue++; return; }
+      const c=outreachCounts(l);
+      tot+=vs.length; toC+=c.to_contact; convo+=c.contacted+c.awaiting+c.interested; declined+=c.declined+c.fell_through; confirmedVenues+=c.confirmed;
+      if(c.confirmed) citiesConfirmed++; else citiesOpen++;
+      vs.forEach(v=>{ if(nudgeDue(v)){ nudges++; nudgeList.push({city:l.city,i,name:v.name,days:daysSince(v.outreach_date)}); } });
+    });
+    const nudgeBanner = nudgeList.length? `<div class="ob-nudge-banner"><b>⏰ ${nudgeList.length} follow-up${nudgeList.length>1?'s':''} due</b> (contacted 7+ days ago, no confirmation)<div class="ob-nudge-list">${nudgeList.sort((a,b)=>b.days-a.days).slice(0,12).map(n=>`<button class="ob-nudge-chip" onclick="RouteAdmin.openStop(${n.i})">${esc(n.name||'Venue')} · ${esc(n.city||'')} · ${n.days}d</button>`).join('')}</div></div>`:'';
+    out.innerHTML=`<div class="route-tool-card route-outreach-board"><h3>Tour Outreach — all cities</h3>
+      <p>Every date with its venues by outreach stage. Confirm one and the rest stay parked as backups; act on any venue right here.</p>
+      <div class="ops-stat-grid">
+        ${statTile('Confirmed cities',`${citiesConfirmed}/${stops.length}`)}
+        ${statTile('Cities still open',citiesOpen)}
+        ${statTile('No venues yet',citiesNoVenue)}
+        ${statTile('To contact',toC)}
+        ${statTile('In conversation',convo)}
+        ${statTile('Follow-ups due',nudges)}
+      </div>
+      ${nudgeBanner}
+      ${stops.map(({l,i})=>{
+        const vs=Array.isArray(l.candidate_venues)?l.candidate_venues:[];
+        const c=vs.length?outreachCounts(l):null;
+        const state = !vs.length ? 'empty' : (c.confirmed?'confirmed':'open');
+        const tag = state==='confirmed'?`<span class="ob-city-tag confirmed">✅ ${esc(l.confirmed_venue||l.suggested_venue||'Confirmed')}</span>` : state==='empty'?'<span class="ob-city-tag empty">No venues yet</span>':`<span class="ob-city-tag open">${esc(outreachSummaryText(l))}</span>`;
+        return `<section class="ob-city ob-city-${state}"><div class="ob-city-head"><div><b>${i+1}. ${esc(l.city||'TBD')}</b><span>${esc([l.date,l.country].filter(Boolean).join(' · '))}</span></div>${tag}<div class="ob-city-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.venueFinderForStop(${i})">Find</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.manualVenueForm(${i})">Add</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.openStop(${i})">Open stop</button></div></div>${vs.length?renderOutreachBoard(l,i):'<div class="route-ai-empty">No venues attached to this date yet.</div>'}</section>`;
+      }).join('')}</div>`;
+  }
+
   function renderVenueBoard(){
     const t=activeRoute(); const out=toolOut();
     if(!t?.legs?.length){ out.innerHTML=errorBox('No active route','Generate or open a route first.'); return; }
@@ -997,7 +1034,7 @@
   function renderDetail(t){
     $('routeAdminShell').innerHTML=`
       <section class="route-plan-shell">
-        <div class="route-plan-topbar"><button class="btn-secondary btn-sm" onclick="RouteAdmin.init()">← Tour Library</button><div><p class="route-kicker">Saved tour workspace</p><h1>${esc(t.name||t.tour_name||'Untitled Tour')}</h1><span>${esc(t.artist||'')} · ${esc(t.region||'')} · ${esc(normalizeDateRange(t))}</span></div><div class="route-command-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderVenueBoard()">Contact Board</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelOpsBoard()">Travel Ops</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelAlertCenter()">Alerts</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelHotelModule()">Travel + Hotels</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.systemTour()">Help</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.duplicateTour('${attr(t.id)}')">Duplicate</button><button class="btn-danger btn-sm" onclick="RouteAdmin.deleteTour('${attr(t.id)}')">Delete</button></div></div>
+        <div class="route-plan-topbar"><button class="btn-secondary btn-sm" onclick="RouteAdmin.init()">← Tour Library</button><div><p class="route-kicker">Saved tour workspace</p><h1>${esc(t.name||t.tour_name||'Untitled Tour')}</h1><span>${esc(t.artist||'')} · ${esc(t.region||'')} · ${esc(normalizeDateRange(t))}</span></div><div class="route-command-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTourOutreach()">Outreach Board</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderVenueBoard()">Contact Board</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelOpsBoard()">Travel Ops</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelAlertCenter()">Alerts</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelHotelModule()">Travel + Hotels</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.systemTour()">Help</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.duplicateTour('${attr(t.id)}')">Duplicate</button><button class="btn-danger btn-sm" onclick="RouteAdmin.deleteTour('${attr(t.id)}')">Delete</button></div></div>
         <div class="route-detail-grid">
           <section class="route-map-card"><div class="route-panel-title"><span>Saved route map</span><em>${esc(t.summary||t.routing_strategy||'')}</em></div><div id="routeMap" class="route-map route-map-detail"><div class="route-map-placeholder">Loading route map…</div></div></section>
           <section class="route-output-panel"><div class="route-panel-title"><span>AI workbench</span><em>Continue refining this saved tour.</em></div><div id="routeToolOutput">${renderWorkbench(t)}</div></section>
@@ -1180,7 +1217,7 @@
 
   async function venueManagerSendToRoute(i){ const v=venueManagerRows[i]; const t=activeRoute(); if(!v) return; if(!t?.legs?.length) return toast('Open or generate a route first, then send venues into it.','error'); const answer=prompt('Send to which stop number?', '1'); if(answer===null) return; const idx=Math.max(0,Math.min(t.legs.length-1,Number(answer)-1||0)); const l=t.legs[idx]; l.candidate_venues=Array.isArray(l.candidate_venues)?l.candidate_venues:[]; const candidate={name:v.name,address:v.address,capacity:v.actual_capacity||v.capacity,booking_method:v.booking_email||v.booking_method||'master list',email:v.booking_email,phone:v.phone,website:v.website,instagram:v.instagram,fit_reason:v.notes||'Selected from Venue Manager.',outreach_angle:v.notes||'Master venue list option',crm_source:true,crm_id:v.id}; l.candidate_venues.unshift(candidate); if(!l.suggested_venue){ l.suggested_venue=v.name; l.venue_address=v.address||''; } if(t.id) await persistStop(idx,l); toast(`✓ ${v.name} added to stop ${idx+1}`,'success'); rerenderActiveRoute(); openStop(idx); }
 
-  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, askAboutCurrentReview };
+  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, askAboutCurrentReview };
   function csvCell(v){
     const s = v==null ? '' : String(v);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;

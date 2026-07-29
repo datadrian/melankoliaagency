@@ -2187,3 +2187,23 @@ details.ob-group[open]>summary{margin-bottom:.6rem}
 .ob-danger{border-color:#7a3030!important;color:#e08a8a!important}
 .ob-card-sum{display:block;font-size:.64rem;color:var(--muted);margin-top:.25rem}
 .ob-leg-sum{font-size:.74rem;color:var(--accent);margin:.25rem 0 0;font-weight:600}
+
+/* ===== Route Planner — tour-wide outreach view ===== */
+.route-outreach-board .ops-stat-grid{margin:.4rem 0 1rem}
+.ob-nudge-banner{border:1px solid #3a3016;background:#17130a;border-radius:10px;padding:.7rem .85rem;margin:0 0 1rem;color:var(--off);font-size:.82rem}
+.ob-nudge-banner b{color:var(--accent)}
+.ob-nudge-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:.55rem}
+.ob-nudge-chip{background:#2e2510;color:#e6c168;border:1px solid #4a3c18;border-radius:999px;padding:.25rem .6rem;font-size:.7rem;cursor:pointer}
+.ob-nudge-chip:hover{background:#3a2f14}
+.ob-city{border:1px solid var(--border);border-radius:12px;padding:.85rem 1rem;margin:.7rem 0;background:var(--card)}
+.ob-city-confirmed{border-color:#2c7a48}
+.ob-city-empty{opacity:.85}
+.ob-city-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.ob-city-head b{color:var(--white);font-size:.98rem}
+.ob-city-head span{color:var(--muted);font-size:.72rem;margin-left:.5rem}
+.ob-city-tag{font-size:.72rem;font-weight:600;padding:.25rem .6rem;border-radius:999px;background:#20242b;color:#9fb0c4}
+.ob-city-tag.confirmed{background:#12301d;color:#6ad493}
+.ob-city-tag.open{background:#2e2510;color:#e6c168}
+.ob-city-tag.empty{background:#331717;color:#e08a8a}
+.ob-city-actions{display:flex;gap:6px;flex-wrap:wrap}
+.ob-city .ob-board{margin-top:.7rem;border-top:1px solid var(--border);padding-top:.6rem}
