@@ -21,13 +21,11 @@ exports.handler = async (event) => {
   try {
     const result = await withTimeout((async()=>{
       const data = body.data || body;
-      if (body.debug || (event.queryStringParameters||{}).debug) globalThis.__BL_DEBUG = true;
       const city = clean(data.city || data.location);
       if (!city) { const err=new Error('city required'); err.status=400; throw err; }
       const parsed = await researchBacklineStructured(data, apiKey);
       return { ...parsed, researched_at:new Date().toISOString() };
     })(), 24000, 'Deep grounded backline research timed out; returned fast planning fallback instead.');
-    if (globalThis.__BL_DEBUG) result.__raw = String(globalThis.__BL_LAST_RAW||'').slice(0,3000);
     return json({ success:true, data:result }, 200, headers);
   } catch(e) {
     const data = body.data || body || {};
@@ -106,9 +104,7 @@ Do not invent phone numbers, emails, or terms — use "unknown" when not source-
     tools:[{ google_search:{} }],
     generationConfig:{ temperature:0.05, maxOutputTokens:4096 }
   }, apiKey, 1);
-  const __raw = extractText(res);
-  if (globalThis.__BL_DEBUG) globalThis.__BL_LAST_RAW = __raw;
-  const parsed = normalizeBackline(parseJsonish(__raw), d);
+  const parsed = normalizeBackline(parseJsonish(extractText(res)), d);
   parsed.grounding = extractGrounding(res);
   return parsed;
 }
