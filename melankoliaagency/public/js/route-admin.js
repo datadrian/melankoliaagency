@@ -425,7 +425,7 @@
       <div class="route-leg-day"><b>${esc(l.day||i+1)}</b><span>${esc(l.day_of_week||'')}</span></div>
       <div class="route-leg-main"><strong>${esc(l.city||'TBD')}</strong><span>${esc([l.date,l.country].filter(Boolean).join(' · '))}</span>${l.suggested_venue?`<em>${esc(l.suggested_venue)}</em>`:''}${(l.candidate_venues||[]).length?`<p class="ob-leg-sum">🎯 ${esc(outreachSummaryText(l))}</p>`:''}${l.notes?`<p>${esc(l.notes)}</p>`:''}</div>
       <div class="route-leg-meta"><span>${esc(type)}</span>${statusBadge(status)}<span>Rate: ${esc(money(rate,currencyOf(activeRoute())))}</span><span>${l.drive_time_text?esc(`Drive: ${l.drive_time_text}${l.drive_km?` · ${l.drive_km} km`:''}`):esc(l.travel_mode_recommendation||'travel TBD')}</span><span>${esc(l.hotel_responsibility?('Hotel: '+l.hotel_responsibility):'Hotel TBD')}</span><span>${l.locked?'Locked':'Not locked'}</span></div>
-      <div class="route-leg-actions">${!l.day_off?`<button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.openStop(${i})">Details</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.venueFinderForStop(${i})">Contact Finder</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.backlineForStop(${i})">Backline</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.suggestVenues(${i})">Fast Contacts</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.generateEmail(${i})">Email</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.adviseDeal(${i})">Deal</button>`:''}</div>
+      <div class="route-leg-actions">${!l.day_off?`<button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.openStop(${i})">Details</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.venueFinderForStop(${i},event)">Contact Finder</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.backlineForStop(${i})">Backline</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.suggestVenues(${i})">Fast Contacts</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.generateEmail(${i})">Email</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.adviseDeal(${i})">Deal</button>`:''}</div>
     </article>`;
   }
 
@@ -585,7 +585,7 @@
       </div>
       <label>Next Action<textarea id="stopNextAction" class="form-input form-textarea" rows="2">${esc(l.next_action||'')}</textarea></label>
       <label>Internal Notes<textarea id="stopNotes" class="form-input form-textarea" rows="3">${esc(l.notes||'')}</textarea></label>
-      <div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.saveStopEdits(${idx})">Save Stop Edits</button><button class="btn-secondary" onclick="RouteAdmin.insertBlankDayAfter(${idx})">Add Blank Day After</button>${l.day_off?`<button class="btn-secondary" onclick="RouteAdmin.convertBlankDayToProspect(${idx})">Convert To Prospect</button><button class="btn-secondary" onclick="RouteAdmin.removeBlankDay(${idx})">Remove Blank Day</button>`:''}<button class="btn-secondary" onclick="RouteAdmin.venueFinderForStop(${idx})">Find Promoters/Venues</button><button class="btn-secondary" onclick="RouteAdmin.backlineForStop(${idx})">Backline Finder</button><button class="btn-secondary" onclick="RouteAdmin.manualVenueForm(${idx})">Manual Add Contact</button><button class="btn-secondary" onclick="RouteAdmin.generateEmail(${idx})">Generate Email</button></div>
+      <div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.saveStopEdits(${idx})">Save Stop Edits</button><button class="btn-secondary" onclick="RouteAdmin.insertBlankDayAfter(${idx})">Add Blank Day After</button>${l.day_off?`<button class="btn-secondary" onclick="RouteAdmin.convertBlankDayToProspect(${idx})">Convert To Prospect</button><button class="btn-secondary" onclick="RouteAdmin.removeBlankDay(${idx})">Remove Blank Day</button>`:''}<button class="btn-secondary" onclick="RouteAdmin.venueFinderForStop(${idx},event)">Search Web For New Contacts</button><button class="btn-secondary" onclick="RouteAdmin.backlineForStop(${idx})">Backline Finder</button><button class="btn-secondary" onclick="RouteAdmin.manualVenueForm(${idx})">Manual Add Contact</button><button class="btn-secondary" onclick="RouteAdmin.generateEmail(${idx})">Generate Email</button></div>
       ${renderBacklineMini(l)}${renderOutreachBoard(l,idx)}
     </div>`;
     focusToolOut();
@@ -736,9 +736,17 @@
     return [...collect(promoters).map(v=>contactCandidate(v,'promoter')),...collect(venues).map(v=>contactCandidate(v,'venue'))];
   }
 
-  async function venueFinderForStop(idx){
+  async function venueFinderForStop(idx,evt){
     const t=activeRoute(); const l=t?.legs?.[idx]; if(!l) return;
-    const out=focusToolOut(); out.innerHTML=loading(`Running grounded Venue Finder for ${l.city}…`);
+    // Immediate feedback right at the click point — this is a LIVE web search
+    // (Gemini + grounding), not a database lookup, so it genuinely takes 15-25s.
+    // Disable + relabel the exact button clicked so it's obvious something is
+    // happening even if the auto-scroll to the workbench isn't noticed.
+    const btn = evt?.currentTarget;
+    let btnRestore=null;
+    if(btn){ btnRestore=btn.innerHTML; btn.disabled=true; btn.innerHTML='⏳ Searching web… (~20s)'; }
+    const out=focusToolOut();
+    out.innerHTML=loading(`Searching the live web for new promoters/venues in ${l.city} — this calls an AI web search (not your CRM), so it can take 15-25 seconds…`);
     try{
       l.candidate_venues = await runGroundedContactFinder([l.city,l.country].filter(Boolean).join(', '),'darkwave, EBM, post-punk, industrial, goth, synth',600);
       await Promise.allSettled(l.candidate_venues.map(v=>upsertVenueToMaster(v,l,'route_venue_finder')));
@@ -750,6 +758,7 @@
       if(n>0) toast(t.id?`✓ Venue Finder found ${n} new contact${n===1?'':'s'}, saved to Firestore`:`✓ Venue Finder found ${n} new contact${n===1?'':'s'}`,'success');
       else toast(`Live web search found nothing new for ${l.city} — see "Promoters/Venues in ${l.city}" above, pulled straight from your CRM`,'error');
     } catch(e){ out.innerHTML=errorBox('Venue Finder failed',e.message); }
+    finally { if(btn && btnRestore!==null){ btn.disabled=false; btn.innerHTML=btnRestore; } }
   }
 
 
@@ -1178,9 +1187,9 @@
       const data = await post(RAG_VENUES_API, {action:'search', city:l.city, country:l.country, genre:'darkwave, EBM, post-punk, industrial, goth, synth', limit:20});
       const list = Array.isArray(data.venues) ? data.venues : [];
       _marketVenuesCache = list;
-      if(!list.length){ panel.innerHTML=`<h4>Promoters/venues in ${esc(l.city)}</h4><div class="route-ai-empty">No CRM contacts found for this market yet. Try "Find Promoters/Venues" (live web search) or "Manual Add Contact" above.</div>`; return; }
+      if(!list.length){ panel.innerHTML=`<h4>Promoters/venues in ${esc(l.city)}</h4><div class="route-ai-empty">No CRM contacts found for this market yet. Try "Search Web For New Contacts" (live web search, ~20s) or "Manual Add Contact" above.</div>`; return; }
       const already = new Set((l.candidate_venues||[]).map(v=>String(v.name||'').toLowerCase()+'|'+String(v.city||'').toLowerCase()));
-      panel.innerHTML = `<h4>Promoters/venues in ${esc(l.city)} <span class="route-muted">— ${list.length} from CRM, ranked by fit</span></h4><div class="route-object-card-list">${list.map((v,vi)=>marketVenueRow(v,vi,idx,already)).join('')}</div>`;
+      panel.innerHTML = `<h4>Promoters/venues in ${esc(l.city)} <span class="route-muted">— ${list.length} from CRM, ranked by fit</span></h4><p class="route-muted route-help-inline">Instant — pulled straight from your Contact Manager, no live web search. Use "Search Web For New Contacts" below for brand-new leads (slower, ~20s).</p><div class="route-object-card-list">${list.map((v,vi)=>marketVenueRow(v,vi,idx,already)).join('')}</div>`;
     } catch(e){ panel.innerHTML = `<h4>Promoters/venues in ${esc(l.city)}</h4>` + errorBox('Could not load CRM market list', e.message); }
   }
   function marketVenueRow(v,vi,idx,already){
