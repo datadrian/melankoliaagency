@@ -29,10 +29,17 @@ exports.handler = async (event) => {
     return json({ success:true, data:result }, 200, headers);
   } catch(e) {
     const data = body.data || body || {};
-    if (e.status === 504 || /timed out/i.test(e.message || '')) {
-      return json({ success:true, warning:e.message, data:fallbackBackline(data, e.message) }, 200, headers);
+    // Bad request (missing city) is a real error — surface it.
+    if (e.status && e.status !== 504 && e.status !== 500) {
+      return json({ success:false, error:e.message || 'Backline search failed' }, e.status, headers);
     }
-    return json({ success:false, error:e.message || 'Backline search failed' }, e.status || 500, headers);
+    // Everything else — timeout, Gemini parse failure, transient API error —
+    // degrades gracefully to the fast planning fallback so the user always
+    // gets usable research links + questions instead of a red error.
+    const warning = /timed out/i.test(e.message||'')
+      ? e.message
+      : `Deep grounded research was unavailable (${e.message||'Gemini error'}); returned fast planning fallback instead.`;
+    return json({ success:true, warning, data:fallbackBackline(data, warning) }, 200, headers);
   }
 };
 
@@ -81,11 +88,11 @@ For every claim, use real source-supported information. Do not invent pricing, e
 
 Important wording: this is planning research for a possible stop. Do not say the artist is performing at, playing, or confirmed at the venue unless the input explicitly says confirmed.
 
-Return only strict JSON matching the schema. Keep terms concise and operational.`;
+Return only strict JSON matching the schema. Keep terms concise and operational. Output ONLY a single JSON object — no markdown, no code fences, no commentary, no citations text before or after the JSON.`;
   const res = await callGemini(RESEARCH_MODEL, {
     contents:[{ parts:[{ text:prompt }] }],
     tools:[{ google_search:{} }],
-    generationConfig:{ temperature:0.05, maxOutputTokens:2048, responseMimeType:'application/json', responseSchema:backlineSchema }
+    generationConfig:{ temperature:0.05, maxOutputTokens:4096, responseMimeType:'application/json', responseSchema:backlineSchema }
   }, apiKey, 1);
   const parsed = parseJsonish(extractText(res));
   parsed.suppliers = Array.isArray(parsed.suppliers) ? parsed.suppliers : [];
@@ -192,7 +199,41 @@ async function callGemini(model, payload, apiKey, attempts = 3) {
 }
 function extractText(data){ return (data?.candidates?.[0]?.content?.parts || []).map(p=>p.text||'').join('\n').trim(); }
 function extractGrounding(data){ return [...new Set((data?.candidates?.[0]?.groundingMetadata?.groundingChunks || []).map(c=>c?.web?.uri).filter(Boolean))]; }
-function parseJsonish(text){ const clean=String(text||'').replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim(); try{return JSON.parse(clean);}catch{} const m=clean.match(/[\[{][\s\S]*[\]}]/); if(!m) throw new Error('Gemini did not return parseable JSON'); return JSON.parse(m[0]); }
+function parseJsonish(text){
+  let clean = String(text||'').trim();
+  // Strip markdown code fences anywhere in the string.
+  clean = clean.replace(/```json/gi,'```').replace(/```/g,'').trim();
+  if(!clean) throw new Error('Gemini returned an empty response');
+  // 1) Straight parse.
+  try{ return JSON.parse(clean); }catch{}
+  // 2) Balanced-brace/bracket scan: find the first { or [ and walk to its
+  //    matching close, respecting strings and escapes. Grounded responses often
+  //    wrap the JSON in prose or append citations after it, which breaks a
+  //    greedy first-to-last slice.
+  const balanced = extractBalancedJson(clean);
+  if(balanced){ try{ return JSON.parse(balanced); }catch{} }
+  // 3) Greedy first-open to last-close as a last resort.
+  const m = clean.match(/[\[{][\s\S]*[\]}]/);
+  if(m){ try{ return JSON.parse(m[0]); }catch{} }
+  throw new Error('Gemini did not return parseable JSON');
+}
+function extractBalancedJson(str){
+  const start = str.search(/[\[{]/);
+  if(start < 0) return null;
+  const open = str[start];
+  const close = open === '{' ? '}' : ']';
+  let depth = 0, inStr = false, esc = false;
+  for(let i=start; i<str.length; i++){
+    const c = str[i];
+    if(esc){ esc=false; continue; }
+    if(c === '\\'){ esc=true; continue; }
+    if(c === '"'){ inStr = !inStr; continue; }
+    if(inStr) continue;
+    if(c === open) depth++;
+    else if(c === close){ depth--; if(depth === 0) return str.slice(start, i+1); }
+  }
+  return null; // unbalanced (likely truncated output)
+}
 function clean(v=''){ return String(v||'').replace(/\s+/g,' ').trim(); }
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 function withTimeout(promise, ms, message){ return Promise.race([promise, new Promise((_,reject)=>setTimeout(()=>{ const e=new Error(message); e.status=504; reject(e); }, ms))]); }
