@@ -2045,46 +2045,46 @@ select.form-input option { background: #111; }
 .venue-manager-card em { color:var(--text); font-style:normal; font-size:.7rem; }
 @media (max-width:900px){ .venue-manager-card{grid-template-columns:1fr}.venue-manager-card .route-stop-actions{justify-content:flex-start} }
 
-/* ===== Contact Discovery ===== */
-.disc-scanbar{display:flex;justify-content:space-between;align-items:center;gap:1.5rem;background:var(--panel,#fff);border:1px solid var(--border,#e5e5e5);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;flex-wrap:wrap}
-.disc-scan-note{font-size:.8rem;color:var(--muted,#777);max-width:52ch;line-height:1.5}
+/* ===== Contact Discovery (dark/gold — matches rest of admin) ===== */
+.disc-scanbar{display:flex;justify-content:space-between;align-items:center;gap:1.5rem;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;flex-wrap:wrap}
+.disc-scan-note{font-size:.8rem;color:var(--off);max-width:52ch;line-height:1.5}
 .disc-scan-actions{display:flex;align-items:center;gap:.75rem}
-.disc-scan-actions label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted,#777);display:flex;align-items:center;gap:.4rem}
-.disc-scan-actions select{padding:.35rem .5rem;border:1px solid var(--border,#e5e5e5);border-radius:5px;font-size:.8rem}
-.disc-status{padding:.7rem 1rem;border-radius:6px;font-size:.8rem;margin-bottom:1rem;border:1px solid var(--border,#e5e5e5);background:#f7f7f7}
-.disc-status.ok{border-color:#b6dfc0;background:#eef9f1;color:#1c6b34}
-.disc-status.err{border-color:#e3b6b6;background:#fbeeee;color:#8a2020}
-.disc-status.working{border-color:#c9d4e6;background:#eef2fb;color:#274690}
+.disc-scan-actions label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:flex;align-items:center;gap:.4rem}
+.disc-scan-actions select{padding:.35rem .5rem;border:1px solid var(--border2);border-radius:5px;font-size:.8rem;background:#0c0c0c;color:var(--off)}
+.disc-status{padding:.7rem 1rem;border-radius:6px;font-size:.8rem;margin-bottom:1rem;border:1px solid var(--border2);background:var(--card);color:var(--off)}
+.disc-status.ok{border-color:rgba(106,212,147,.35);background:#12301d;color:#6ad493}
+.disc-status.err{border-color:rgba(224,138,138,.35);background:#331717;color:#e08a8a}
+.disc-status.working{border-color:rgba(125,182,240,.35);background:#132c46;color:#7db6f0}
 .disc-toolbar{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.9rem;flex-wrap:wrap}
-.disc-stats{font-size:.78rem;color:var(--muted,#777)}
+.disc-stats{font-size:.78rem;color:var(--off)}
 .disc-filters{display:flex;gap:.4rem;flex-wrap:wrap}
-.disc-filters .chip{border:1px solid var(--border,#e5e5e5);background:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.72rem;cursor:pointer;color:#444}
-.disc-filters .chip.active{background:#111;color:#fff;border-color:#111}
+.disc-filters .chip{border:1px solid var(--border2);background:var(--card);padding:.3rem .7rem;border-radius:20px;font-size:.72rem;cursor:pointer;color:var(--off)}
+.disc-filters .chip.active{background:var(--accent);color:#000;border-color:var(--accent)}
 .disc-bulk{display:flex;gap:.5rem}
 .disc-list{display:flex;flex-direction:column;gap:.6rem}
-.disc-card{border:1px solid var(--border,#e5e5e5);border-radius:8px;background:#fff;padding:.9rem 1rem;display:flex;gap:.9rem;align-items:flex-start}
+.disc-card{border:1px solid var(--border2);border-radius:8px;background:var(--card);padding:.9rem 1rem;display:flex;gap:.9rem;align-items:flex-start}
 .disc-card .disc-check{margin-top:.2rem}
 .disc-card .disc-main{flex:1;min-width:0}
 .disc-badge{display:inline-block;font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:.15rem .5rem;border-radius:4px;margin-right:.5rem;vertical-align:middle}
-.disc-badge.new{background:#e7f0ff;color:#1b47a8}
-.disc-badge.update{background:#fff2e0;color:#9a5a12}
-.disc-badge.lowconf{background:#fde8e8;color:#992222}
-.disc-name{font-weight:600;font-size:.92rem}
-.disc-sub{font-size:.76rem;color:var(--muted,#777);margin-top:.15rem}
-.disc-fields{display:flex;flex-wrap:wrap;gap:.35rem .9rem;margin-top:.55rem;font-size:.74rem}
-.disc-fields span b{color:#333;font-weight:600}
-.disc-diff{margin-top:.5rem;font-size:.73rem;background:#faf7ef;border:1px solid #eee2c8;border-radius:6px;padding:.5rem .65rem}
-.disc-diff .add{color:#1c6b34}
+.disc-badge.new{background:#132c46;color:#7db6f0}
+.disc-badge.update{background:#2e2510;color:#e6c168}
+.disc-badge.lowconf{background:#331717;color:#e08a8a}
+.disc-name{font-weight:600;font-size:.92rem;color:var(--white)}
+.disc-sub{font-size:.76rem;color:var(--muted);margin-top:.15rem}
+.disc-fields{display:flex;flex-wrap:wrap;gap:.35rem .9rem;margin-top:.55rem;font-size:.74rem;color:var(--off)}
+.disc-fields span b{color:var(--white);font-weight:600}
+.disc-diff{margin-top:.5rem;font-size:.73rem;background:rgba(200,164,100,.08);border:1px solid rgba(200,164,100,.25);border-radius:6px;padding:.5rem .65rem;color:var(--off)}
+.disc-diff .add{color:#6ad493}
 .disc-actions{display:flex;flex-direction:column;gap:.4rem;flex:0 0 auto}
 .disc-actions button{font-size:.72rem;padding:.32rem .7rem}
-.disc-note{font-size:.72rem;color:#9a5a12;margin-top:.35rem}
+.disc-note{font-size:.72rem;color:#e6c168;margin-top:.35rem}
 
 /* Contact Discovery — market chip */
 .disc-badge.market-chip{background:rgba(200,164,100,.14);color:#c8a464;border:1px solid rgba(200,164,100,.35);}
 
 /* Contact Discovery — associated venues */
-.disc-venues{margin-top:6px;font-size:12px;color:#9a9a9a;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
-.disc-venues b{color:#c8c8c8;margin-right:2px;}
+.disc-venues{margin-top:6px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.disc-venues b{color:var(--off);margin-right:2px;}
 .disc-venue-chip{display:inline-flex;gap:5px;align-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 8px;color:#ddd;}
 .disc-venue-city{color:#c8a464;font-size:11px;}
 
@@ -2132,15 +2132,15 @@ select.form-input option { background: #111; }
 @media(max-width:640px){.adv-ex-grid{grid-template-columns:1fr;}}
 
 /* ===== Contact Discovery — screenshots ===== */
-.disc-shotbar{border-top:1px dashed var(--border,#e5e5e5);}
-.disc-badge.shot{background:#eef3fb;color:#2b5db0;border:1px solid #cdd9ee;}
-.disc-shot-thumb{display:inline-block;margin:6px 0 2px;border:1px solid var(--border,#e5e5e5);border-radius:6px;overflow:hidden;width:120px;height:76px;background:#f2f2f2;}
+.disc-shotbar{border-top:1px dashed var(--border2);}
+.disc-badge.shot{background:#132c46;color:#7db6f0;border:1px solid rgba(125,182,240,.35);}
+.disc-shot-thumb{display:inline-block;margin:6px 0 2px;border:1px solid var(--border2);border-radius:6px;overflow:hidden;width:120px;height:76px;background:#0c0c0c;}
 .disc-shot-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
-.disc-status.warn{border-color:#e6d3a3;background:#fbf5e6;color:#7a5a10;}
+.disc-status.warn{border-color:rgba(230,193,104,.35);background:#2e2510;color:#e6c168;}
 
 /* Contact Discovery — social/contact chips */
 .disc-socials{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 2px;}
-.disc-soc-chip{font-size:.72rem;padding:2px 8px;border-radius:999px;background:#f2f4f8;border:1px solid #dde3ee;color:#3b4a66;}
+.disc-soc-chip{font-size:.72rem;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#ddd;}
 
 /* ==================== Team Access + shared admin-card/table/form-grid (also backfills Page Editor) ==================== */
 .admin-card{background:#151515;border:1px solid #262626;border-radius:8px;padding:1.1rem 1.25rem;}
@@ -2158,10 +2158,10 @@ select.form-input option { background: #111; }
 
 /* Contact Discovery — enrich (web lookup) */
 .disc-enrich-btn{white-space:nowrap;}
-.disc-enrich-progress{font-size:.85rem;color:#6b6b6b;margin:.35rem 0 0;min-height:1em;}
+.disc-enrich-progress{font-size:.85rem;color:var(--muted);margin:.35rem 0 0;min-height:1em;}
 
 /* Contact Discovery — fast/deep enrich toggle */
-.disc-deep-toggle{display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;color:#4b4b4b;user-select:none;cursor:pointer;}
+.disc-deep-toggle{display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;color:var(--off);user-select:none;cursor:pointer;}
 .disc-deep-toggle input{margin:0;}
 
 /* ===== Route Planner — multi-venue outreach board (dark) ===== */
