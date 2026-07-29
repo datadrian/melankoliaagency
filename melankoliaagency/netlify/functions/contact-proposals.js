@@ -76,8 +76,24 @@ async function statsProposals() {
 
 async function stageProposals(rows, scan) {
   const existing = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 500 }).catch(() => []);
+  // Dedup set for NEW-candidate rows (or update rows with no resolved venue target):
+  // blocks re-proposing the same contact by email (or name+phone) across ALL history
+  // (any status) — this is the original Contact Discovery "never re-propose the same
+  // lead" guarantee.
   const seen = new Set();
+  // Separate dedup for targeted UPDATE rows (has match_target_venue_id): only blocks
+  // if there's a PENDING update proposal already covering the SAME field(s) on the
+  // SAME venue. Past approved/rejected history must NOT block future enrichment
+  // passes (e.g. address scans) on a contact that was already approved long ago.
+  const pendingFieldKeys = new Set();
   existing.forEach(d => {
+    if (d.type === 'update' && d.match_target_venue_id) {
+      if ((d.status || 'pending') === 'pending') {
+        const fields = Object.keys(d.proposed_fields || {}).sort().join(',');
+        pendingFieldKeys.add(d.match_target_venue_id + '::' + fields);
+      }
+      return; // targeted updates never populate the email/name+phone 'seen' set
+    }
     const em = norm(d.candidate && d.candidate.email);
     if (em) seen.add(em);
     else {
@@ -89,19 +105,27 @@ async function stageProposals(rows, scan) {
   let staged = 0, skipped = 0;
   for (const r of rows) {
     const source = r.source || (scan && scan.source) || 'gmail';
-    const email = norm(r.candidate && r.candidate.email);
-    // Dedup: email-based when we have one (all sources). Gmail requires an email.
-    // Screenshots often have no email — dedup those by name+phone instead of dropping them.
-    if (email) {
-      if (seen.has(email)) { skipped++; continue; }
-      seen.add(email);
-    } else if (source === 'gmail') {
-      skipped++; continue;
+    const isTargetedUpdate = r.type === 'update' && r.match_target_venue_id;
+    if (isTargetedUpdate) {
+      const fields = Object.keys(r.proposed_fields || {}).sort().join(',');
+      const key = r.match_target_venue_id + '::' + fields;
+      if (pendingFieldKeys.has(key)) { skipped++; continue; }
+      pendingFieldKeys.add(key);
     } else {
-      const c = r.candidate || {};
-      const key = 'np:' + norm(c.name || c.org || c.venue_name) + '|' + String(c.phone || '').replace(/[^0-9]/g, '');
-      if (key !== 'np:|' && seen.has(key)) { skipped++; continue; }
-      if (key !== 'np:|') seen.add(key);
+      const email = norm(r.candidate && r.candidate.email);
+      // Dedup: email-based when we have one (all sources). Gmail requires an email.
+      // Screenshots often have no email — dedup those by name+phone instead of dropping them.
+      if (email) {
+        if (seen.has(email)) { skipped++; continue; }
+        seen.add(email);
+      } else if (source === 'gmail') {
+        skipped++; continue;
+      } else {
+        const c = r.candidate || {};
+        const key = 'np:' + norm(c.name || c.org || c.venue_name) + '|' + String(c.phone || '').replace(/[^0-9]/g, '');
+        if (key !== 'np:|' && seen.has(key)) { skipped++; continue; }
+        if (key !== 'np:|') seen.add(key);
+      }
     }
     const doc = {
       type: r.type === 'update' ? 'update' : 'new',
