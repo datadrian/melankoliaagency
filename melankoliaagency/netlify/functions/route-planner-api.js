@@ -111,6 +111,30 @@ exports.handler = async (event) => {
       return json(200, { success:true, out });
     }
 
+    if (a === 'debugGhost3') {
+      const { _rawReq } = require('./_firebase');
+      const target=String(b.id||'guide-sacred-skin-westcoast');
+      const out={};
+      try{ out.subcols = await _rawReq('POST', `/${TOURS}/${encodeURIComponent(target)}:listCollectionIds`, {}); }catch(e){ out.subcols_err=e.message; }
+      // for each subcollection, list child docs and delete them, then delete parent
+      const ids = (out.subcols && out.subcols.collectionIds) || [];
+      out.deleted = {};
+      for (const cid of ids) {
+        try{
+          const kids = await _rawReq('GET', `/${TOURS}/${encodeURIComponent(target)}/${encodeURIComponent(cid)}?pageSize=300`);
+          const docs = (kids.documents||[]);
+          out.deleted[cid] = [];
+          for (const d of docs) {
+            const path = String(d.name).split('/databases/(default)/documents')[1];
+            try{ await _rawReq('DELETE', path); out.deleted[cid].push('ok:'+path.split('/').pop()); }catch(e){ out.deleted[cid].push('fail:'+e.message); }
+          }
+        }catch(e){ out.deleted[cid]='list-err:'+e.message; }
+      }
+      // final parent delete attempt
+      try{ await _rawReq('DELETE', `/${TOURS}/${encodeURIComponent(target)}`); out.parent_del='ok'; }catch(e){ out.parent_del='err:'+e.message; }
+      return json(200, { success:true, out });
+    }
+
     if (a === 'hardDeleteTour') {
       // One-shot cleanup for ghost/custom-id tour docs that resist soft-delete.
       const target = String(b.id||'').trim();
