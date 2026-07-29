@@ -90,6 +90,12 @@ exports.handler = async (event) => {
       return json(200, { success:true, data:doc });
     }
 
+    if (a === 'debugGhost') {
+      const all = await listDocs(TOURS, { pageSize:300 });
+      const m = all.filter(t => String(t.name||t.tour_name||'').includes('Guide Demo'));
+      return json(200, { success:true, docs: m.map(t => ({ id:t.id, id_json: JSON.stringify(t.id), len:String(t.id).length, codes:[...String(t.id)].map(c=>c.charCodeAt(0)) })) });
+    }
+
     if (a === 'hardDeleteTour') {
       // One-shot cleanup for ghost/custom-id tour docs that resist soft-delete.
       const target = String(b.id||'').trim();
