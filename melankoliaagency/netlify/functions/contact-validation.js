@@ -38,7 +38,7 @@ exports.handler = async (event) => {
     if (b.action === 'scan') return json(200, await runScan(b.options || {}));
     if (b.action === 'list') return json(200, await listProposals(b));
     if (b.action === 'stats') return json(200, await statsProposals());
-    if (b.action === 'edit') return json(200, await editProposal(b.id, b.after || {}));
+    if (b.action === 'edit') return json(200, await editProposal(b.id, b.after || { record:b.record || {}, contacts:b.contacts || [] }));
     if (b.action === 'approve') return json(200, await approveProposal(b.id));
     if (b.action === 'bulk_approve') return json(200, await bulkApprove(b.ids || []));
     if (b.action === 'reject') return json(200, await rejectProposal(b.id, b.reason || ''));
@@ -420,8 +420,9 @@ async function completeGmailQueue(qid, rawResult) {
     for (const [f,v] of Object.entries(result.fields)) if (!isFilled(venue[f]) && !isFilled(after.proposed_fields[f])) after.proposed_fields[f] = v;
     after.proposed_contacts = uniqArr([...(after.proposed_contacts || []), ...result.contacts.map(c => ({...c,contact_key:contactKey(c)}))]);
     const patch = { after, gmail_evidence:result.evidence, confidence:result.confidence, updated_at:now(), note:'Missing contact information mined from CRM notes and read-only booking Gmail; review evidence before approval.' };
+    const hasChanges = Object.values(after.proposed_fields || {}).some(isFilled) || (after.proposed_contacts || []).some(c => c && Object.values(c).some(isFilled));
     if (p) await updateDoc(COLL,p.id,patch);
-    else {
+    else if (hasChanges) {
       const newId=id();
       await createDoc(COLL,{ type:'note_contact_update',status:'pending',target_venue_id:venue.id,before:trimSnapshot(venue),...patch,created_at:now() },newId);
       await updateDoc(GMAIL_QUEUE,qid,{proposal_id:newId});
@@ -1069,6 +1070,9 @@ async function approveProposal(pid) {
   }
 
   if (p.type === 'note_contact_update') {
+    const proposedFields = (p.after && p.after.proposed_fields) || {};
+    const proposedContacts = (p.after && p.after.proposed_contacts) || [];
+    if (!Object.values(proposedFields).some(isFilled) && !proposedContacts.some(c => c && Object.values(c).some(isFilled))) throw new Error('No proposed changes to approve');
     const venue = await getDoc(VENUES, p.target_venue_id);
     if (!venue) throw new Error('Target venue no longer exists');
     const payload = { ...venue };

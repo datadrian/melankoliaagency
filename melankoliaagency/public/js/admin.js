@@ -3188,8 +3188,11 @@ function renderCvProposals() {
       const contacts = (p.after && p.after.proposed_contacts) || [];
       const fieldRows = Object.keys(fields).length ? `<div class="disc-fields">${Object.entries(fields).map(([k,v]) => `<span><b>${escapeHtml(k)}:</b> ${escapeHtml(v)}</span>`).join('')}</div>` : '';
       const contactRows = contacts.length ? `<div class="disc-venues"><b>Proposed contacts:</b>${contacts.map(cvContactRow).join('')}</div>` : '';
+      const orgName = (p.before && p.before.name) || 'Unknown organization';
+      const additions = [...Object.keys(fields), ...(contacts.length ? [`${contacts.length} contact${contacts.length === 1 ? '' : 's'}`] : [])];
+      const summary = additions.length ? `<div class="disc-diff"><b>${escapeHtml(orgName)}</b><br><span class="disc-sub">Adds: ${additions.map(escapeHtml).join(', ')}</span></div>` : `<div class="disc-status err" style="display:block">No proposed changes — reject this card.</div>`;
       const unknown = p.before && cvIsUnknown(p.before.name) ? '<div class="cv-unknown-warning"><b>Unknown organization:</b> resolve or verify the organization name before approval.</div>' : '';
-      body = `${unknown}${fieldRows}${contactRows}${cvEvidenceBox(p)}${cvCrossReferenceBox(p)}`;
+      body = `${summary}${unknown}${fieldRows}${contactRows}${cvEvidenceBox(p)}${cvCrossReferenceBox(p)}`;
     } else if (p.type === 'google_contact_update') {
       const gc = p.google_contact || {};
       const fields = p.after.proposed_fields || {};
