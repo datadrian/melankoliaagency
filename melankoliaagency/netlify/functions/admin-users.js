@@ -123,10 +123,19 @@ async function updateUser(b) {
   }
   patch.updated_at = now();
   const saved = await updateDoc(USERS, b.id, { ...u, ...patch });
-  // if deactivated, kill any live sessions for this user so access stops immediately
+  // Keep live sessions aligned with Team Access edits so permission changes
+  // take effect immediately rather than waiting for the next login.
+  const sessions = await listDocs(SESSIONS, { pageSize: 500 }).catch(() => []);
+  const liveSessions = sessions.filter(s => s.user_id === b.id);
   if (b.active === false) {
-    const sessions = await listDocs(SESSIONS, { pageSize: 500 }).catch(() => []);
-    await Promise.all(sessions.filter(s => s.user_id === b.id).map(s => deleteDoc(SESSIONS, s.id).catch(() => {})));
+    await Promise.all(liveSessions.map(s => deleteDoc(SESSIONS, s.id).catch(() => {})));
+  } else if (b.modules !== undefined || b.display_name !== undefined) {
+    await Promise.all(liveSessions.map(s => updateDoc(SESSIONS, s.id, {
+      ...s,
+      modules: b.modules !== undefined ? sanitizeModules(b.modules) : (s.modules || []),
+      display_name: b.display_name !== undefined ? (String(b.display_name || '').trim() || u.username) : (s.display_name || u.display_name || u.username),
+      updated_at: now(),
+    }).catch(() => {})));
   }
   return { success: true, data: publicUser(saved) };
 }

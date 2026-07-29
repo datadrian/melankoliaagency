@@ -6,7 +6,7 @@ const RESEARCH_FUNCTION_URL = '/.netlify/functions/researchArtist';
 const SITE_DATA_API = '/.netlify/functions/site-data';
 const MEDIA_UPLOAD_API = '/.netlify/functions/media-upload';
 const ADMIN_USERS_API = '/.netlify/functions/admin-users';
-const ALL_ADMIN_MODULES = ['artists','videos','bookings','venues','discovery','routes','emails','advancing','bands','pages','settings'];
+const ALL_ADMIN_MODULES = ['artists','videos','bookings','venues','discovery','validation','routes','emails','advancing','bands','pages','settings'];
 
 function mkSessionToken(){ return sessionStorage.getItem('mk_session_token') || ''; }
 function mkSessionUser(){ try { return JSON.parse(sessionStorage.getItem('mk_session_user') || 'null'); } catch(e) { return null; } }
@@ -2926,7 +2926,7 @@ function _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 const MODULE_LABELS = {
   artists: 'Artists / AI Research / EPK', videos: 'Videos', bookings: 'Booking Requests',
-  venues: 'Contact Manager', discovery: 'Contact Discovery', routes: 'Route Planner',
+  venues: 'Contact Manager', discovery: 'Contact Discovery', validation: 'Contact Validation', routes: 'Route Planner',
   emails: 'Email Generator', advancing: 'Advancing', bands: 'Band Access',
   pages: 'Page Editor', settings: 'Site Settings',
 };
