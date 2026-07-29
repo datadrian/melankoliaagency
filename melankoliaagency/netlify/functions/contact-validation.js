@@ -45,6 +45,10 @@ exports.handler = async (event) => {
       if (!isAgent) return json(403, { success: false, error: 'contract import requires agent_key' });
       return json(200, await importContractContacts(b.contacts || []));
     }
+    if (b.action === 'import_email_addresses') {
+      if (!isAgent) return json(403, { success: false, error: 'email import requires agent_key' });
+      return json(200, await importEmailAddresses(b.contacts || []));
+    }
     if (b.action === 'purge') {
       if (!isAgent) return json(403, { success: false, error: 'purge requires agent_key' });
       const t0 = Date.now();
@@ -468,6 +472,41 @@ async function importContractContacts(contacts) {
   return { success: true, scanned: rows.length, matched, staged_update: stagedUpdate, staged_new: stagedNew, skipped };
 }
 
+// ---------- booking Gmail address import ----------
+// Targeted only at known CRM records that currently lack an address. The agent
+// supplies an explicit target_venue_id derived from the message correspondent's
+// known CRM email. This action stages proposals only; it never writes CRM.
+async function importEmailAddresses(contacts) {
+  if (!Array.isArray(contacts)) throw new Error('contacts[] required');
+  const rows = contacts.slice(0, 200).filter(x => x && x.target_venue_id && isFilled(x.address));
+  const venues = await listVenues();
+  const venueById = new Map(venues.map(v => [v.id, v]));
+  const existing = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000, mask: ['type','email_key'] }).catch(() => []);
+  const seen = new Set(existing.filter(p => p.type === 'email_contact_update').map(p => p.email_key).filter(Boolean));
+  let stagedUpdate = 0, skipped = 0, missingTarget = 0;
+  for (const ct of rows) {
+    const key = String(ct.email_key || `email_address_${ct.target_venue_id}`);
+    if (seen.has(key)) { skipped++; continue; }
+    const venue = venueById.get(ct.target_venue_id);
+    if (!venue || venue.deleted_at) { missingTarget++; continue; }
+    const fields = {};
+    for (const f of ['address','city','region','country']) if (!isFilled(venue[f]) && isFilled(ct[f])) fields[f] = ct[f];
+    if (!Object.keys(fields).length) { skipped++; seen.add(key); continue; }
+    await createDoc(COLL, {
+      type: 'email_contact_update', status: 'pending', email_key: key,
+      target_venue_id: venue.id, before: trimSnapshot(venue),
+      after: { proposed_fields: fields, new_contact: null },
+      email_source: { message_ids: uniqArr(ct.evidence_message_ids || []), evidence_notes: ct.evidence_notes || '' },
+      extracted_contact: { organization: ct.organization || '', promoter_person_name: ct.promoter_person_name || '', email: ct.email || '', phone: ct.phone || '', address: ct.address || '', city: ct.city || '', region: ct.region || '', country: ct.country || '' },
+      confidence: ct.confidence || 'medium',
+      note: `Matched booking-email address evidence directly to CRM record "${venue.name}". Only still-empty fields are proposed.`,
+      created_at: now(), updated_at: now()
+    }, id());
+    stagedUpdate++; seen.add(key);
+  }
+  return { success: true, scanned: rows.length, staged_update: stagedUpdate, skipped, missing_target: missingTarget };
+}
+
 // ---------- list / stats ----------
 async function listProposals(b) {
   let docs = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000 }).catch(() => []);
@@ -478,7 +517,7 @@ async function listProposals(b) {
 }
 async function statsProposals() {
   const docs = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000 }).catch(() => []);
-  const s = { pending: 0, approved: 0, rejected: 0, restructure: 0, merge: 0, google_contact_update: 0, google_contact_new: 0, contract_contact_update: 0, contract_contact_new: 0, total: docs.length };
+  const s = { pending: 0, approved: 0, rejected: 0, restructure: 0, merge: 0, google_contact_update: 0, google_contact_new: 0, contract_contact_update: 0, contract_contact_new: 0, email_contact_update: 0, total: docs.length };
   docs.forEach(d => {
     const st = d.status || 'pending'; if (s[st] != null) s[st]++;
     if (st === 'pending' && s[d.type] != null) s[d.type]++;
@@ -547,7 +586,7 @@ async function approveProposal(pid) {
     return { success: true, venue_id: primary.id, merged_count: losers.length };
   }
 
-  if (p.type === 'google_contact_update' || p.type === 'contract_contact_update') {
+  if (p.type === 'google_contact_update' || p.type === 'contract_contact_update' || p.type === 'email_contact_update') {
     const venue = await getDoc(VENUES, p.target_venue_id);
     if (!venue) throw new Error('Target venue no longer exists');
     // Re-check LIVE CRM values at approval time: only apply a proposed field if

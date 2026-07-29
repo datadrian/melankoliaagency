@@ -3097,7 +3097,7 @@ async function refreshCvStats() {
     const j = await cvCall({ action: 'stats' });
     const s = j.data || {};
     const el = document.getElementById('cvStats');
-    if (el) el.innerHTML = `<b>${s.pending || 0}</b> pending &middot; ${s.restructure || 0} restructure &middot; ${s.merge || 0} merge/dup &middot; ${s.google_contact_update || 0} google-update &middot; ${s.google_contact_new || 0} google-new &middot; ${s.contract_contact_update || 0} contract-update &middot; ${s.contract_contact_new || 0} contract-new &middot; ${s.approved || 0} approved &middot; ${s.rejected || 0} rejected`;
+    if (el) el.innerHTML = `<b>${s.pending || 0}</b> pending &middot; ${s.restructure || 0} restructure &middot; ${s.merge || 0} merge/dup &middot; ${s.google_contact_update || 0} google-update &middot; ${s.google_contact_new || 0} google-new &middot; ${s.contract_contact_update || 0} contract-update &middot; ${s.contract_contact_new || 0} contract-new &middot; ${s.email_contact_update || 0} email-address &middot; ${s.approved || 0} approved &middot; ${s.rejected || 0} rejected`;
   } catch (e) { /* silent */ }
 }
 function setCvFilter(f, btn) {
@@ -3111,7 +3111,7 @@ async function loadCvProposals() {
   if (host) host.innerHTML = '<p class="muted">Loading\u2026</p>';
   try {
     let payload = { action: 'list' };
-    if (['restructure', 'merge', 'google_contact_update', 'google_contact_new', 'contract_contact_update', 'contract_contact_new'].includes(_cvFilter)) { payload.status = 'pending'; payload.type = _cvFilter; }
+    if (['restructure', 'merge', 'google_contact_update', 'google_contact_new', 'contract_contact_update', 'contract_contact_new', 'email_contact_update'].includes(_cvFilter)) { payload.status = 'pending'; payload.type = _cvFilter; }
     else payload.status = _cvFilter;
     const j = await cvCall(payload);
     _cvProposals = j.data || [];
@@ -3155,7 +3155,7 @@ function renderCvProposals() {
   if (!_cvProposals.length) { host.innerHTML = '<p class="muted">Nothing here yet.</p>'; return; }
   host.innerHTML = _cvProposals.map(p => {
     const confBadge = `<span class="disc-badge conf-${p.confidence || 'medium'}">${p.confidence || 'medium'}</span>`;
-    const typeBadges = { merge: '\u2696 Merge', restructure: '\u2699 Restructure', google_contact_update: '\ud83d\udcc7 Google \u2192 update', google_contact_new: '\ud83d\udcc7 Google \u2192 new contact', contract_contact_update: '\ud83d\udcc4 Contract \u2192 update', contract_contact_new: '\ud83d\udcc4 Contract \u2192 new contact' };
+    const typeBadges = { merge: '\u2696 Merge', restructure: '\u2699 Restructure', google_contact_update: '\ud83d\udcc7 Google \u2192 update', google_contact_new: '\ud83d\udcc7 Google \u2192 new contact', contract_contact_update: '\ud83d\udcc4 Contract \u2192 update', contract_contact_new: '\ud83d\udcc4 Contract \u2192 new contact', email_contact_update: '\u2709 Email \u2192 address' };
     const typeBadge = `<span class="disc-badge">${typeBadges[p.type] || p.type}</span>`;
     const canAct = (p.status || 'pending') === 'pending';
     let body = '';
@@ -3174,6 +3174,10 @@ function renderCvProposals() {
         ? `<div class="disc-fields">${Object.entries(fields).map(([k, v]) => `<span><b>${escapeHtml(k)}:</b> ${escapeHtml(v)}</span>`).join('')}</div>` : '';
       const contactRow = p.after.new_contact ? `<div class="disc-venues"><b>Add contact:</b>${cvContactRow(p.after.new_contact)}</div>` : '';
       body = `<div class="disc-sub">Google contact: ${escapeHtml(gc.name || gc.org || '')} ${gc.emails && gc.emails[0] ? '&middot; ' + escapeHtml(gc.emails[0]) : ''}</div>${fieldRows}${contactRow}`;
+    } else if (p.type === 'email_contact_update') {
+      const ct = p.extracted_contact || {}, fields = p.after.proposed_fields || {};
+      const fieldRows = `<div class="disc-fields">${Object.entries(fields).map(([k,v]) => `<span><b>${escapeHtml(k)}:</b> ${escapeHtml(v)}</span>`).join('')}</div>`;
+      body = `<div class="disc-sub">Booking-email evidence for: ${escapeHtml((p.before && p.before.name) || ct.organization || '')}</div>${fieldRows}`;
     } else if (p.type === 'contract_contact_update') {
       const ct = p.extracted_contact || {}, fields = p.after.proposed_fields || {};
       const fieldRows = Object.keys(fields).length ? `<div class="disc-fields">${Object.entries(fields).map(([k,v]) => `<span><b>${escapeHtml(k)}:</b> ${escapeHtml(v)}</span>`).join('')}</div>` : '';
