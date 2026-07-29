@@ -3077,8 +3077,9 @@ async function cvCall(payload) {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ session_token: mkSessionToken(), ...payload }),
   });
-  const j = await res.json().catch(() => ({}));
-  if (!res.ok || j.success === false) throw new Error(j.error || 'request failed');
+  const raw = await res.text();
+  let j = {}; try { j = raw ? JSON.parse(raw) : {}; } catch (_) {}
+  if (!res.ok || j.success === false) throw new Error(j.error || `request failed (${res.status})`);
   return j;
 }
 function showCvStatus(msg, kind) {
@@ -3245,12 +3246,28 @@ async function cvReject(id) {
 async function cvBulkApprove() {
   const ids = Array.from(document.querySelectorAll('#cvList .cv-check:checked')).map(cb => cb.dataset.pid);
   if (!ids.length) { showCvStatus('Select at least one first.', 'err'); return; }
-  showCvStatus(`Approving ${ids.length}\u2026`, 'working');
+  // Small sequential requests keep every serverless invocation below its time
+  // limit. Completed chunks stay approved if a later request fails, and a retry
+  // is idempotent because approveProposal recognizes approved proposals.
+  const BATCH = 5;
+  let approved = 0, failed = 0;
+  const errors = [];
   try {
-    const j = await cvCall({ action: 'bulk_approve', ids });
-    showCvStatus(`Approved ${j.approved}, ${j.failed} failed.`, j.failed ? 'err' : 'ok');
-    loadCvProposals();
-  } catch (e) { showCvStatus('Bulk approve failed: ' + e.message, 'err'); }
+    for (let i = 0; i < ids.length; i += BATCH) {
+      const chunk = ids.slice(i, i + BATCH);
+      showCvStatus(`Approving ${Math.min(i + chunk.length, ids.length)} of ${ids.length}\u2026`, 'working');
+      const j = await cvCall({ action: 'bulk_approve', ids: chunk });
+      approved += Number(j.approved || 0);
+      failed += Number(j.failed || 0);
+      (j.results || []).filter(r => !r.ok).forEach(r => errors.push(r.error || 'Unknown approval error'));
+    }
+    const detail = errors.length ? ` First error: ${escapeHtml(errors[0])}` : '';
+    showCvStatus(`Approved ${approved}, ${failed} failed.${detail}`, failed ? 'err' : 'ok');
+    await loadCvProposals();
+  } catch (e) {
+    showCvStatus(`Bulk approval stopped after ${approved} completed: ${escapeHtml(e.message)}. Refresh and retry the remaining selected records.`, 'err');
+    await loadCvProposals();
+  }
 }
 async function cvBulkReject() {
   const ids = Array.from(document.querySelectorAll('#cvList .cv-check:checked')).map(cb => cb.dataset.pid);

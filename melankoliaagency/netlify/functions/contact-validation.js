@@ -12,7 +12,7 @@
 // Runs entirely against Firestore — no external connectors needed, so the admin
 // panel can trigger a scan directly (no agent relay required, unlike Contact
 // Discovery's Gmail scan).
-const { listDocs, getDoc, createDoc, updateDoc, json } = require('./_firebase');
+const { listDocs, getDoc, createDoc, updateDoc, queryDocs, json } = require('./_firebase');
 const { authorize } = require('./_auth');
 
 const COLL = 'contact_validation_proposals';
@@ -21,6 +21,7 @@ const AGENT_KEY = () => process.env.CONTACT_DISCOVERY_KEY || process.env.MELANKO
 const RAG_URL = (process.env.SITE_BASE || 'https://melankoliaagency.com') + '/.netlify/functions/rag-venues';
 const now = () => new Date().toISOString();
 const id = () => `cvp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+const venueId = () => `venue_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return json(204, {});
@@ -550,6 +551,34 @@ async function editProposal(pid, patch) {
 }
 
 // ---------- approve / reject ----------
+// Approval-time duplicate guard for proposals staged as "new". Keep this
+// targeted: a full CRM collection read on every approval made 27-item batches
+// exceed the serverless timeout. Exact email/phone matches win; name must also
+// match the city when a city is present.
+async function findLiveDuplicateFast(candidate) {
+  const c = candidate || {};
+  const emails = uniqArr([c.booking_email, ...(c.emails || [])]).filter(isFilled);
+  for (const email of emails) {
+    const hits = await queryDocs(VENUES, 'booking_email', email, { limit: 5 }).catch(() => []);
+    const v = hits.find(x => x && !x.deleted_at);
+    if (v) return { venue: v, matched_on: 'email' };
+  }
+  const phones = uniqArr([c.phone, ...(c.phones || [])]).filter(isFilled);
+  for (const phone of phones) {
+    const hits = await queryDocs(VENUES, 'phone', phone, { limit: 5 }).catch(() => []);
+    const v = hits.find(x => x && !x.deleted_at);
+    if (v) return { venue: v, matched_on: 'phone' };
+  }
+  const name = String(c.name || '').trim();
+  const city = normName(c.city);
+  if (name) {
+    const hits = await queryDocs(VENUES, 'name', name, { limit: 10 }).catch(() => []);
+    const v = hits.filter(x => x && !x.deleted_at).find(x => !city || normName(x.city) === city);
+    if (v) return { venue: v, matched_on: city ? 'name+city' : 'name' };
+  }
+  return null;
+}
+
 async function approveProposal(pid) {
   if (!pid) throw new Error('id required');
   const p = await getDoc(COLL, pid);
@@ -608,12 +637,18 @@ async function approveProposal(pid) {
   }
 
   if (p.type === 'google_contact_new' || p.type === 'contract_contact_new') {
-    const payload = { ...p.after };
+    // Recheck the LIVE CRM before creating anything. If another approval or
+    // staff edit created the contact after staging, merge only missing fields
+    // and arrays into that live record instead of creating a duplicate.
+    const duplicate = await findLiveDuplicateFast(p.after || {});
+    const payload = duplicate
+      ? { ...mergeVenues(duplicate.venue, [p.after || {}]), id: duplicate.venue.id }
+      : { ...(p.after || {}), id: venueId() };
     const res = await fetch(RAG_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upsert', venue: payload, skip_embeddings: true, agent_key: AGENT_KEY() }) });
     const j = await res.json().catch(() => ({}));
     if (!res.ok || !j.success) throw new Error('CRM write failed: ' + (j.error || res.status));
-    await updateDoc(COLL, pid, { status: 'approved', updated_at: now() });
-    return { success: true, venue_id: j.data && j.data.id };
+    await updateDoc(COLL, pid, { status: 'approved', updated_at: now(), approved_venue_id: j.data && j.data.id, approval_match: duplicate ? duplicate.matched_on : 'new' });
+    return { success: true, venue_id: j.data && j.data.id, merged_existing: !!duplicate, matched_on: duplicate && duplicate.matched_on };
   }
 
   throw new Error('Unknown proposal type');
