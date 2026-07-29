@@ -26,6 +26,14 @@ exports.handler = async (event) => {
       return json(200,{success:true,data:await searchVenues(typeof b.query === 'string' ? {...b, query:b.query} : (b.query||b))});
     }
 
+    if (b.action === 'lookup') {
+      if (!isAgent) {
+        const auth = await authorize(b, null);
+        if (!auth.ok) return json(401, { success:false, error: auth.error });
+      }
+      return json(200, { success:true, data: await lookupVenue(b.name||'', b.city||'', b.country||'') });
+    }
+
     // Writes: 'venues' module access, the trusted automation agent_key, or the master password.
     if (b.action === 'upsert' || b.action === 'bulk_upsert') {
       if (!isAgent) {
@@ -68,6 +76,29 @@ async function upsertVenue(v, opts={}){
   if (clean.id || existing) return updateDoc(VENUES, docId, merged).catch(()=>createDoc(VENUES,{...merged,created_at:now()},docId));
   return createDoc(VENUES,{...merged,created_at:now()},docId);
 }
+
+function _norm(x){ return String(x||'').toLowerCase().replace(/\b(the|a|an|venue|club|bar|hall|theatre|theater|lounge|room)\b/g,'').replace(/[^a-z0-9]+/g,' ').trim(); }
+function _toks(x){ return new Set(_norm(x).split(/\s+/).filter(w=>w.length>1)); }
+async function lookupVenue(name, city, country){
+  const target=_norm(name); if(!target) return { match:null, reason:'no name' };
+  let pool=[];
+  if(city) pool = await queryDocs(VENUES, 'city', city, {limit:300}).catch(()=>[]);
+  if(!pool.length && country) pool = await queryDocs(VENUES, 'country', country, {limit:300}).catch(()=>[]);
+  if(!pool.length) pool = await listVenues();
+  const tt=_toks(name); let best=null, bestScore=0;
+  for(const v of pool){
+    const vn=_norm(v.name); if(!vn) continue;
+    let score=0;
+    if(vn===target) score=1;
+    else if(vn.includes(target)||target.includes(vn)) score=0.85;
+    else { const vt=_toks(v.name); let inter=0; tt.forEach(t=>{ if(vt.has(t)) inter++; }); const denom=Math.max(tt.size,vt.size)||1; score=inter/denom; }
+    if(city && String(v.city||'').toLowerCase()===String(city).toLowerCase()) score+=0.08;
+    if(score>bestScore){ bestScore=score; best=v; }
+  }
+  if(!best || bestScore<0.6) return { match:null, score:Number(bestScore.toFixed(3)) };
+  return { match: publicVenue(best), score:Number(bestScore.toFixed(3)) };
+}
+
 async function searchVenues(q){
   let venues = [];
   if (q.city) venues = await queryDocs(VENUES, 'city', q.city, {limit:300}).catch(()=>[]);
