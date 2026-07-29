@@ -58,7 +58,11 @@ exports.handler = async (event) => {
     }
     if (b.action === 'gmail_queue_claim') {
       if (!isAgent) return json(403, { success: false, error: 'gmail queue requires agent_key' });
-      return json(200, await claimGmailQueue(b.limit || 10));
+      return json(200, await claimGmailQueue(b.limit || 10, b.source_ids || []));
+    }
+    if (b.action === 'queue_pending_locations') {
+      if (!isAgent) return json(403, { success: false, error: 'gmail queue requires agent_key' });
+      return json(200, await queuePendingLocationProposals(b.ids || []));
     }
     if (b.action === 'gmail_queue_complete') {
       if (!isAgent) return json(403, { success: false, error: 'gmail queue requires agent_key' });
@@ -348,13 +352,34 @@ async function listGmailQueue(b) {
   if (b.status && b.status !== 'all') docs = docs.filter(x => (x.status || 'queued') === b.status);
   return { success:true, data:docs, count:docs.length };
 }
-async function claimGmailQueue(limit) {
-  const docs = (await listDocs(GMAIL_QUEUE, { orderBy:'created_at asc', pageSize:500 }).catch(() => []))
-    .filter(x => ['queued','failed'].includes(x.status || 'queued'))
+async function claimGmailQueue(limit, sourceIds) {
+  const wanted = new Set((sourceIds || []).map(String));
+  let docs = await listDocs(GMAIL_QUEUE, { orderBy:'created_at asc', pageSize:2000 }).catch(() => []);
+  docs = docs.filter(x => ['queued','failed'].includes(x.status || 'queued'));
+  if (wanted.size) docs = docs.filter(x => wanted.has(String(x.source_id || '')));
+  docs = docs
     .sort((a,b) => ({unknown:0,email_without_name:1,missing_city_region:2,standard:3}[a.priority] ?? 4) - ({unknown:0,email_without_name:1,missing_city_region:2,standard:3}[b.priority] ?? 4))
     .slice(0, Math.max(1, Math.min(Number(limit)||10,25)));
   for (const d of docs) await updateDoc(GMAIL_QUEUE, d.id, { status:'in_progress', updated_at:now() });
   return { success:true, data:docs, count:docs.length };
+}
+async function queuePendingLocationProposals(ids) {
+  const wanted = new Set((ids || []).map(String));
+  let proposals = await listDocs(COLL, { orderBy:'created_at desc', pageSize:2000, mask:['status','type','after'] }).catch(() => []);
+  proposals = proposals.filter(p => (p.status || 'pending') === 'pending' && /_new$/.test(p.type || '') && (!wanted.size || wanted.has(String(p.id))));
+  const seenDocs = await listDocs(GMAIL_QUEUE, { orderBy:'created_at desc', pageSize:2000, mask:['queue_key'] }).catch(() => []);
+  const seen = new Set(seenDocs.map(x => x.queue_key).filter(Boolean));
+  let queued = 0;
+  for (const p of proposals) {
+    const requested = proposalNeedsGmail(p); if (!requested.length) continue;
+    const a=p.after||{}, contacts=a.contacts||[];
+    const emails=uniqArr([a.booking_email,...(a.emails||[]),...contacts.map(c=>c.email)].filter(isFilled).map(normEmail));
+    const names=uniqArr([a.name,...contacts.map(c=>c.name)].filter(isFilled));
+    if (!emails.length && !names.length) continue;
+    const priority=!isFilled(a.name)?'unknown':requested.includes('contact_name')?'email_without_name':'missing_city_region';
+    if (await queueGmailItem({source_type:'proposal',source_id:p.id,priority,requested_fields:requested,query_hints:{emails:emails.slice(0,8),names:names.slice(0,8),organization:isFilled(a.name)?a.name:''}},seen)) queued++;
+  }
+  return {success:true,matched:proposals.length,queued};
 }
 function cleanGmailResult(result) {
   const allowed = ['name','contact_type','address','city','region','country','website','instagram','booking_method'];
