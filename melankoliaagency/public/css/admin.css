@@ -1873,7 +1873,11 @@ select.form-input option { background: #111; }
 .route-venue-row strong { display:block; color:var(--white); margin-bottom:.25rem; }
 .route-venue-row span { color:var(--accent); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; }
 .route-venue-row p { color:var(--muted); font-size:.78rem; line-height:1.5; margin:.35rem 0 0; }
-.route-detail-grid { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(360px,.85fr); gap:1rem; margin-bottom:1rem; }
+.route-detail-grid { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(360px,.85fr); gap:1rem; margin-bottom:1rem; align-items:start; }
+.route-detail-grid.route-wide-tool { grid-template-columns:1fr; }
+.route-detail-grid.route-wide-tool .route-map-card { display:none; }
+.route-detail-grid.route-wide-tool .route-output-panel { width:100%; }
+.route-wide-toggle-row { margin-bottom:.6rem; }
 .route-show-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:1px; background:var(--border); }
 .route-card { background:#101010; border:1px solid var(--border); padding:1rem; }
 .route-card-top { display:flex; justify-content:space-between; gap:1rem; }

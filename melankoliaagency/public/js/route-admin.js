@@ -110,8 +110,7 @@
         await new Promise(r=>setTimeout(r, 400*(attempt+1)));
       }
     }
-    const __dbg = ` | DEBUG token=${(typeof mkSessionToken==='function'?mkSessionToken():'N/A').slice(0,12)} user=${JSON.stringify(window.MK_SESSION_USER||null)} apiUrl=${ROUTE_API}`;
-    root.innerHTML = errorBox('Route Planner backend unavailable', ((lastErr&&lastErr.message)||'Unknown error') + __dbg) +
+    root.innerHTML = errorBox('Route Planner backend unavailable', (lastErr&&lastErr.message)||'Unknown error') +
       `<div style="margin-top:10px"><button type="button" class="btn-secondary btn-sm" onclick="RouteAdmin.init()">Retry</button></div>`;
   }
 
@@ -422,6 +421,23 @@
 
   function renderWorkbench(t){ return `<div class="route-workbench-grid"><button onclick="RouteAdmin.reviewCurrentRoute()"><strong>AI oversight</strong><span>Show saved review; regenerate only if requested.</span></button><button onclick="RouteAdmin.optimizeCurrent()"><strong>Optimize route</strong><span>Reorder without losing holds/deals.</span></button><button onclick="RouteAdmin.estimateBudget()"><strong>Estimate budget</strong><span>Rates, guarantees, costs, break-even.</span></button><button onclick="RouteAdmin.renderVenueBoard()"><strong>Venue board</strong><span>Find, add, select, and email venues city by city.</span></button><button onclick="RouteAdmin.backlineAllStops()"><strong>Backline finder</strong><span>Research suppliers, venue backline, pickup/delivery terms.</span></button><button onclick="RouteAdmin.renderTravelHotelModule()"><strong>Travel + hotels</strong><span>Flights, trains, drives, hotels, links, costs, band guidance.</span></button><button onclick="RouteAdmin.renderTravelOpsBoard()"><strong>Travel Ops Board</strong><span>Today/tomorrow moves, missing hotels, confirmations, risk flags.</span></button><button onclick="RouteAdmin.renderTravelAlertCenter()"><strong>Travel Alert Center</strong><span>Resolve, assign, and jump into critical travel issues.</span></button><button onclick="RouteAdmin.chatAgent()"><strong>Ask booking AI</strong><span>Routing, buyer, hold, and deal strategy.</span></button><button onclick="RouteAdmin.analyzeCurrentAnchors()"><strong>Analyze pipeline</strong><span>Show saved analysis; regenerate only if requested.</span></button></div><div id="routeAiOutput"></div>`; }
   function toolOut(){ return $('routeAiOutput') || $('routeToolOutput') || $('routeDetailTools'); }
+  // Auto-widen the AI workbench panel when it renders something dense (Stop Detail,
+  // Outreach Board, Venue Board, Backline results, Travel modules) so those forms/boards
+  // get full width instead of being squeezed into the narrow 390px workbench column next
+  // to the map (which was also the cause of a tall blank gap under the shorter map card).
+  function setupWideToolObserver(){
+    const target = $('routeToolOutput'); if(!target || target._wideObserverAttached) return;
+    target._wideObserverAttached = true;
+    const mo = new MutationObserver(()=>{
+      requestAnimationFrame(()=>{
+        const grid = document.querySelector('.route-detail-grid'); if(!grid) return;
+        grid.classList.toggle('route-wide-tool', target.scrollHeight > 640);
+      });
+    });
+    mo.observe(target, {childList:true, subtree:true});
+  }
+  function toggleWideView(){ document.querySelector('.route-detail-grid')?.classList.toggle('route-wide-tool'); }
+
   // Scroll the AI/tool output panel into view and briefly highlight it, so a
   // click on a leg-row button (Details, Backline, Contact Finder, etc.) gives
   // clear feedback — the output renders in the workbench panel further down the
@@ -558,10 +574,12 @@
       </div>
       <label>Next Action<textarea id="stopNextAction" class="form-input form-textarea" rows="2">${esc(l.next_action||'')}</textarea></label>
       <label>Internal Notes<textarea id="stopNotes" class="form-input form-textarea" rows="3">${esc(l.notes||'')}</textarea></label>
-      <div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.saveStopEdits(${idx})">Save Stop Edits</button><button class="btn-secondary" onclick="RouteAdmin.insertBlankDayAfter(${idx})">Add Blank Day After</button>${l.day_off?`<button class="btn-secondary" onclick="RouteAdmin.convertBlankDayToProspect(${idx})">Convert To Prospect</button>`:''}<button class="btn-secondary" onclick="RouteAdmin.venueFinderForStop(${idx})">Find Promoters/Venues</button><button class="btn-secondary" onclick="RouteAdmin.backlineForStop(${idx})">Backline Finder</button><button class="btn-secondary" onclick="RouteAdmin.manualVenueForm(${idx})">Manual Add Contact</button><button class="btn-secondary" onclick="RouteAdmin.generateEmail(${idx})">Generate Email</button></div>
+      <div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.saveStopEdits(${idx})">Save Stop Edits</button><button class="btn-secondary" onclick="RouteAdmin.insertBlankDayAfter(${idx})">Add Blank Day After</button>${l.day_off?`<button class="btn-secondary" onclick="RouteAdmin.convertBlankDayToProspect(${idx})">Convert To Prospect</button><button class="btn-secondary" onclick="RouteAdmin.removeBlankDay(${idx})">Remove Blank Day</button>`:''}<button class="btn-secondary" onclick="RouteAdmin.venueFinderForStop(${idx})">Find Promoters/Venues</button><button class="btn-secondary" onclick="RouteAdmin.backlineForStop(${idx})">Backline Finder</button><button class="btn-secondary" onclick="RouteAdmin.manualVenueForm(${idx})">Manual Add Contact</button><button class="btn-secondary" onclick="RouteAdmin.generateEmail(${idx})">Generate Email</button></div>
       ${renderBacklineMini(l)}${renderOutreachBoard(l,idx)}
+      <div id="marketVenuesPanel" class="route-stop-venues"></div>
     </div>`;
     focusToolOut();
+    if(!l.day_off) loadMarketVenues(idx);
   }
   function saveStopEdits(idx){
     const t=activeRoute(); const l=t?.legs?.[idx]; if(!l) return;
@@ -912,6 +930,13 @@
     await persistAndRerenderRoute('Blank day converted to prospect', true);
     openStop(idx);
   }
+  async function removeBlankDay(idx){
+    const t=activeRoute(); const l=t?.legs?.[idx]; if(!l || !l.day_off) return;
+    if(!confirm(`Remove this blank/recovery day (${l.date||''})? Later dates shift back by one day.`)) return;
+    for(let i=idx+1;i<t.legs.length;i++){ if(t.legs[i]?.date) t.legs[i].date=addDaysISO(t.legs[i].date,-1); }
+    t.legs.splice(idx,1); renumberLegs(t);
+    await persistAndRerenderRoute('Blank day removed', true);
+  }
   function reviewChangeActions(review={}){
     const changes=Array.isArray(review.recommended_changes)?review.recommended_changes:[];
     return changes.map(c=>{
@@ -1127,6 +1152,45 @@
     html+=`</div>`;
     return html;
   }
+  // Ranked list of ALL promoters/venues already in the Contact Manager CRM for this
+  // stop's city (not a fresh web search) — ordered by rag-venues' relevance score
+  // (genre fit, geography, relationship warmth). Lets Adrian see the whole local pool
+  // at a glance and one-click add any of them into this stop's outreach list.
+  let _marketVenuesCache = [];
+  async function loadMarketVenues(idx){
+    const t=activeRoute(); const l=t?.legs?.[idx]; const panel=$('marketVenuesPanel');
+    if(!l || !panel) return;
+    if(!l.city){ panel.innerHTML=''; return; }
+    panel.innerHTML = `<h4>Promoters/venues in ${esc(l.city)} <span class="route-muted">— loading from CRM…</span></h4>`;
+    try{
+      const data = await post(RAG_VENUES_API, {action:'search', city:l.city, country:l.country, genre:'darkwave, EBM, post-punk, industrial, goth, synth', limit:20});
+      const list = Array.isArray(data.venues) ? data.venues : [];
+      _marketVenuesCache = list;
+      if(!list.length){ panel.innerHTML=`<h4>Promoters/venues in ${esc(l.city)}</h4><div class="route-ai-empty">No CRM contacts found for this market yet. Try "Find Promoters/Venues" (live web search) or "Manual Add Contact" above.</div>`; return; }
+      const already = new Set((l.candidate_venues||[]).map(v=>String(v.name||'').toLowerCase()+'|'+String(v.city||'').toLowerCase()));
+      panel.innerHTML = `<h4>Promoters/venues in ${esc(l.city)} <span class="route-muted">— ${list.length} from CRM, ranked by fit</span></h4><div class="route-object-card-list">${list.map((v,vi)=>marketVenueRow(v,vi,idx,already)).join('')}</div>`;
+    } catch(e){ panel.innerHTML = `<h4>Promoters/venues in ${esc(l.city)}</h4>` + errorBox('Could not load CRM market list', e.message); }
+  }
+  function marketVenueRow(v,vi,idx,already){
+    const key = String(v.name||'').toLowerCase()+'|'+String(v.city||'').toLowerCase();
+    const added = already.has(key);
+    const score = typeof v._rag_score==='number' ? Math.round(Math.max(0,Math.min(1,v._rag_score))*100) : null;
+    return `<div class="route-object-card"><b>${esc(v.name||'Contact')}</b><span>${esc([v.contact_type||v.type,v.city,v.country,v.capacity?`cap ${v.capacity}`:'',v.relationship_status].filter(Boolean).join(' · '))}${score!==null?` · fit ${score}%`:''}</span>${v.notes?`<p>${esc(String(v.notes).slice(0,160))}</p>`:''}<div class="route-stop-actions">${added?'<span class="ob-crm-tag">✓ Already in outreach</span>':`<button class="btn-secondary btn-sm" onclick="RouteAdmin.addMarketVenueToOutreach(${idx},${vi})">+ Add to outreach</button>`}${v.website?`<a class="btn-secondary btn-sm" href="${attr(v.website)}" target="_blank">Site</a>`:''}</div></div>`;
+  }
+  function crmToOutreachContact(v={}){
+    const isPromoter = /promoter|collective|agency|booker|festival|series/i.test(v.contact_type||v.type||'');
+    return {contact_type:isPromoter?'promoter':'venue', name:v.name, address:venueAddress(v), city:v.city, country:v.country, capacity:v.capacity||v.actual_capacity, fit_reason:v.notes||v.relationship_status||'From venue CRM.', booking_method:v.booking_method, website:v.website, email:v.booking_email||v.email, instagram:v.instagram, facebook:v.facebook, outreach_angle:v.notes||'', crm_matched:true, crm_id:v.id, type:v.contact_type||v.type||(isPromoter?'promoter':'venue')};
+  }
+  function addMarketVenueToOutreach(idx, vi){
+    const t=activeRoute(); const l=t?.legs?.[idx]; const v=_marketVenuesCache[vi]; if(!l||!v) return;
+    l.candidate_venues = Array.isArray(l.candidate_venues) ? l.candidate_venues : [];
+    const key = x => String(x.name||'').toLowerCase()+'|'+String(x.city||'').toLowerCase();
+    if(l.candidate_venues.some(x=>key(x)===key(v))){ toast('Already in this stop\'s outreach list','error'); return; }
+    l.candidate_venues.push(crmToOutreachContact(v));
+    if(!l.suggested_venue) l.suggested_venue = v.name||'';
+    _persistLeg(idx,l,`✓ ${v.name||'Venue'} added to outreach`);
+    rerenderActiveRoute(); openStop(idx);
+  }
   function _persistLeg(idx,l,msg){ if(activeRoute()?.id){ persistStop(idx,l).then(()=>toast(msg,'success')).catch(e=>toast('Save failed: '+e.message,'error')); } else toast(msg+' (unsaved draft)','success'); }
   function setVenueOutreach(idx,vi,status){
     const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[vi]; if(!v) return;
@@ -1211,7 +1275,7 @@
   function renderDetail(t){
     $('routeAdminShell').innerHTML=`
       <section class="route-plan-shell">
-        <div class="route-plan-topbar"><button class="btn-secondary btn-sm" onclick="RouteAdmin.init()">← Tour Library</button><div><p class="route-kicker">Saved tour workspace</p><h1>${esc(t.name||t.tour_name||'Untitled Tour')}</h1><span>${esc(t.artist||'')} · ${esc(t.region||'')} · ${esc(normalizeDateRange(t))}</span></div><div class="route-command-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTourOutreach()">Outreach Board</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderVenueBoard()">Contact Board</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelOpsBoard()">Travel Ops</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelAlertCenter()">Alerts</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelHotelModule()">Travel + Hotels</button><button class="btn-secondary btn-sm" onclick="window.open('/route-planner-guide.html','_blank')">Help</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.duplicateTour('${attr(t.id)}')">Duplicate</button><button class="btn-danger btn-sm" onclick="RouteAdmin.deleteTour('${attr(t.id)}')">Delete</button></div></div>
+        <div class="route-plan-topbar"><button class="btn-secondary btn-sm" onclick="RouteAdmin.init()">← Tour Library</button><div><p class="route-kicker">Saved tour workspace</p><h1>${esc(t.name||t.tour_name||'Untitled Tour')}</h1><span>${esc(t.artist||'')} · ${esc(t.region||'')} · ${esc(normalizeDateRange(t))}</span></div><div class="route-command-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTourOutreach()">Outreach Board</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderVenueBoard()">Contact Board</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelOpsBoard()">Travel Ops</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelAlertCenter()">Alerts</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTravelHotelModule()">Travel + Hotels</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.toggleWideView()">⛶ Compact/Wide</button><button class="btn-secondary btn-sm" onclick="window.open('/route-planner-guide.html','_blank')">Help</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.duplicateTour('${attr(t.id)}')">Duplicate</button><button class="btn-danger btn-sm" onclick="RouteAdmin.deleteTour('${attr(t.id)}')">Delete</button></div></div>
         <div class="route-detail-grid">
           <section class="route-map-card"><div class="route-panel-title"><span>Saved route map</span><em>${esc(t.summary||t.routing_strategy||'')}</em></div><div id="routeMap" class="route-map route-map-detail"><div class="route-map-placeholder">Loading route map…</div></div></section>
           <section class="route-output-panel"><div class="route-panel-title"><span>AI workbench</span><em>Continue refining this saved tour.</em></div><div id="routeToolOutput">${renderWorkbench(t)}</div></section>
@@ -1221,6 +1285,7 @@
         ${renderRouteHelpSections(true)}
         ${renderAssistantDock()}
       </section>`;
+    setupWideToolObserver();
   }
   function showRow(s){ return `<div class="route-card"><div class="route-card-top"><div><div class="route-card-artist">${esc(s.status||'draft')}</div><h3>${esc(s.venue_name||s.city||'Show')}</h3></div></div><div class="route-card-meta"><span>${esc(s.date||'')}</span><span>${esc([s.city,s.country].filter(Boolean).join(', '))}</span></div><p>${esc([s.advancing_notes||'Ready for advancing details.', s.travel_mode_recommendation?('Travel: '+s.travel_mode_recommendation):'', s.hotel_responsibility?('Hotel: '+s.hotel_responsibility):'', s.backline_needed?('Backline: '+s.backline_needed):''].filter(Boolean).join(' · '))}</p></div>`; }
   async function duplicateTour(id){ const source=tours.find(t=>t.id===id) || currentTour; if(!source) return; const copy={...source,id:undefined,name:(source.name||source.tour_name||'Tour')+' Copy',tour_name:(source.tour_name||source.name||'Tour')+' Copy',status:'draft'}; try{ const saved=await api({action:'createTour',tour:copy,createShows:false}); toast('✓ Tour duplicated','success'); await initRoutePlannerAdmin(); if(saved.id) openTour(saved.id); } catch(e){ toast('Duplicate failed: '+e.message,'error'); } }
@@ -1504,7 +1569,7 @@
   }
 
 
-  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, draftAllFollowUps, matchAllFromCRM, autofillVenueFromCRM, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, transportCompare, toggleFlightGear, addGearPiece, removeGearPiece, _setGear, askAboutCurrentReview, applyReviewPatch, dismissReviewPatch };
+  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, draftAllFollowUps, matchAllFromCRM, autofillVenueFromCRM, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, removeBlankDay, toggleWideView, loadMarketVenues, addMarketVenueToOutreach, transportCompare, toggleFlightGear, addGearPiece, removeGearPiece, _setGear, askAboutCurrentReview, applyReviewPatch, dismissReviewPatch };
   function csvCell(v){
     const s = v==null ? '' : String(v);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
