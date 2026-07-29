@@ -3153,10 +3153,10 @@ function cvContactRow(c) {
 }
 function cvIsUnknown(v) { return !String(v || '').trim() || /^(unknown(?: venue| organi[sz]ation)?|n\/a|na|tbd|-|--|none|no name|unnamed)$/i.test(String(v).trim()); }
 function cvEvidenceBox(p) {
-  const all = { ...(p.evidence || {}), ...(p.gmail_evidence || {}) };
+  const all = { ...(p.evidence || {}), ...(p.gmail_evidence || {}), ...(p.research_evidence || {}) };
   const rows = Object.entries(all).filter(([,e]) => e && e.snippet).slice(0,12);
   if (!rows.length) return '';
-  return `<div class="cv-evidence-box"><b>Evidence used</b>${rows.map(([field,e]) => `<div><span class="disc-badge conf-${escapeHtml(e.confidence || 'medium')}">${escapeHtml(e.source || 'source')} · ${escapeHtml(e.confidence || 'medium')}</span> <b>${escapeHtml(field)}:</b> “${escapeHtml(e.snippet)}”</div>`).join('')}</div>`;
+  return `<div class="cv-evidence-box"><b>Evidence used</b>${rows.map(([field,e]) => `<div><span class="disc-badge conf-${escapeHtml(e.confidence || 'medium')}">${escapeHtml(e.source || 'source')} · ${escapeHtml(e.confidence || 'medium')}</span> <b>${escapeHtml(field)}:</b> “${escapeHtml(e.snippet)}”${(e.source_urls || []).length ? ` <a href="${escapeHtml(e.source_urls[0])}" target="_blank" rel="noopener">Source ↗</a>` : ''}</div>`).join('')}</div>`;
 }
 function cvCrossReferenceBox(p) {
   const refs = p.cross_references || [];
