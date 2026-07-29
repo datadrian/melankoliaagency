@@ -42,13 +42,15 @@ exports.handler = async (event) => {
     if (b.action === 'bulk_reject') return json(200, await bulkReject(b.ids || []));
     if (b.action === 'purge') {
       if (!isAgent) return json(403, { success: false, error: 'purge requires agent_key' });
-      const all = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 1000 }).catch(() => []);
-      let del = 0;
+      const t0 = Date.now();
+      const all = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 1000, mask: ['status'] }).catch(() => []);
+      let del = 0, more = false;
       for (const d of all) {
+        if ((Date.now() - t0) > 18000) { more = true; break; }
         const match = (!b.status || (d.status || 'pending') === b.status) || (Array.isArray(b.ids) && b.ids.includes(d.id));
         if (match) { await require('./_firebase').deleteDoc(COLL, d.id).catch(() => {}); del++; }
       }
-      return json(200, { success: true, deleted: del });
+      return json(200, { success: true, deleted: del, more });
     }
     return json(400, { success: false, error: 'Unknown action' });
   } catch (e) {
