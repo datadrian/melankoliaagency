@@ -48,6 +48,19 @@
   }
   const api = payload => post(ROUTE_API,payload);
   const ai = (action,data) => post(ROUTE_AI,{action,data});
+  // Like post(), but returns the FULL parsed JSON (success/status/data/warning)
+  // instead of unwrapping to just `data` — needed for the Backline Finder
+  // job-status polling, where `status:'pending'` responses have no `data` yet.
+  async function postFull(url,payload){
+    const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ session_token: (typeof mkSessionToken==='function'?mkSessionToken():''), ...(payload||{}) })});
+    const text = await res.text();
+    let json = null;
+    try { json = text ? JSON.parse(text) : {}; }
+    catch(e){ const snippet=text.slice(0,220).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim(); throw new Error(`Non-JSON response from ${url.split('/').pop()} (${res.status}). ${snippet || 'The function likely timed out before returning JSON.'}`); }
+    if(!res.ok || json.success===false) throw new Error(json.error || `Request failed (${res.status})`);
+    return json;
+  }
+  function sleepMs(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
   function loading(text){ return `<div class="route-loading"><span></span>${esc(text)}</div>`; }
   function errorBox(title,msg){ return `<div class="route-error"><strong>${esc(title)}</strong><br>${esc(msg)}</div>`; }
@@ -643,11 +656,28 @@
     const fallbackNote=(data.fallback||data.warning)?`<div class="route-warning-list"><b>${data.fallback?'Fallback mode':'Research warning'}</b><ul><li>${esc(data.warning||'Deep verified research was unavailable; links below are search links for manual confirmation, not verified supplier terms.')}</li></ul></div>`:'';
     return `<div class="route-tool-card route-backline-result"><h3>Backline Finder${idx!==null?` — Stop ${idx+1}`:''}</h3>${fallbackNote}<p>${esc(data.summary||'')}</p><p><strong>Recommended plan:</strong> ${esc(data.recommended_plan||'Confirm with promoter/venue and keep a rental backup.')}</p><p><strong>Risk:</strong> ${esc(data.risk_level||'unknown')}</p><div class="route-panel-title"><span>Local suppliers / rental options</span><em>${suppliers.length} found</em></div><div class="route-object-card-list">${supplierHtml}</div><div class="route-panel-title"><span>Venue backline / house gear</span><em>${venueBackline.length} checked</em></div><div class="route-object-card-list">${venueHtml}</div>${questions.length?`<div class="route-panel-title"><span>Open questions for promoter / venue</span></div><ul>${questions.map(q=>`<li>${esc(q)}</li>`).join('')}</ul>`:''}</div>`;
   }
+  // Backline Finder runs as an async job: 'start' returns instantly with a
+  // job_id (the actual grounded web research runs in a Netlify background
+  // function with no synchronous-timeout ceiling), then we poll 'status'
+  // every ~2.2s until it's done. This is what fixed the old "FALLBACK MODE"
+  // issue — the previous synchronous call could get cut off by the
+  // platform's ~10-26s function limit whenever a search ran a bit long.
   async function backlineForStop(idx){
     const t=activeRoute(); const l=t?.legs?.[idx]; if(!l) return;
-    const out=focusToolOut(); out.innerHTML=loading(`Researching backline options for ${l.city}…`);
+    const out=focusToolOut();
+    let waited=0;
+    out.innerHTML=loading(`Researching backline options for ${l.city}…`);
     try{
-      const data=await post(BACKLINE_API,{data:{artist:t.artist,city:l.city,country:l.country,venue:l.suggested_venue,date:l.date,backline_needed:l.backline_needed,gear_requirements:t.logisticsProfile||t.logistics_profile||t.gearProfile||''}});
+      const started=await postFull(BACKLINE_API,{action:'start',data:{artist:t.artist,city:l.city,country:l.country,venue:l.suggested_venue,date:l.date,backline_needed:l.backline_needed,gear_requirements:t.logisticsProfile||t.logistics_profile||t.gearProfile||''}});
+      const jobId=started.job_id;
+      let data=null, warning='';
+      for(let i=0;i<40;i++){ // ~40 x 2.2s ≈ 88s ceiling; the job self-heals to a fallback well before that
+        await sleepMs(2200); waited+=2.2;
+        const poll=await postFull(BACKLINE_API,{action:'status',job_id:jobId});
+        if(poll.status==='done'){ data=poll.data; warning=poll.warning||''; break; }
+        out.innerHTML=loading(`Researching backline options for ${l.city}… (${Math.round(waited)}s — live web search in progress)`);
+      }
+      if(!data) throw new Error('Backline research is taking unusually long — try again in a moment.');
       l.backline_research=data; l.backline_options=data.suppliers||[]; l.venue_backline=data.venue_backline||[]; l.backline_next_questions=data.open_questions||[];
       l.backline_notes=[data.summary,data.recommended_plan].filter(Boolean).join(' · ');
       if(t.id) await persistStop(idx,l);
