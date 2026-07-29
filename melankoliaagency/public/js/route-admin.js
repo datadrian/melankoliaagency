@@ -358,7 +358,7 @@
     return `<article class="route-leg ${l.day_off?'day-off':''}" onclick="RouteAdmin.openStop(${i})">
       <div class="route-leg-day"><b>${esc(l.day||i+1)}</b><span>${esc(l.day_of_week||'')}</span></div>
       <div class="route-leg-main"><strong>${esc(l.city||'TBD')}</strong><span>${esc([l.date,l.country].filter(Boolean).join(' · '))}</span>${l.suggested_venue?`<em>${esc(l.suggested_venue)}</em>`:''}${(l.candidate_venues||[]).length?`<p class="ob-leg-sum">🎯 ${esc(outreachSummaryText(l))}</p>`:''}${l.notes?`<p>${esc(l.notes)}</p>`:''}</div>
-      <div class="route-leg-meta"><span>${esc(type)}</span>${statusBadge(status)}<span>Rate: ${esc(money(rate,currencyOf(activeRoute())))}</span><span>${esc(l.travel_mode_recommendation||'travel TBD')}</span><span>${esc(l.hotel_responsibility?('Hotel: '+l.hotel_responsibility):'Hotel TBD')}</span><span>${l.locked?'Locked':'Not locked'}</span></div>
+      <div class="route-leg-meta"><span>${esc(type)}</span>${statusBadge(status)}<span>Rate: ${esc(money(rate,currencyOf(activeRoute())))}</span><span>${l.drive_time_text?esc(`Drive: ${l.drive_time_text}${l.drive_km?` · ${l.drive_km} km`:''}`):esc(l.travel_mode_recommendation||'travel TBD')}</span><span>${esc(l.hotel_responsibility?('Hotel: '+l.hotel_responsibility):'Hotel TBD')}</span><span>${l.locked?'Locked':'Not locked'}</span></div>
       <div class="route-leg-actions">${!l.day_off?`<button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.openStop(${i})">Details</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.venueFinderForStop(${i})">Contact Finder</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.backlineForStop(${i})">Backline</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.suggestVenues(${i})">Fast Contacts</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.generateEmail(${i})">Email</button><button class="btn-secondary btn-sm" onclick="event.stopPropagation();RouteAdmin.adviseDeal(${i})">Deal</button>`:''}</div>
     </article>`;
   }
@@ -835,13 +835,38 @@
   function renderReviewOutput(review, cached=false){
     const verdict=(review?.verdict||'review').replace(/_/g,' ');
     const actions=[...(review?.suggested_actions||[]), ...reviewChangeActions(review)];
-    return `<div class="route-tool-card route-review-card"><div class="route-tool-head"><h3>AI Oversight — ${esc(verdict)}${cached?' <span class="route-cache-pill">saved</span>':''}</h3><div class="route-stop-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.reviewCurrentRoute(false,true)">Regenerate Review</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.insertBlankDayAfter()">Add Blank Day</button></div></div>${renderObject(review)}${renderSuggestedActions(actions)}<div class="route-context-chat"><h4>Respond to this review</h4><textarea id="routeReviewChatInput" class="form-input form-textarea" rows="3" placeholder="e.g. Add a rest day after WGT, but keep Paris and London fixed…"></textarea><button class="btn-primary" onclick="RouteAdmin.askAboutCurrentReview()">Ask AI / Propose Fix</button></div></div>`;
+    return `<div class="route-tool-card route-review-card"><div class="route-tool-head"><h3>AI Oversight — ${esc(verdict)}${cached?' <span class="route-cache-pill">saved</span>':''}</h3><div class="route-stop-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.reviewCurrentRoute(false,true)">Regenerate Review</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.insertBlankDayAfter()">Add Blank Day</button></div></div>${renderObject(review)}${renderSuggestedActions(actions)}<div class="route-context-chat"><h4>Respond to this review</h4><textarea id="routeReviewChatInput" class="form-input form-textarea" rows="3" placeholder="e.g. Add a rest day after WGT, but keep Paris and London fixed…"></textarea><button class="btn-primary" onclick="RouteAdmin.askAboutCurrentReview()">Ask AI / Propose Fix</button><div id="routeReviewChatOut" class="route-review-chat-out"></div></div></div>`;
   }
   async function askAboutCurrentReview(){
     const q=val('routeReviewChatInput'); if(!q) return toast('Type what you want to do about the review first.','error');
-    const input=$('routeAssistantInput'); if(input) input.value=`Using the saved AI Oversight review, ${q}`;
-    await assistantAsk();
+    const t=activeRoute()||{};
+    const out=$('routeReviewChatOut'); if(out) out.innerHTML=`<div class="route-loading"><span></span>Reading the route and asking Booking AI…</div>`;
+    try{
+      const data=await ai('assistant_edit_route',{question:`Using the saved AI Oversight review, ${q}`,tour:t,legs:t.legs||[],shows:currentShows||[],currency:currencyOf(t)});
+      lastAssistantPatch=data.route_patch||null;
+      const p=lastAssistantPatch;
+      const patchHasChanges=p && (Object.keys(p.tour_updates||{}).length || (p.leg_updates||[]).length || (p.add_candidate_venues||[]).length || (p.add_legs||[]).length || (p.delete_leg_indices||[]).length);
+      const changeSummary = patchHasChanges ? summarizePatch(p) : '';
+      if(out) out.innerHTML=`<div class="route-review-answer"><p>${esc(data.answer||data.summary||'I reviewed the route.')}</p>${(data.warnings||[]).length?`<div class="route-warning-list"><b>Watch-outs</b><ul>${data.warnings.map(w=>`<li>${esc(w)}</li>`).join('')}</ul></div>`:''}${patchHasChanges?`<div class="route-patch-preview"><b>Proposed changes</b>${changeSummary}<details><summary>See raw patch</summary><pre>${esc(JSON.stringify(p,null,2))}</pre></details><button class="btn-primary btn-sm" onclick="RouteAdmin.applyReviewPatch()">Apply changes + save</button> <button class="btn-secondary btn-sm" onclick="RouteAdmin.dismissReviewPatch()">Dismiss</button></div>`:'<p class="route-muted">No route changes were needed — this was informational.</p>'}${renderSuggestedActions(data.suggested_actions||[])}</div>`;
+      const el=$('routeReviewChatInput'); if(el) el.value='';
+      if(out) out.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }catch(e){ if(out) out.innerHTML=errorBox('AI could not respond',e.message); }
   }
+  function summarizePatch(p){
+    const bits=[];
+    const tu=Object.keys(p.tour_updates||{}); if(tu.length) bits.push(`<li>Update tour settings: ${esc(tu.join(', '))}</li>`);
+    (p.leg_updates||[]).forEach(ch=>{ bits.push(`<li>Change stop #${(Number(ch.leg_index)||0)+1}: ${esc(Object.keys(ch.updates||{}).join(', '))}</li>`); });
+    (p.add_legs||[]).forEach(l=>{ bits.push(`<li>Add stop: ${esc([l.day_off?'Rest day':(l.city||'new stop'),l.date].filter(Boolean).join(' · '))}</li>`); });
+    (p.delete_leg_indices||[]).forEach(i=>{ bits.push(`<li>Remove stop #${(Number(i)||0)+1}</li>`); });
+    (p.add_candidate_venues||[]).forEach(ch=>{ bits.push(`<li>Add venue "${esc(ch.venue?.name||'venue')}" to stop #${(Number(ch.leg_index)||0)+1}</li>`); });
+    return bits.length?`<ul class="route-patch-list">${bits.join('')}</ul>`:'';
+  }
+  async function applyReviewPatch(){
+    const out=$('routeReviewChatOut');
+    try{ await applyAssistantPatch(); if(out) out.innerHTML='<div class="route-ai-empty">✓ Changes applied and saved. Ask for the next adjustment anytime.</div>'; }
+    catch(e){ if(out) out.innerHTML=errorBox('Apply failed',e.message); }
+  }
+  function dismissReviewPatch(){ lastAssistantPatch=null; const out=$('routeReviewChatOut'); if(out) out.innerHTML='<div class="route-ai-empty">Dismissed. Ask something else about the review.</div>'; }
   function renderPipelineAnalysisOutput(data, cached=false){
     return `<div class="route-tool-card"><div class="route-tool-head"><h3>Current Route Pipeline Analysis ${cached?'<span class="route-cache-pill">saved</span>':''}</h3><div class="route-stop-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.analyzeCurrentAnchors(true)">Regenerate Analysis</button></div></div>${renderObject(data)}${renderSuggestedActions(data?.suggested_actions||[])}</div>`;
   }
@@ -1156,10 +1181,55 @@
           mapMarkers.push(marker);
         }
       }
-      if(pts.length){ const line=new google.maps.Polyline({path:pts,geodesic:true,strokeColor:'#c8a96e',strokeOpacity:.95,strokeWeight:2,map}); mapLines.push(line); const bounds=new google.maps.LatLngBounds(); pts.forEach(p=>bounds.extend(p)); map.fitBounds(bounds,{top:50,right:50,bottom:50,left:50}); }
+      if(pts.length){
+        await drawSegments(legs);
+        const bounds=new google.maps.LatLngBounds(); pts.forEach(p=>bounds.extend(p)); map.fitBounds(bounds,{top:50,right:50,bottom:50,left:50});
+      }
       else { await renderStarterMap(); }
     } catch(e){ el.innerHTML=`<div class="route-map-placeholder route-map-fallback">Map unavailable: ${esc(e.message)}</div>`; }
   }
+  // ---- Real driving paths + drive times between consecutive plotted stops ----
+  function isDrivingMode(txt){ const s=String(txt||'').toLowerCase(); if(/fly|flight|air|plane|✈/.test(s)) return false; if(/train|rail|ferry|boat/.test(s)) return false; return /driv|van|road|bus|car|coach|nightliner|shuttle|rv|feasible/.test(s) || s===''; }
+  function segKey(a,b){ return `${a.lat.toFixed(4)},${a.lng.toFixed(4)}>${b.lat.toFixed(4)},${b.lng.toFixed(4)}`; }
+  function haversineKm(a,b){ const R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLng=(b.lng-a.lng)*Math.PI/180,la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180; const h=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
+  function fmtDur(min){ min=Math.round(min); const h=Math.floor(min/60), m=min%60; return h?`${h}h ${m?`${m}m`:''}`.trim():`${m}m`; }
+  function decodePolyline(str){ let index=0,lat=0,lng=0,coords=[]; while(index<str.length){ let b,shift=0,result=0; do{ b=str.charCodeAt(index++)-63; result|=(b&0x1f)<<shift; shift+=5; }while(b>=0x20); const dlat=(result&1)?~(result>>1):(result>>1); lat+=dlat; shift=0; result=0; do{ b=str.charCodeAt(index++)-63; result|=(b&0x1f)<<shift; shift+=5; }while(b>=0x20); const dlng=(result&1)?~(result>>1):(result>>1); lng+=dlng; coords.push({lat:lat/1e5,lng:lng/1e5}); } return coords; }
+  async function fetchDriveRoute(a,b){
+    try{ const res=await fetch(MAPS_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'route',mode:'DRIVE',origin:{lat:a.lat,lng:a.lng},destination:{lat:b.lat,lng:b.lng}})}).then(r=>r.json());
+      if(res&&res.success&&res.encodedPolyline){ return {ok:true,km:Math.round((res.distanceMeters||0)/1000),minutes:Math.round((res.durationSeconds||0)/60),path:decodePolyline(res.encodedPolyline)}; }
+    }catch{}
+    return {ok:false};
+  }
+  async function drawSegments(legs){
+    const stops=(legs||[]).map((l,i)=>({l,i})).filter(x=>!x.l.day_off && x.l.lat && x.l.lng);
+    for(let k=1;k<stops.length;k++){
+      const prev=stops[k-1].l, cur=stops[k].l, idx=stops[k].i;
+      const a={lat:Number(prev.lat),lng:Number(prev.lng)}, b={lat:Number(cur.lat),lng:Number(cur.lng)};
+      const driving=isDrivingMode(cur.travel_mode_recommendation);
+      if(driving){
+        const key=segKey(a,b);
+        // use cached geometry if the endpoints haven't moved
+        if(!(cur._seg && cur._seg.key===key && Array.isArray(cur._seg.path))){
+          const r=await fetchDriveRoute(a,b);
+          if(r.ok){ cur._seg={key,mode:'drive',km:r.km,minutes:r.minutes,path:r.path}; cur.drive_km=r.km; cur.drive_minutes=r.minutes; cur.drive_time_text=fmtDur(r.minutes); }
+          else { const km=Math.round(haversineKm(a,b)*1.25); const minutes=Math.round(km/80*60); cur._seg={key,mode:'drive_est',km,minutes,path:[a,b]}; cur.drive_km=km; cur.drive_minutes=minutes; cur.drive_time_text='~'+fmtDur(minutes); }
+        }
+        const seg=cur._seg;
+        const line=new google.maps.Polyline({path:seg.path,geodesic:false,strokeColor:'#c8a96e',strokeOpacity:.95,strokeWeight:4,map});
+        mapLines.push(line);
+        // midpoint drive-time label
+        const mid=seg.path[Math.floor(seg.path.length/2)]||a;
+        const lbl=new google.maps.Marker({position:mid,map,icon:{path:google.maps.SymbolPath.CIRCLE,scale:0,strokeOpacity:0},label:{text:`${seg.mode==='drive_est'?'~':''}${fmtDur(seg.minutes)} · ${seg.km} km`,color:'#e6c168',fontSize:'11px',fontWeight:'700',className:'route-seg-label'}});
+        mapMarkers.push(lbl);
+      } else {
+        // flight / rail: dashed geodesic
+        const line=new google.maps.Polyline({path:[a,b],geodesic:true,strokeOpacity:0,map,icons:[{icon:{path:'M 0,-1 0,1',strokeColor:'#7a6a3a',strokeOpacity:.9,scale:2},offset:'0',repeat:'12px'}]});
+        mapLines.push(line);
+        cur.drive_minutes=null; cur.drive_km=null; cur.drive_time_text=''; cur._seg={key:segKey(a,b),mode:'fly'};
+      }
+    }
+  }
+
   function darkMapStyle(){ return [{elementType:'geometry',stylers:[{color:'#101010'}]},{elementType:'labels.text.stroke',stylers:[{color:'#101010'}]},{elementType:'labels.text.fill',stylers:[{color:'#888'}]},{featureType:'water',elementType:'geometry',stylers:[{color:'#050505'}]},{featureType:'road',elementType:'geometry',stylers:[{color:'#242424'}]},{featureType:'poi',stylers:[{visibility:'off'}]},{featureType:'transit',stylers:[{visibility:'off'}]}]; }
 
   function systemTour(){
@@ -1280,7 +1350,7 @@
 
   async function venueManagerSendToRoute(i){ const v=venueManagerRows[i]; const t=activeRoute(); if(!v) return; if(!t?.legs?.length) return toast('Open or generate a route first, then send venues into it.','error'); const answer=prompt('Send to which stop number?', '1'); if(answer===null) return; const idx=Math.max(0,Math.min(t.legs.length-1,Number(answer)-1||0)); const l=t.legs[idx]; l.candidate_venues=Array.isArray(l.candidate_venues)?l.candidate_venues:[]; const candidate={name:v.name,address:v.address,capacity:v.actual_capacity||v.capacity,booking_method:v.booking_email||v.booking_method||'master list',email:v.booking_email,phone:v.phone,website:v.website,instagram:v.instagram,fit_reason:v.notes||'Selected from Venue Manager.',outreach_angle:v.notes||'Master venue list option',crm_source:true,crm_id:v.id}; l.candidate_venues.unshift(candidate); if(!l.suggested_venue){ l.suggested_venue=v.name; l.venue_address=v.address||''; } if(t.id) await persistStop(idx,l); toast(`✓ ${v.name} added to stop ${idx+1}`,'success'); rerenderActiveRoute(); openStop(idx); }
 
-  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, draftAllFollowUps, matchAllFromCRM, autofillVenueFromCRM, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, askAboutCurrentReview };
+  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, draftAllFollowUps, matchAllFromCRM, autofillVenueFromCRM, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, askAboutCurrentReview, applyReviewPatch, dismissReviewPatch };
   function csvCell(v){
     const s = v==null ? '' : String(v);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;

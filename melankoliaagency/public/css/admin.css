@@ -2217,3 +2217,15 @@ details.ob-group[open]>summary{margin-bottom:.6rem}
 .ob-hold-banner b{color:#e08a8a}
 .ob-nudge-chip.overdue{background:#331717;color:#e08a8a;border-color:#5a2a2a}
 .ob-crm-tag{font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:#6ad493;align-self:center;padding:.15rem .4rem}
+
+/* ===== Route Planner — drive segment labels + inline review chat ===== */
+.route-seg-label{ text-shadow:0 0 4px #000,0 0 4px #000; }
+.route-review-chat-out{ margin-top:.7rem; }
+.route-review-answer{ border-top:1px solid var(--border); padding-top:.7rem; }
+.route-review-answer p{ color:var(--off); font-size:.82rem; line-height:1.5; }
+.route-patch-preview{ background:#0d0d0d; border:1px solid var(--border); border-radius:8px; padding:.7rem .8rem; margin:.6rem 0; }
+.route-patch-preview b{ color:var(--accent); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; display:block; margin-bottom:.4rem; }
+.route-patch-list{ margin:.2rem 0 .6rem; padding-left:1.1rem; color:var(--off); font-size:.78rem; }
+.route-patch-list li{ margin:.15rem 0; }
+.route-patch-preview details summary{ color:var(--muted); font-size:.7rem; cursor:pointer; margin:.3rem 0; }
+.route-patch-preview pre{ background:#050505; border:1px solid var(--border); padding:.6rem; font-size:.66rem; max-height:220px; overflow:auto; color:var(--muted); }
