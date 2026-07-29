@@ -2207,3 +2207,10 @@ details.ob-group[open]>summary{margin-bottom:.6rem}
 .ob-city-tag.empty{background:#331717;color:#e08a8a}
 .ob-city-actions{display:flex;gap:6px;flex-wrap:wrap}
 .ob-city .ob-board{margin-top:.7rem;border-top:1px solid var(--border);padding-top:.6rem}
+
+/* ===== Outreach — follow-up + hold + CRM affordances ===== */
+.ob-nudge-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.ob-hold-banner{border-color:#4a2a2a;background:#160c0c;margin-top:.7rem}
+.ob-hold-banner b{color:#e08a8a}
+.ob-nudge-chip.overdue{background:#331717;color:#e08a8a;border-color:#5a2a2a}
+.ob-crm-tag{font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:#6ad493;align-self:center;padding:.15rem .4rem}

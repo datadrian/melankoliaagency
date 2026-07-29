@@ -676,9 +676,21 @@
       if(c.confirmed) citiesConfirmed++; else citiesOpen++;
       vs.forEach(v=>{ if(nudgeDue(v)){ nudges++; nudgeList.push({city:l.city,i,name:v.name,days:daysSince(v.outreach_date)}); } });
     });
-    const nudgeBanner = nudgeList.length? `<div class="ob-nudge-banner"><b>⏰ ${nudgeList.length} follow-up${nudgeList.length>1?'s':''} due</b> (contacted 7+ days ago, no confirmation)<div class="ob-nudge-list">${nudgeList.sort((a,b)=>b.days-a.days).slice(0,12).map(n=>`<button class="ob-nudge-chip" onclick="RouteAdmin.openStop(${n.i})">${esc(n.name||'Venue')} · ${esc(n.city||'')} · ${n.days}d</button>`).join('')}</div></div>`:'';
+    const holdList=[];
+    stops.forEach(({l,i})=>{
+      const vs=Array.isArray(l.candidate_venues)?l.candidate_venues:[];
+      const confirmed=vs.some(v=>vStatus(v)==='confirmed');
+      if(confirmed || !l.hold_deadline) return;
+      const dd=daysSince(l.hold_deadline);
+      if(dd===null) return;
+      const daysLeft=-dd; // deadline in future => positive
+      if(daysLeft<=10) holdList.push({city:l.city,i,deadline:l.hold_deadline,daysLeft});
+    });
+    const nudgeBanner = nudgeList.length? `<div class="ob-nudge-banner"><div class="ob-nudge-top"><b>⏰ ${nudgeList.length} follow-up${nudgeList.length>1?'s':''} due</b> (contacted 7+ days ago, no confirmation)<button class="btn-primary btn-sm" onclick="RouteAdmin.draftAllFollowUps()">✉ Draft all follow-ups</button></div><div class="ob-nudge-list">${nudgeList.sort((a,b)=>b.days-a.days).slice(0,12).map(n=>`<button class="ob-nudge-chip" onclick="RouteAdmin.openStop(${n.i})">${esc(n.name||'Venue')} · ${esc(n.city||'')} · ${n.days}d</button>`).join('')}</div></div>`:'';
+    const holdBanner = holdList.length? `<div class="ob-nudge-banner ob-hold-banner"><b>⏳ ${holdList.length} hold deadline${holdList.length>1?'s':''} approaching</b> (no venue confirmed yet)<div class="ob-nudge-list">${holdList.sort((a,b)=>a.daysLeft-b.daysLeft).map(h=>`<button class="ob-nudge-chip ${h.daysLeft<0?'overdue':''}" onclick="RouteAdmin.openStop(${h.i})">${esc(h.city||'City')} · ${h.daysLeft<0?`${-h.daysLeft}d overdue`:`${h.daysLeft}d left`} (${esc(h.deadline)})</button>`).join('')}</div></div>`:'';
     out.innerHTML=`<div class="route-tool-card route-outreach-board"><h3>Tour Outreach — all cities</h3>
       <p>Every date with its venues by outreach stage. Confirm one and the rest stay parked as backups; act on any venue right here.</p>
+      <div class="route-stop-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.matchAllFromCRM()">↺ Match contacts from CRM</button></div>
       <div class="ops-stat-grid">
         ${statTile('Confirmed cities',`${citiesConfirmed}/${stops.length}`)}
         ${statTile('Cities still open',citiesOpen)}
@@ -688,6 +700,7 @@
         ${statTile('Follow-ups due',nudges)}
       </div>
       ${nudgeBanner}
+      ${holdBanner}
       ${stops.map(({l,i})=>{
         const vs=Array.isArray(l.candidate_venues)?l.candidate_venues:[];
         const c=vs.length?outreachCounts(l):null;
@@ -695,6 +708,55 @@
         const tag = state==='confirmed'?`<span class="ob-city-tag confirmed">✅ ${esc(l.confirmed_venue||l.suggested_venue||'Confirmed')}</span>` : state==='empty'?'<span class="ob-city-tag empty">No venues yet</span>':`<span class="ob-city-tag open">${esc(outreachSummaryText(l))}</span>`;
         return `<section class="ob-city ob-city-${state}"><div class="ob-city-head"><div><b>${i+1}. ${esc(l.city||'TBD')}</b><span>${esc([l.date,l.country].filter(Boolean).join(' · '))}</span></div>${tag}<div class="ob-city-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.venueFinderForStop(${i})">Find</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.manualVenueForm(${i})">Add</button><button class="btn-secondary btn-sm" onclick="RouteAdmin.openStop(${i})">Open stop</button></div></div>${vs.length?renderOutreachBoard(l,i):'<div class="route-ai-empty">No venues attached to this date yet.</div>'}</section>`;
       }).join('')}</div>`;
+  }
+
+  // ---- Batch follow-up emails for nudge-due venues ----
+  async function draftAllFollowUps(){
+    const t=activeRoute(); if(!t?.legs) return;
+    const targets=[];
+    t.legs.forEach((l,i)=>{ if(l.day_off) return; (l.candidate_venues||[]).forEach(v=>{ if(nudgeDue(v)) targets.push({l,i,v}); }); });
+    if(!targets.length){ toast('No follow-ups due right now','success'); return; }
+    const capped=targets.slice(0,12);
+    const out=toolOut(); out.innerHTML=loading(`Drafting ${capped.length} follow-up email${capped.length>1?'s':''}…`);
+    const cards=[];
+    for(const {l,i,v} of capped){
+      try{
+        const email=await post(EMAIL_API,{emailType:'follow_up',data:{artist:t.artist,artistContext:findArtistContext(t.artist),tour:t,city:l.city,country:l.country,venue:v.name,venueData:v,date:l.date,deal:l.deal_suggestion,contactName:v.contact_name||''}});
+        cards.push(renderEmailOutput(email, `Follow-up — ${v.name||l.city} · ${l.city||''}${l.date?` · ${l.date}`:''}`));
+      }catch(e){ cards.push(errorBox(`Follow-up failed for ${v.name||l.city}`, e.message)); }
+    }
+    out.innerHTML=`<div class="route-tool-card"><h3>Follow-up drafts (${cards.length})</h3><p>Circling-back emails for venues contacted 7+ days ago with no confirmation. Select, copy into Gmail, then log the nudge on each venue.</p><div class="route-stop-actions"><button class="btn-secondary btn-sm" onclick="RouteAdmin.renderTourOutreach()">← Back to Outreach Board</button></div></div>${cards.join('')}`;
+  }
+
+  // ---- Autofill a candidate venue's contact details from the CRM ----
+  function _fillEmpty(v, m){
+    const map=[['email','booking_email'],['booking_method','booking_method'],['website','website'],['instagram','instagram'],['phone','phone'],['contact_name','contact_name'],['booking_form_url','booking_form_url'],['capacity','capacity']];
+    const added=[];
+    map.forEach(([cand,crm])=>{ const cur=v[cand]; const val=m[crm]; if((cur===undefined||cur===null||cur==='') && val){ v[cand]=val; added.push(cand); } });
+    if(!v.address && (m.address||m.full_address)){ v.address=m.address||m.full_address; added.push('address'); }
+    return added;
+  }
+  async function autofillVenueFromCRM(idx,vi,silent){
+    const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[vi]; if(!v) return [];
+    try{
+      const r=await post(RAG_VENUES_API,{action:'lookup',name:v.name||'',city:l.city||'',country:l.country||''});
+      const m=r&&r.match; if(!m){ if(!silent) toast(`No CRM match for ${v.name||'venue'}`,'error'); return []; }
+      const added=_fillEmpty(v,m); v.crm_matched=true; v.crm_venue_id=m.id||v.crm_venue_id;
+      if(added.length){ if(activeRoute()?.id) await persistStop(idx,l).catch(()=>null); }
+      if(!silent){ toast(added.length?`✓ Filled from CRM: ${added.join(', ')}`:'CRM match found — nothing new to add','success'); rerenderActiveRoute(); openStop(idx); }
+      return added;
+    }catch(e){ if(!silent) toast('CRM lookup failed: '+e.message,'error'); return []; }
+  }
+  async function matchAllFromCRM(){
+    const t=activeRoute(); if(!t?.legs) return;
+    const jobs=[];
+    t.legs.forEach((l,i)=>{ if(l.day_off) return; (l.candidate_venues||[]).forEach((v,vi)=>{ const needs=!v.email && !v.booking_form_url && (!v.booking_method || v.booking_method==='unknown'); if(needs && v.name) jobs.push({i,vi}); }); });
+    if(!jobs.length){ toast('Every venue already has contact details','success'); return; }
+    if(!confirm(`Look up ${jobs.length} venue${jobs.length>1?'s':''} in your CRM and fill only the missing contact fields?`)) return;
+    let filled=0, fields=0;
+    for(const {i,vi} of jobs){ const added=await autofillVenueFromCRM(i,vi,true); if(added.length){ filled++; fields+=added.length; } }
+    toast(`✓ CRM match done — ${filled} venue${filled!==1?'s':''} enriched, ${fields} field${fields!==1?'s':''} added`,'success');
+    rerenderActiveRoute(); renderTourOutreach();
   }
 
   function renderVenueBoard(){
@@ -925,6 +987,7 @@
              <button class="btn-primary btn-sm" onclick="RouteAdmin.confirmVenue(${idx},${vi})">Confirm this venue</button>`}
         <button class="btn-secondary btn-sm" onclick="RouteAdmin.generateVenueEmail(${idx},${vi})">Branded Email</button>
         <button class="btn-secondary btn-sm" onclick="RouteAdmin.venueOutreachNote(${idx},${vi})">Note</button>
+        ${(!v.email && (!v.booking_method||v.booking_method==='unknown') && !v.booking_form_url)?`<button class="btn-secondary btn-sm" onclick="RouteAdmin.autofillVenueFromCRM(${idx},${vi})" title="Fill contact details from your CRM">↺ CRM</button>`:(v.crm_matched?'<span class="ob-crm-tag">✓ CRM</span>':'')}
         ${v.website?`<a class="btn-secondary btn-sm" href="${attr(v.website)}" target="_blank">Site</a>`:''}
       </div></div>`;
   }
@@ -1217,7 +1280,7 @@
 
   async function venueManagerSendToRoute(i){ const v=venueManagerRows[i]; const t=activeRoute(); if(!v) return; if(!t?.legs?.length) return toast('Open or generate a route first, then send venues into it.','error'); const answer=prompt('Send to which stop number?', '1'); if(answer===null) return; const idx=Math.max(0,Math.min(t.legs.length-1,Number(answer)-1||0)); const l=t.legs[idx]; l.candidate_venues=Array.isArray(l.candidate_venues)?l.candidate_venues:[]; const candidate={name:v.name,address:v.address,capacity:v.actual_capacity||v.capacity,booking_method:v.booking_email||v.booking_method||'master list',email:v.booking_email,phone:v.phone,website:v.website,instagram:v.instagram,fit_reason:v.notes||'Selected from Venue Manager.',outreach_angle:v.notes||'Master venue list option',crm_source:true,crm_id:v.id}; l.candidate_venues.unshift(candidate); if(!l.suggested_venue){ l.suggested_venue=v.name; l.venue_address=v.address||''; } if(t.id) await persistStop(idx,l); toast(`✓ ${v.name} added to stop ${idx+1}`,'success'); rerenderActiveRoute(); openStop(idx); }
 
-  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, askAboutCurrentReview };
+  window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, draftAllFollowUps, matchAllFromCRM, autofillVenueFromCRM, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, askAboutCurrentReview };
   function csvCell(v){
     const s = v==null ? '' : String(v);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
