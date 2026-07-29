@@ -90,7 +90,17 @@ For every claim, use real source-supported information. Do not invent pricing, e
 
 Important wording: this is planning research for a possible stop. Do not say the artist is performing at, playing, or confirmed at the venue unless the input explicitly says confirmed.
 
-Return only strict JSON matching the schema. Keep terms concise and operational. Output ONLY a single JSON object — no markdown, no code fences, no commentary, no citations text before or after the JSON.`;
+Output ONLY a single JSON object — no markdown, no code fences, no commentary, no citations text. Use EXACTLY these top-level keys and array-item keys:
+{
+  "location": "City, Country",
+  "summary": "1-2 sentence overview",
+  "recommended_plan": "practical plan: ask promoter/venue first vs rent locally, pickup risk",
+  "risk_level": "low | medium | high | unknown",
+  "suppliers": [ { "name": "", "type": "backline_rental | production | rehearsal_studio | music_store", "website": "", "email": "", "phone": "", "services": ["drums","bass amp"], "delivery_available": "yes | no | unknown", "pickup_required": "yes | no | unknown", "terms": "", "deposit_or_id": "", "hours_or_timing": "", "fit_reason": "", "source_urls": ["https://..."] } ],
+  "venue_backline": [ { "venue": "", "confirmed_backline": "yes | no | unknown", "equipment": ["Gretsch kit","Ampeg SVT"], "terms": "", "production_contact": "", "source_urls": ["https://..."] } ],
+  "open_questions": ["question 1","question 2"]
+}
+Do not invent phone numbers, emails, or terms — use "unknown" when not source-supported.`;
   const res = await callGemini(RESEARCH_MODEL, {
     contents:[{ parts:[{ text:prompt }] }],
     tools:[{ google_search:{} }],
@@ -98,12 +108,69 @@ Return only strict JSON matching the schema. Keep terms concise and operational.
   }, apiKey, 1);
   const __raw = extractText(res);
   if (globalThis.__BL_DEBUG) globalThis.__BL_LAST_RAW = __raw;
-  const parsed = parseJsonish(__raw);
-  parsed.suppliers = Array.isArray(parsed.suppliers) ? parsed.suppliers : [];
-  parsed.venue_backline = Array.isArray(parsed.venue_backline) ? parsed.venue_backline : [];
-  parsed.open_questions = Array.isArray(parsed.open_questions) ? parsed.open_questions : [];
+  const parsed = normalizeBackline(parseJsonish(__raw), d);
   parsed.grounding = extractGrounding(res);
   return parsed;
+}
+
+// Map whatever key names the grounded model returns into our canonical shape.
+// Grounded calls ignore responseSchema, so the model sometimes uses e.g.
+// rental_options / company_name / venue_backline_info instead of suppliers / name.
+function normalizeBackline(raw, d={}){
+  raw = raw && typeof raw === 'object' ? raw : {};
+  const pick = (o,keys)=>{ for(const k of keys){ if(o && o[k]!=null && o[k]!=='') return o[k]; } return ''; };
+  const arr = v => Array.isArray(v) ? v : (v && typeof v==='object' ? Object.values(v).filter(x=>x&&typeof x==='object') : []);
+  const asList = v => Array.isArray(v) ? v.map(x=>String(x)).filter(Boolean)
+                     : (typeof v==='string' && v ? v.split(/[;,\n]/).map(x=>x.trim()).filter(Boolean) : []);
+
+  // suppliers can live under many key names
+  const rawSuppliers = arr(raw.suppliers || raw.rental_options || raw.backline_options
+    || raw.rental_companies || raw.suppliers_list || raw.options || raw.companies || raw.providers);
+  const suppliers = rawSuppliers.map(s=>{
+    s = s && typeof s==='object' ? s : {};
+    return {
+      name: pick(s,['name','company_name','company','supplier','title']) || 'Backline supplier',
+      type: pick(s,['type','category']) || 'backline_rental',
+      website: pick(s,['website','url','web','link','site']),
+      email: pick(s,['email','contact_email']),
+      phone: pick(s,['phone','contact_info','contact','tel','telephone']),
+      services: asList(s.services || s.gear_available || s.equipment || s.inventory || s.gear),
+      delivery_available: pick(s,['delivery_available','delivery']) || 'unknown',
+      pickup_required: pick(s,['pickup_required','pickup']) || 'unknown',
+      terms: pick(s,['terms','notes','details','minimum_rental','rental_terms']),
+      deposit_or_id: pick(s,['deposit_or_id','deposit','id_required']) || 'unknown',
+      hours_or_timing: pick(s,['hours_or_timing','hours','opening_hours','timing']) || 'unknown',
+      fit_reason: pick(s,['fit_reason','why','reason','fit']) || (pick(s,['location','address']) ? ('Located at '+pick(s,['location','address'])) : ''),
+      confidence_score: Number(s.confidence_score)||2,
+      source_urls: asList(s.source_urls || s.sources || (s.website?[s.website]:[]) )
+    };
+  });
+
+  // venue backline
+  const vbSrc = raw.venue_backline || raw.venue_backline_info || raw.venue || raw.house_backline;
+  const vbList = Array.isArray(vbSrc) ? vbSrc : (vbSrc && typeof vbSrc==='object' ? [vbSrc] : []);
+  const venue_backline = vbList.map(v=>{
+    v = v && typeof v==='object' ? v : {};
+    return {
+      venue: pick(v,['venue','venue_name','name']) || clean(d.venue||d.venue_name||d.suggested_venue) || '',
+      confirmed_backline: pick(v,['confirmed_backline','confirmed','has_backline']) || 'unknown',
+      equipment: asList(v.equipment || v.house_gear_summary || v.gear || v.house_gear),
+      terms: pick(v,['terms','notes','details']),
+      production_contact: pick(v,['production_contact','contact','tech_contact']) || null,
+      source_urls: asList(v.source_urls || v.sources || (v.tech_specs_url?[v.tech_specs_url]:[]))
+    };
+  }).filter(v=>v.venue || v.equipment.length);
+
+  return {
+    location: pick(raw,['location','city','area']) || [clean(d.city||d.location),clean(d.country)].filter(Boolean).join(', '),
+    summary: pick(raw,['summary','overview']) || 'Grounded backline research for this stop.',
+    recommended_plan: pick(raw,['recommended_plan','plan','recommendation','best_plan']) || 'Ask the promoter/venue first whether house backline exists; in parallel line up a local rental supplier and confirm delivery, deposit/ID, and pickup/return timing before routing the day.',
+    risk_level: pick(raw,['risk_level','risk']) || 'unknown',
+    suppliers,
+    venue_backline,
+    open_questions: asList(raw.open_questions || raw.questions || raw.follow_ups).length ? asList(raw.open_questions || raw.questions || raw.follow_ups)
+      : ['Does the venue/promoter provide house backline or a preferred supplier?','Is delivery to the venue available, or is pickup/return required?','What deposit, ID, or payment terms are required?','What are pickup/return hours and after-hours options?','Which exact items are needed (drums, bass amp, guitar amp, keys stand, DI, cymbals)?']
+  };
 }
 
 async function researchBackline(d, apiKey) {
