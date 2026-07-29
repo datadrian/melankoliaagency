@@ -135,6 +135,22 @@ exports.handler = async (event) => {
       return json(200, { success:true, out });
     }
 
+    if (a === 'debugGhost4') {
+      const { _rawReq } = require('./_firebase');
+      // raw list, expose exact document.name for Guide Demo docs
+      const j = await _rawReq('GET', `/${TOURS}?pageSize=300`);
+      const docs = (j.documents||[]).filter(d => {
+        const f=d.fields||{}; const n=(f.name&&f.name.stringValue)||(f.tour_name&&f.tour_name.stringValue)||'';
+        return String(n).includes('Guide Demo');
+      }).map(d => ({ name:d.name, seg: d.name.split('/documents/')[1] }));
+      // try deleting each by its EXACT name path
+      for (const d of docs) {
+        const path = '/' + d.seg;
+        try{ await _rawReq('DELETE', path); d.del='ok'; }catch(e){ d.del='err:'+e.message; }
+      }
+      return json(200, { success:true, docs });
+    }
+
     if (a === 'hardDeleteTour') {
       // One-shot cleanup for ghost/custom-id tour docs that resist soft-delete.
       const target = String(b.id||'').trim();
