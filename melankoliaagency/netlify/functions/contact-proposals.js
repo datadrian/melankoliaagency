@@ -128,7 +128,7 @@ async function editProposal(pid, patch) {
   const p = await getDoc(COLL, pid);
   if (!p) return { success: false, error: 'Proposal not found' };
   if ((p.status || 'pending') !== 'pending') return { success: false, error: 'Only pending proposals can be edited' };
-  const ALLOWED = ['name','org','venue_name','email','phone','website','instagram','contact_type','city','region','country','market','booking_method','relationship_status','notes','venues'];
+  const ALLOWED = ['name','title','org','venue_name','email','phone','whatsapp','website','instagram','facebook','twitter','tiktok','youtube','linkedin','soundcloud','spotify','bandcamp','telegram','contact_type','city','region','country','address','market','booking_method','relationship_status','notes','venues','emails','phones','other_socials'];
   const c = { ...(p.candidate || {}) };
   ALLOWED.forEach(k => {
     if (patch[k] === undefined) return;
@@ -137,6 +137,10 @@ async function editProposal(pid, patch) {
         ? patch.venues.filter(v => v && String(v.name || '').trim())
             .map(v => ({ name: String(v.name).trim(), city: String(v.city || '').trim(), address: String(v.address || '').trim() }))
         : [];
+    } else if (k === 'emails' || k === 'phones') {
+      c[k] = Array.isArray(patch[k]) ? patch[k].map(x => String(x || '').trim()).filter(Boolean) : c[k];
+    } else if (k === 'other_socials') {
+      c[k] = Array.isArray(patch[k]) ? patch[k].filter(o => o && (o.handle || o.url)).map(o => ({ platform: String(o.platform||'').trim(), handle: String(o.handle||'').trim(), url: String(o.url||'').trim() })) : c[k];
     } else {
       c[k] = typeof patch[k] === 'string' ? patch[k].trim() : patch[k];
     }
@@ -200,21 +204,71 @@ async function writeToCRM(p) {
       });
       if (additions.length) merged.associated_venues = existingV.concat(additions);
     }
+    // Union-merge multi-value contact fields (emails, phones, other socials) — never overwrite, add new only
+    const c2 = p.candidate || {};
+    const unionStr = (existArr, addArr, addScalar) => {
+      const out = Array.isArray(existArr) ? existArr.slice() : [];
+      const seenl = new Set(out.map(x => String(x || '').trim().toLowerCase()));
+      [].concat(Array.isArray(addArr) ? addArr : [], addScalar ? [addScalar] : []).forEach(x => {
+        const v = String(x || '').trim(); const k = v.toLowerCase();
+        if (v && !seenl.has(k)) { seenl.add(k); out.push(v); }
+      });
+      return out;
+    };
+    const em = unionStr(base.emails, c2.emails, c2.email);
+    if (em.length) merged.emails = em;
+    const ph = unionStr(base.phones, c2.phones, c2.phone);
+    if (ph.length) merged.phones = ph;
+    if (Array.isArray(c2.other_socials) && c2.other_socials.length) {
+      const existO = Array.isArray(base.other_socials) ? base.other_socials : [];
+      const oseen = new Set(existO.map(o => (String(o.platform || '') + '|' + String(o.handle || o.url || '')).toLowerCase()));
+      const addO = [];
+      c2.other_socials.filter(o => o && (o.handle || o.url)).forEach(o => {
+        const k = (String(o.platform || '') + '|' + String(o.handle || o.url || '')).toLowerCase();
+        if (!oseen.has(k)) { oseen.add(k); addO.push({ platform: o.platform || '', handle: o.handle || '', url: o.url || '' }); }
+      });
+      if (addO.length) merged.other_socials = existO.concat(addO);
+    }
+    // Fill any empty scalar social/contact fields from the candidate (only-if-empty)
+    ['contact_name','contact_title','address','whatsapp','instagram','facebook','twitter','tiktok','youtube','linkedin','soundcloud','spotify','bandcamp','telegram','website'].forEach(k => {
+      const src = k === 'contact_name' ? c2.name : k === 'contact_title' ? c2.title : c2[k];
+      if (src && !isFilled(base[k])) merged[k] = src;
+    });
     venuePayload = merged;
   } else {
     const c = p.candidate || {};
+    const uniq = (a) => { const o=[],s=new Set(); (Array.isArray(a)?a:[]).forEach(x=>{const v=String(x||'').trim(),k=v.toLowerCase(); if(v&&!s.has(k)){s.add(k);o.push(v);}}); return o; };
+    const allEmails = uniq([].concat(c.emails||[], c.email?[c.email]:[]));
+    const allPhones = uniq([].concat(c.phones||[], c.phone?[c.phone]:[]));
+    const otherSocials = Array.isArray(c.other_socials) ? c.other_socials.filter(o=>o&&(o.handle||o.url)) : [];
     venuePayload = {
       id: venueId(),
       name: c.venue_name || c.org || c.name || c.email || 'Unknown',
+      contact_name: c.name || '',
+      contact_title: c.title || '',
       city: c.city || 'Unknown',
       country: c.country || '',
       region: c.region || '',
+      address: c.address || '',
       market: c.market || '',
       contact_type: c.contact_type || 'promoter',
-      booking_email: c.email || '',
-      phone: c.phone || '',
+      booking_email: c.email || (allEmails[0] || ''),
+      emails: allEmails,
+      phone: c.phone || (allPhones[0] || ''),
+      phones: allPhones,
+      whatsapp: c.whatsapp || '',
       website: c.website || '',
       instagram: c.instagram || '',
+      facebook: c.facebook || '',
+      twitter: c.twitter || '',
+      tiktok: c.tiktok || '',
+      youtube: c.youtube || '',
+      linkedin: c.linkedin || '',
+      soundcloud: c.soundcloud || '',
+      spotify: c.spotify || '',
+      bandcamp: c.bandcamp || '',
+      telegram: c.telegram || '',
+      other_socials: otherSocials,
       booking_method: c.booking_method || (c.email ? 'email' : ''),
       relationship_status: c.relationship_status || 'prospect',
       genre_affinity: c.genre_affinity || [],

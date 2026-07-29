@@ -43,11 +43,19 @@ If the screenshot clearly contains NO booking contact (e.g. a random photo, meme
 
 ${MARKET_HINT}
 
+Capture EVERY contact detail visible anywhere in the screenshot — do not skip anything. Include all email addresses, all phone/WhatsApp numbers, and every social handle or link you can see (headers, signatures, bios, profile fields, footers, business cards). Never invent a value; only record what is actually shown.
+
 Return ONLY this JSON:
-{"is_contact":true,"name":"","org":"","venue_name":"","contact_type":"","email":"","phone":"","instagram":"","website":"","city":"","region":"","country":"","market":"","booking_method":"","relationship_status":"","venues":[{"name":"","city":"","address":""}],"notes":"","confidence":"medium"}
+{"is_contact":true,"name":"","title":"","org":"","venue_name":"","contact_type":"","email":"","phone":"","emails":[],"phones":[],"website":"","instagram":"","facebook":"","twitter":"","tiktok":"","youtube":"","linkedin":"","soundcloud":"","spotify":"","bandcamp":"","telegram":"","whatsapp":"","other_socials":[{"platform":"","handle":"","url":""}],"city":"","region":"","country":"","address":"","market":"","booking_method":"","relationship_status":"","venues":[{"name":"","city":"","address":""}],"notes":"","confidence":"medium"}
+- name: the person; title: their role/job title if shown (e.g. Talent Buyer, Booker)
 - contact_type: one of promoter, venue, festival, agency, buyer, other
+- email/phone: the PRIMARY/best one; emails[]/phones[]: ALL of them found (include the primary too)
+- instagram/facebook/twitter/tiktok/youtube/linkedin/soundcloud/spotify/bandcamp/telegram/whatsapp: handle or URL if present (else "")
+- whatsapp: the WhatsApp number/link specifically if identified as WhatsApp
+- other_socials[]: any platform not listed above (Discord, Threads, Signal, etc.)
 - booking_method: how they book (email, phone, instagram DM, form, etc.) if visible
 - venues[]: any specific rooms/venues named
+- address: street address of the contact/venue if shown
 - confidence: high/medium/low based on how clearly a bookable contact is present`;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 18000);
@@ -122,11 +130,31 @@ exports.handler = async (event) => {
     if (email) seen.add(email);
     if (npKey !== 'np:|') seen.add(npKey);
 
+    const uniqStr = (arr, extra) => {
+      const out = [], seenl = new Set();
+      [].concat(Array.isArray(arr) ? arr : [], extra ? [extra] : []).forEach(x => {
+        const v = String(x || '').trim(); const k = v.toLowerCase();
+        if (v && !seenl.has(k)) { seenl.add(k); out.push(v); }
+      });
+      return out;
+    };
+    const otherSocials = Array.isArray(f.other_socials)
+      ? f.other_socials.filter(o => o && (o.handle || o.url)).map(o => ({ platform: o.platform || '', handle: o.handle || '', url: o.url || '' }))
+      : [];
     const candidate = {
-      name: f.name || '', org: f.org || '', venue_name: f.venue_name || f.org || f.name || '',
-      contact_type: f.contact_type || 'other', email: f.email || '', phone: f.phone || '',
-      instagram: f.instagram || '', website: f.website || '',
-      city: f.city || '', region: f.region || '', country: f.country || '', market: f.market || '',
+      name: f.name || '', title: f.title || '', org: f.org || '', venue_name: f.venue_name || f.org || f.name || '',
+      contact_type: f.contact_type || 'other',
+      email: f.email || (Array.isArray(f.emails) && f.emails[0]) || '',
+      phone: f.phone || (Array.isArray(f.phones) && f.phones[0]) || '',
+      emails: uniqStr(f.emails, f.email),
+      phones: uniqStr(f.phones, f.phone),
+      website: f.website || '',
+      instagram: f.instagram || '', facebook: f.facebook || '', twitter: f.twitter || '',
+      tiktok: f.tiktok || '', youtube: f.youtube || '', linkedin: f.linkedin || '',
+      soundcloud: f.soundcloud || '', spotify: f.spotify || '', bandcamp: f.bandcamp || '',
+      telegram: f.telegram || '', whatsapp: f.whatsapp || '',
+      other_socials: otherSocials,
+      city: f.city || '', region: f.region || '', country: f.country || '', address: f.address || '', market: f.market || '',
       booking_method: f.booking_method || '', relationship_status: f.relationship_status || '',
       venues: Array.isArray(f.venues) ? f.venues.filter(v => v && v.name) : [],
       notes: f.notes || '',

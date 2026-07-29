@@ -2421,13 +2421,23 @@ function renderProposals() {
     const marketb = c.market ? `<span class="disc-badge market-chip">${escapeHtml(c.market)}</span>` : '';
     const shotb = p.source === 'screenshot' ? '<span class="disc-badge shot">\uD83D\uDCF7 Screenshot</span>' : '';
     const fields = [];
-    if (c.email) fields.push(`<span><b>Email</b> ${escapeHtml(c.email)}</span>`);
-    if (c.phone) fields.push(`<span><b>Phone</b> ${escapeHtml(c.phone)}</span>`);
+    const emails = (Array.isArray(c.emails) && c.emails.length) ? c.emails : (c.email ? [c.email] : []);
+    const phones = (Array.isArray(c.phones) && c.phones.length) ? c.phones : (c.phone ? [c.phone] : []);
+    if (emails.length) fields.push(`<span><b>Email</b> ${emails.map(escapeHtml).join(', ')}</span>`);
+    if (phones.length) fields.push(`<span><b>Phone</b> ${phones.map(escapeHtml).join(', ')}</span>`);
+    if (c.whatsapp) fields.push(`<span><b>WhatsApp</b> ${escapeHtml(c.whatsapp)}</span>`);
+    if (c.title) fields.push(`<span><b>Title</b> ${escapeHtml(c.title)}</span>`);
     const locStr = [c.city, c.region, c.country].filter(Boolean).join(', ');
     if (locStr) fields.push(`<span><b>Location</b> ${escapeHtml(locStr)}</span>`);
+    if (c.address) fields.push(`<span><b>Addr</b> ${escapeHtml(c.address)}</span>`);
     if (c.website) fields.push(`<span><b>Web</b> ${escapeHtml(c.website)}</span>`);
-    if (c.instagram) fields.push(`<span><b>IG</b> ${escapeHtml(c.instagram)}</span>`);
     if (c.contact_type) fields.push(`<span><b>Type</b> ${escapeHtml(c.contact_type)}</span>`);
+    if (c.booking_method) fields.push(`<span><b>Books via</b> ${escapeHtml(c.booking_method)}</span>`);
+    const SOC = [['instagram','IG'],['facebook','FB'],['twitter','X'],['tiktok','TikTok'],['youtube','YT'],['linkedin','LinkedIn'],['soundcloud','SC'],['spotify','Spotify'],['bandcamp','Bandcamp'],['telegram','TG']];
+    const socChips = [];
+    SOC.forEach(([k,lbl]) => { if (c[k]) socChips.push(`<span class="disc-soc-chip">${lbl}: ${escapeHtml(c[k])}</span>`); });
+    if (Array.isArray(c.other_socials)) c.other_socials.forEach(o => { if (o && (o.handle||o.url)) socChips.push(`<span class="disc-soc-chip">${escapeHtml(o.platform||'link')}: ${escapeHtml(o.handle||o.url)}</span>`); });
+    const socialsHtml = socChips.length ? `<div class="disc-socials">${socChips.join('')}</div>` : '';
     let venuesHtml = '';
     if (Array.isArray(c.venues) && c.venues.length) {
       const chips = c.venues.map(v => {
@@ -2456,6 +2466,7 @@ function renderProposals() {
         <div>${badge}${shotb}${lowb}${marketb}<span class="disc-name">${escapeHtml(c.venue_name || c.org || c.name || c.email || 'Unknown')}</span></div>${p.source==="screenshot"&&p.source_image_url?`<a class="disc-shot-thumb" href="${escapeHtml(p.source_image_url)}" target="_blank" title="View original screenshot"><img src="${escapeHtml(p.source_image_url)}" loading="lazy" alt="screenshot"></a>`:""}
         <div class="disc-sub">${escapeHtml(c.name || '')}${c.name && c.org ? ' \u2014 ' : ''}${escapeHtml(c.org && c.org !== c.venue_name ? c.org : '')}</div>
         <div class="disc-fields">${fields.join('')}</div>
+        ${socialsHtml}
         ${venuesHtml}
         ${diff}${note}
         <div class="disc-edit" id="discEdit-${p.id}" style="display:none"></div>
