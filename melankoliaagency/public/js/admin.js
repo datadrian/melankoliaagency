@@ -3097,7 +3097,7 @@ async function refreshCvStats() {
     const j = await cvCall({ action: 'stats' });
     const s = j.data || {};
     const el = document.getElementById('cvStats');
-    if (el) el.innerHTML = `<b>${s.pending || 0}</b> pending &middot; ${s.restructure || 0} restructure &middot; ${s.merge || 0} merge/dup &middot; ${s.approved || 0} approved &middot; ${s.rejected || 0} rejected`;
+    if (el) el.innerHTML = `<b>${s.pending || 0}</b> pending &middot; ${s.restructure || 0} restructure &middot; ${s.merge || 0} merge/dup &middot; ${s.google_contact_update || 0} google-update &middot; ${s.google_contact_new || 0} google-new &middot; ${s.approved || 0} approved &middot; ${s.rejected || 0} rejected`;
   } catch (e) { /* silent */ }
 }
 function setCvFilter(f, btn) {
@@ -3111,7 +3111,7 @@ async function loadCvProposals() {
   if (host) host.innerHTML = '<p class="muted">Loading\u2026</p>';
   try {
     let payload = { action: 'list' };
-    if (_cvFilter === 'restructure' || _cvFilter === 'merge') { payload.status = 'pending'; payload.type = _cvFilter; }
+    if (['restructure', 'merge', 'google_contact_update', 'google_contact_new'].includes(_cvFilter)) { payload.status = 'pending'; payload.type = _cvFilter; }
     else payload.status = _cvFilter;
     const j = await cvCall(payload);
     _cvProposals = j.data || [];
@@ -3155,7 +3155,8 @@ function renderCvProposals() {
   if (!_cvProposals.length) { host.innerHTML = '<p class="muted">Nothing here yet.</p>'; return; }
   host.innerHTML = _cvProposals.map(p => {
     const confBadge = `<span class="disc-badge conf-${p.confidence || 'medium'}">${p.confidence || 'medium'}</span>`;
-    const typeBadge = p.type === 'merge' ? '<span class="disc-badge">\u2696 Merge</span>' : '<span class="disc-badge">\u2699 Restructure</span>';
+    const typeBadges = { merge: '\u2696 Merge', restructure: '\u2699 Restructure', google_contact_update: '\ud83d\udcc7 Google \u2192 update', google_contact_new: '\ud83d\udcc7 Google \u2192 new contact' };
+    const typeBadge = `<span class="disc-badge">${typeBadges[p.type] || p.type}</span>`;
     const canAct = (p.status || 'pending') === 'pending';
     let body = '';
     if (p.type === 'restructure') {
@@ -3163,9 +3164,19 @@ function renderCvProposals() {
         ? `<div class="disc-diff"><b>Name:</b> <s>${escapeHtml(p.before.name || '')}</s> \u2192 <b>${escapeHtml(p.after.name || '')}</b></div>` : '';
       const flag = p.after.needs_manual_name ? '<div class="disc-status err" style="display:block;margin:.4rem 0">\u26a0 Needs the real company name \u2014 edit before approving.</div>' : '';
       body = `${nameChange}${flag}<div class="disc-venues"><b>Contacts on this record:</b>${(p.after.contacts || []).map(cvContactRow).join('')}</div>`;
-    } else {
+    } else if (p.type === 'merge') {
       const losersNames = (p.before.losers || []).map(l => l.name).join(', ');
       body = `<div class="disc-diff"><b>Keep:</b> ${escapeHtml(p.before.primary && p.before.primary.name || '')} &nbsp; <b>Merge in &amp; archive:</b> ${escapeHtml(losersNames)}</div>`;
+    } else if (p.type === 'google_contact_update') {
+      const gc = p.google_contact || {};
+      const fields = p.after.proposed_fields || {};
+      const fieldRows = Object.keys(fields).length
+        ? `<div class="disc-fields">${Object.entries(fields).map(([k, v]) => `<span><b>${escapeHtml(k)}:</b> ${escapeHtml(v)}</span>`).join('')}</div>` : '';
+      const contactRow = p.after.new_contact ? `<div class="disc-venues"><b>Add contact:</b>${cvContactRow(p.after.new_contact)}</div>` : '';
+      body = `<div class="disc-sub">Google contact: ${escapeHtml(gc.name || gc.org || '')} ${gc.emails && gc.emails[0] ? '&middot; ' + escapeHtml(gc.emails[0]) : ''}</div>${fieldRows}${contactRow}`;
+    } else if (p.type === 'google_contact_new') {
+      const a = p.after || {};
+      body = `<div class="disc-diff"><b>New CRM contact:</b> ${escapeHtml(a.name || '')}</div><div class="disc-fields"><span><b>City:</b> ${escapeHtml(a.city || '\u2014')}</span><span><b>Country:</b> ${escapeHtml(a.country || '\u2014')}</span><span><b>Email:</b> ${escapeHtml(a.booking_email || '\u2014')}</span><span><b>Phone:</b> ${escapeHtml(a.phone || '\u2014')}</span></div>`;
     }
     const note = p.note ? `<p class="view-sub" style="margin:.3rem 0 0">${escapeHtml(p.note)}</p>` : '';
     const actions = canAct
@@ -3251,4 +3262,39 @@ async function rejectAllPendingDiscovery() {
     showDiscStatus(`Rejected ${j.rejected} pending proposals. You can re-run the scan now.`, 'ok');
     loadProposals();
   } catch (e) { showDiscStatus('Reject all failed: ' + e.message, 'err'); }
+}
+
+function showGcStatus(msg, kind) {
+  const el = document.getElementById('gcImportStatus');
+  if (!el) return;
+  el.style.display = 'block';
+  el.className = 'disc-status ' + (kind || '');
+  el.innerHTML = msg;
+}
+async function importGoogleContactsCsv() {
+  const fileInput = document.getElementById('gcCsvFile');
+  const btn = document.getElementById('gcImportBtn');
+  const file = fileInput && fileInput.files && fileInput.files[0];
+  if (!file) { showGcStatus('Choose a CSV file first (export from contacts.google.com \u2192 Export \u2192 Google CSV).', 'err'); return; }
+  const csvText = await file.text();
+  if (btn) btn.disabled = true;
+  let totalNew = 0, totalUpdate = 0, totalMatched = 0, totalScanned = 0, pass = 0;
+  try {
+    let more = true;
+    while (more && pass < 30) {
+      pass++;
+      if (btn) btn.textContent = pass === 1 ? '\u23f3 Importing\u2026' : `\u23f3 Importing\u2026 (pass ${pass})`;
+      showGcStatus(`Matching Google contacts against the CRM\u2026 (pass ${pass})`, 'working');
+      const j = await cvCall({ action: 'import_google_contacts', csv: csvText });
+      totalScanned = j.scanned || totalScanned;
+      totalMatched += j.matched || 0; totalUpdate += j.staged_update || 0; totalNew += j.staged_new || 0;
+      more = !!j.more;
+      loadCvProposals();
+    }
+    showGcStatus(`Done \u2014 ${totalMatched} matched existing CRM records (${totalUpdate} staged as updates), ${totalNew} staged as brand-new contacts. Review under the "Google \u2014 update" / "Google \u2014 new" filters.`, 'ok');
+  } catch (e) {
+    showGcStatus('Import failed: ' + e.message, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '\u2b06 Import CSV'; }
+  }
 }
