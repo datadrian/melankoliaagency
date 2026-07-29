@@ -245,7 +245,8 @@ exports.handler = async (event) => {
       let putRes;
       try { putRes=await ghPut(`public/${rel}`, b64, `advancing: doc upload for ${cur.venue_name||cur.city||cur.id}`); }
       catch(e){ return json(500,{success:false,error:'Upload failed: '+e.message}); }
-      const docRec={ id:'doc_'+uniq, filename:b.filename||safeName, mime, url:'/'+rel, size:Math.round(b64.length*0.75),
+      const cdnUrl=`https://cdn.jsdelivr.net/gh/${GH_OWNER}/${GH_REPO}@${GH_BRANCH}/public/${rel}`;
+      const docRec={ id:'doc_'+uniq, filename:b.filename||safeName, mime, url:cdnUrl, site_path:'/'+rel, size:Math.round(b64.length*0.75),
         uploaded_by:(a==='promoter_upload_doc'?'promoter':(b.uploaded_by||'agency')), uploaded_at:now(),
         github_sha:(putRes.content&&putRes.content.sha)||'', extract_status:'pending', extracted:null };
       // Gemini extraction (skip for very large PDFs to stay under timeout)
@@ -271,7 +272,8 @@ exports.handler = async (event) => {
       const idx=docs.findIndex(d=>d.id===b.doc_id); if(idx<0) return json(404,{success:false,error:'Doc not found'});
       const dref=docs[idx];
       // fetch the stored file back from GitHub raw
-      const raw=await fetch(`https://cdn.jsdelivr.net/gh/${GH_OWNER}/${GH_REPO}@${GH_BRANCH}/public${dref.url}`).catch(()=>null);
+      const fetchUrl = /^https?:\/\//.test(dref.url) ? dref.url : `https://cdn.jsdelivr.net/gh/${GH_OWNER}/${GH_REPO}@${GH_BRANCH}/public${dref.site_path||dref.url}`;
+      const raw=await fetch(fetchUrl).catch(()=>null);
       if(!raw||!raw.ok) return json(502,{success:false,error:'Could not fetch stored doc'});
       const buf=Buffer.from(await raw.arrayBuffer());
       const ex=await runGeminiDocExtract(dref.mime, buf.toString('base64'), [cur.venue_name,cur.city,cur.date].filter(Boolean).join(' '));
