@@ -117,6 +117,36 @@ function isPlausiblePhone(value) {
   return true;
 }
 function normEmail(s) { return String(s || '').trim().toLowerCase(); }
+function nameIdentityTokens(name) {
+  const generic = new Set(['festival','festivals','fest','events','event','productions','production','promotions','promotion','presents','gatherings','gathering']);
+  return [...new Set(normName(name).split(/\s+/).filter(t => t && !generic.has(t)))];
+}
+function namesLikelySame(a, b) {
+  const aa = nameIdentityTokens(a), bb = nameIdentityTokens(b);
+  if (!aa.length || !bb.length) return false;
+  const sa = aa.join(' '), sb = bb.join(' ');
+  if (sa === sb) return true;
+  // Alias/expanded names such as "From Hell To Disco" and
+  // "Asfalt Gatherings / From Hell To Disco" retain the shorter identity.
+  const shorter = aa.length <= bb.length ? aa : bb;
+  const longer = aa.length <= bb.length ? bb : aa;
+  if (shorter.length >= 2 && shorter.every(t => longer.includes(t))) return true;
+  const overlap = aa.filter(t => bb.includes(t)).length;
+  return overlap / Math.max(aa.length, bb.length) >= 0.75;
+}
+function similarNameGroups(group) {
+  const pending = [...group], out = [];
+  while (pending.length) {
+    const component = [pending.shift()];
+    for (let i = 0; i < component.length; i++) {
+      for (let j = pending.length - 1; j >= 0; j--) {
+        if (namesLikelySame(component[i].name, pending[j].name)) component.push(pending.splice(j, 1)[0]);
+      }
+    }
+    if (component.length > 1) out.push(component);
+  }
+  return out;
+}
 
 const BIZ_WORDS = /\b(club|bar|hall|theatre|theater|lounge|room|agency|booking|bookings|records|recordings|live|presents|productions|production|music|sounds|promotions|festival|collective|events|entertainment|studio|studios|society|association|assoc|llc|inc|ltd|gmbh|kollektiv|verein|company|co\.|group|network|arts|gallery|café|cafe|pub|tavern|warehouse|space|venue|dj|crew|label|management|mgmt|hq|house|hotel|center|centre)\b/i;
 function looksLikePerson(name) {
@@ -271,8 +301,11 @@ function findDuplicateClusters(venues) {
     usedAsLoser.add(primary.id);
     clusters.push({ primary, losers, matchedOn });
   }
-  for (const group of byEmail.values()) if (group.length > 1) tryStage(group, 'shared booking email');
-  for (const group of byPhone.values()) if (group.length > 1) tryStage(group, 'shared phone number');
+  // A shared promoter email/phone alone is not proof that two venues or
+  // festivals are duplicates. Require similar organization identities too;
+  // otherwise one promoter who handles several events would collapse them.
+  for (const group of byEmail.values()) for (const similar of similarNameGroups(group)) tryStage(similar, 'shared booking email + similar name');
+  for (const group of byPhone.values()) for (const similar of similarNameGroups(group)) tryStage(similar, 'shared phone number + similar name');
   for (const group of byNameCity.values()) if (group.length > 1) tryStage(group, 'name+city');
   return clusters;
 }
