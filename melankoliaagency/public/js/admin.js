@@ -3098,7 +3098,7 @@ async function refreshCvStats() {
     const j = await cvCall({ action: 'stats' });
     const s = j.data || {};
     const el = document.getElementById('cvStats');
-    if (el) el.innerHTML = `<b>${s.pending || 0}</b> pending &middot; ${s.restructure || 0} restructure &middot; ${s.merge || 0} merge/dup &middot; ${s.google_contact_update || 0} google-update &middot; ${s.google_contact_new || 0} google-new &middot; ${s.contract_contact_update || 0} contract-update &middot; ${s.contract_contact_new || 0} contract-new &middot; ${s.email_contact_update || 0} email-address &middot; ${s.approved || 0} approved &middot; ${s.rejected || 0} rejected`;
+    if (el) el.innerHTML = `<b>${s.pending || 0}</b> pending &middot; ${s.restructure || 0} restructure &middot; ${s.merge || 0} merge/dup &middot; ${s.note_contact_update || 0} notes/gmail &middot; ${s.gmail_queued || 0} Gmail queued &middot; ${s.google_contact_update || 0} google-update &middot; ${s.google_contact_new || 0} google-new &middot; ${s.contract_contact_update || 0} contract-update &middot; ${s.contract_contact_new || 0} contract-new &middot; ${s.email_contact_update || 0} email-address &middot; ${s.approved || 0} approved &middot; ${s.rejected || 0} rejected`;
   } catch (e) { /* silent */ }
 }
 function setCvFilter(f, btn) {
@@ -3112,7 +3112,7 @@ async function loadCvProposals() {
   if (host) host.innerHTML = '<p class="muted">Loading\u2026</p>';
   try {
     let payload = { action: 'list' };
-    if (['restructure', 'merge', 'google_contact_update', 'google_contact_new', 'contract_contact_update', 'contract_contact_new', 'email_contact_update'].includes(_cvFilter)) { payload.status = 'pending'; payload.type = _cvFilter; }
+    if (['restructure', 'merge', 'google_contact_update', 'google_contact_new', 'contract_contact_update', 'contract_contact_new', 'email_contact_update', 'note_contact_update'].includes(_cvFilter)) { payload.status = 'pending'; payload.type = _cvFilter; }
     else payload.status = _cvFilter;
     const j = await cvCall(payload);
     _cvProposals = j.data || [];
@@ -3126,16 +3126,17 @@ async function runContactValidationScan() {
   const btn = document.getElementById('cvScanBtn');
   const restructure = document.getElementById('cvRestructureToggle').checked;
   const dedupe = document.getElementById('cvDedupeToggle').checked;
+  const enrichNotes = document.getElementById('cvNotesToggle').checked;
   if (btn) { btn.disabled = true; }
-  let totalR = 0, totalM = 0, pass = 0;
+  let totalR = 0, totalM = 0, totalN = 0, totalQ = 0, pass = 0;
   try {
     let more = true;
     while (more && pass < 30) {
       pass++;
       if (btn) btn.textContent = pass === 1 ? '\u25b6 Scanning\u2026' : `\u25b6 Scanning\u2026 (pass ${pass})`;
-      showCvStatus(`Scanning the Contact Manager for restructure &amp; duplicate candidates\u2026 (pass ${pass})`, 'working');
-      const j = await cvCall({ action: 'scan', options: { restructure, dedupe } });
-      totalR += j.restructure_staged || 0; totalM += j.merge_staged || 0;
+      showCvStatus(`Scanning CRM structure, duplicates, notes, and missing Gmail evidence\u2026 (pass ${pass})`, 'working');
+      const j = await cvCall({ action: 'scan', options: { restructure, dedupe, enrich_notes: enrichNotes } });
+      totalR += j.restructure_staged || 0; totalM += j.merge_staged || 0; totalN += j.note_enrichment_staged || 0; totalQ += j.gmail_queued || 0;
       more = !!j.more;
       loadCvProposals();
     }
@@ -3150,13 +3151,27 @@ function _cvById(id) { return (_cvProposals || []).find(p => p.id === id); }
 function cvContactRow(c) {
   return `<div class="disc-venue-chip">${escapeHtml(c.name || '(no name)')}${c.title ? ' \u2014 ' + escapeHtml(c.title) : ''}${c.email ? ' \u00b7 ' + escapeHtml(c.email) : ''}${c.phone ? ' \u00b7 ' + escapeHtml(c.phone) : ''}${c.is_primary ? ' <span class="disc-badge">primary</span>' : ''}</div>`;
 }
+function cvIsUnknown(v) { return !String(v || '').trim() || /^(unknown(?: venue| organi[sz]ation)?|n\/a|na|tbd|-|--|none|no name|unnamed)$/i.test(String(v).trim()); }
+function cvEvidenceBox(p) {
+  const all = { ...(p.evidence || {}), ...(p.gmail_evidence || {}) };
+  const rows = Object.entries(all).filter(([,e]) => e && e.snippet).slice(0,12);
+  if (!rows.length) return '';
+  return `<div class="cv-evidence-box"><b>Evidence used</b>${rows.map(([field,e]) => `<div><span class="disc-badge conf-${escapeHtml(e.confidence || 'medium')}">${escapeHtml(e.source || 'source')} · ${escapeHtml(e.confidence || 'medium')}</span> <b>${escapeHtml(field)}:</b> “${escapeHtml(e.snippet)}”</div>`).join('')}</div>`;
+}
+function cvCrossReferenceBox(p) {
+  const refs = p.cross_references || [];
+  if (!refs.length) return '';
+  const names = [...new Set(refs.flatMap(r => (r.organizations || []).map(o => o.name + (o.city ? ` (${o.city})` : ''))))].slice(0,12);
+  return `<div class="cv-cross-warning"><b>Shared promoter — do not merge organizations.</b> This contact also appears at: ${names.map(escapeHtml).join(', ')}.</div>`;
+}
+
 function renderCvProposals() {
   const host = document.getElementById('cvList');
   if (!host) return;
   if (!_cvProposals.length) { host.innerHTML = '<p class="muted">Nothing here yet.</p>'; return; }
   host.innerHTML = _cvProposals.map(p => {
     const confBadge = `<span class="disc-badge conf-${p.confidence || 'medium'}">${p.confidence || 'medium'}</span>`;
-    const typeBadges = { merge: '\u2696 Merge', restructure: '\u2699 Restructure', google_contact_update: '\ud83d\udcc7 Google \u2192 update', google_contact_new: '\ud83d\udcc7 Google \u2192 new contact', contract_contact_update: '\ud83d\udcc4 Contract \u2192 update', contract_contact_new: '\ud83d\udcc4 Contract \u2192 new contact', email_contact_update: '\u2709 Email \u2192 address' };
+    const typeBadges = { merge: '\u2696 Merge', restructure: '\u2699 Restructure', google_contact_update: '\ud83d\udcc7 Google \u2192 update', google_contact_new: '\ud83d\udcc7 Google \u2192 new contact', contract_contact_update: '\ud83d\udcc4 Contract \u2192 update', contract_contact_new: '\ud83d\udcc4 Contract \u2192 new contact', email_contact_update: '\u2709 Email \u2192 address', note_contact_update: '\u270e Notes/Gmail \u2192 enrichment' };
     const typeBadge = `<span class="disc-badge">${typeBadges[p.type] || p.type}</span>`;
     const canAct = (p.status || 'pending') === 'pending';
     let body = '';
@@ -3168,6 +3183,13 @@ function renderCvProposals() {
     } else if (p.type === 'merge') {
       const losersNames = (p.before.losers || []).map(l => l.name).join(', ');
       body = `<div class="disc-diff"><b>Keep:</b> ${escapeHtml(p.before.primary && p.before.primary.name || '')} &nbsp; <b>Merge in &amp; archive:</b> ${escapeHtml(losersNames)}</div>`;
+    } else if (p.type === 'note_contact_update') {
+      const fields = (p.after && p.after.proposed_fields) || {};
+      const contacts = (p.after && p.after.proposed_contacts) || [];
+      const fieldRows = Object.keys(fields).length ? `<div class="disc-fields">${Object.entries(fields).map(([k,v]) => `<span><b>${escapeHtml(k)}:</b> ${escapeHtml(v)}</span>`).join('')}</div>` : '';
+      const contactRows = contacts.length ? `<div class="disc-venues"><b>Proposed contacts:</b>${contacts.map(cvContactRow).join('')}</div>` : '';
+      const unknown = p.before && cvIsUnknown(p.before.name) ? '<div class="cv-unknown-warning"><b>Unknown organization:</b> resolve or verify the organization name before approval.</div>' : '';
+      body = `${unknown}${fieldRows}${contactRows}${cvEvidenceBox(p)}${cvCrossReferenceBox(p)}`;
     } else if (p.type === 'google_contact_update') {
       const gc = p.google_contact || {};
       const fields = p.after.proposed_fields || {};
@@ -3222,53 +3244,45 @@ const CV_CONTACT_FIELDS = [
 let _cvEditId = null;
 let _cvEditOld = {};
 let _cvEditSources = [];
+let _cvEditContacts = [];
 
-function cvFirstContact(obj) {
-  return (obj && Array.isArray(obj.contacts) && obj.contacts[0]) || {};
-}
+function cvFirstContact(obj) { return (obj && Array.isArray(obj.contacts) && obj.contacts[0]) || {}; }
 function cvOldRecord(p) {
   const src = p.before || p.google_contact || p.extracted_contact || {};
   const ct = cvFirstContact(src);
   const googlePerson = p.google_contact && src.org ? src.name : '';
   return {
-    name: src.name || src.org || src.organization || src.event_or_venue || '',
-    contact_type: src.contact_type || src.type || '',
-    address: src.address || '', city: src.city || '', region: src.region || '', country: src.country || '',
-    market: src.market || '', website: src.website || '',
-    booking_email: src.booking_email || src.email || (src.emails && src.emails[0]) || '',
-    phone: src.phone || (src.phones && src.phones[0]) || '',
+    name: src.name || src.org || src.organization || src.event_or_venue || '', contact_type: src.contact_type || src.type || '',
+    address: src.address || '', city: src.city || '', region: src.region || '', country: src.country || '', market: src.market || '', website: src.website || '',
+    booking_email: src.booking_email || src.email || (src.emails && src.emails[0]) || '', phone: src.phone || (src.phones && src.phones[0]) || '',
     instagram: src.instagram || '', booking_method: src.booking_method || '', notes: src.notes || src.evidence_notes || '',
-    contact_name: ct.name || src.contact_name || src.promoter_person_name || googlePerson || '',
-    contact_title: ct.title || src.contact_title || src.title || '',
-    contact_email: ct.email || src.booking_email || src.email || (src.emails && src.emails[0]) || '',
-    contact_phone: ct.phone || src.phone || (src.phones && src.phones[0]) || '',
-    contact_whatsapp: ct.whatsapp || src.whatsapp || ''
+    contact_name: ct.name || src.contact_name || src.promoter_person_name || googlePerson || '', contact_title: ct.title || src.contact_title || src.title || '',
+    contact_email: ct.email || src.booking_email || src.email || (src.emails && src.emails[0]) || '', contact_phone: ct.phone || src.phone || (src.phones && src.phones[0]) || '', contact_whatsapp: ct.whatsapp || src.whatsapp || ''
   };
 }
 function cvProposedRecord(p) {
   const a = p.after || {};
   const isUpdate = /_update$/.test(p.type || '');
-  const record = isUpdate ? (a.proposed_fields || {}) : a;
-  const ct = a.new_contact || cvFirstContact(a);
-  return {
-    ...record,
-    contact_name: ct.name || '', contact_title: ct.title || '', contact_email: ct.email || '',
-    contact_phone: ct.phone || '', contact_whatsapp: ct.whatsapp || ''
-  };
+  return isUpdate ? (a.proposed_fields || {}) : a;
+}
+function cvProposedContacts(p) {
+  const a = p.after || {};
+  if (Array.isArray(a.proposed_contacts)) return a.proposed_contacts.map(c => ({...c}));
+  if (Array.isArray(a.contacts)) return a.contacts.map(c => ({...c}));
+  if (a.new_contact) return [{...a.new_contact}];
+  return [];
 }
 function cvSourceList(p) {
   if (p.type === 'merge') {
-    const before = p.before || {};
-    const rows = [];
-    if (before.primary) rows.push({ label:`Keep: ${before.primary.name || 'primary record'}`, record:cvOldRecord({ before:before.primary }) });
-    (before.losers || []).forEach(v => rows.push({ label:`Merge in: ${v.name || 'record'}`, record:cvOldRecord({ before:v }) }));
+    const before = p.before || {}, rows = [];
+    if (before.primary) rows.push({ label:`Keep: ${before.primary.name || 'primary record'}`, record:cvOldRecord({ before:before.primary }), contacts:before.primary.contacts || [] });
+    (before.losers || []).forEach(v => rows.push({ label:`Merge in: ${v.name || 'record'}`, record:cvOldRecord({ before:v }), contacts:v.contacts || [] }));
     return rows;
   }
-  return [{ label:'Old / current or source', record:cvOldRecord(p) }];
+  const src = p.before || p.google_contact || p.extracted_contact || {};
+  return [{ label:'Old / current or source', record:cvOldRecord(p), contacts:src.contacts || [] }];
 }
-function cvOldValue(v) {
-  return String(v || '').trim() ? escapeHtml(String(v)) : '<span class="cv-empty">Empty</span>';
-}
+function cvOldValue(v) { return String(v || '').trim() ? escapeHtml(String(v)) : '<span class="cv-empty">Empty</span>'; }
 function cvOldFieldRow(field, label) {
   const values = _cvEditSources.map((src, i) => ({ i, label:src.label, value:src.record[field] || '' }));
   const shown = values.some(x => String(x.value).trim()) ? values.filter(x => String(x.value).trim()) : values.slice(0,1);
@@ -3276,101 +3290,63 @@ function cvOldFieldRow(field, label) {
     `<div class="cv-source-value"><div>${_cvEditSources.length > 1 ? `<small>${escapeHtml(x.label)}</small>` : ''}<div class="cv-old-value">${cvOldValue(x.value)}</div></div><button type="button" class="cv-copy-btn" onclick="cvCopySourceField(${x.i},'${field}')">Copy &rarr;</button></div>`
   ).join('')}</div>`;
 }
-
 function cvProposedFieldRow(field, label, value) {
   const textarea = field === 'notes';
-  return `<label class="cv-new-field"><span>${escapeHtml(label)}</span>${textarea
-    ? `<textarea data-cvfield="${field}" rows="3">${escapeHtml(value || '')}</textarea>`
-    : `<input data-cvfield="${field}" value="${escapeHtml(value || '')}">`}</label>`;
+  return `<label class="cv-new-field"><span>${escapeHtml(label)}</span>${textarea ? `<textarea data-cvfield="${field}" rows="3">${escapeHtml(value || '')}</textarea>` : `<input data-cvfield="${field}" value="${escapeHtml(value || '')}">`}</label>`;
 }
-function cvOpenEdit(id) {
-  const p = _cvById(id);
-  if (!p) return;
-  _cvEditId = id;
-  _cvEditSources = cvSourceList(p);
-  _cvEditOld = (_cvEditSources[0] && _cvEditSources[0].record) || {};
-  const proposed = cvProposedRecord(p);
-  const modal = document.getElementById('cvEditModal');
-  const body = document.getElementById('cvEditBody');
-  const subtitle = document.getElementById('cvEditSubtitle');
-  if (!modal || !body) return;
-  const mode = p.type === 'merge' ? 'Review merged contact'
-    : p.type === 'restructure' ? 'Restructure legacy contact'
-    : /_new$/.test(p.type || '') ? 'Create new CRM contact'
-    : 'Add missing data to existing CRM contact';
-  document.getElementById('cvEditTitle').textContent = mode;
-  subtitle.textContent = p.type === 'merge'
-    ? 'Both source records are on the left; the editable merged proposal is on the right.'
-    : /_new$/.test(p.type || '')
-      ? 'Source or extracted contact on the left; editable CRM proposal on the right.'
-      : 'Current CRM contact on the left; editable proposal on the right. Existing live fields remain protected.';
-  body.innerHTML = `
-    <div class="cv-copy-toolbar">
-      ${_cvEditSources.map((src,i) => `<button type="button" class="btn-secondary btn-sm" onclick="cvCopyAllSource(${i})">Copy empty fields from ${escapeHtml(src.label)} &rarr;</button>`).join('')}
-      ${_cvEditSources.map((src,i) => `<button type="button" class="btn-secondary btn-sm" onclick="cvCopySourceContact(${i})">Copy contact from ${escapeHtml(src.label)} &rarr;</button>`).join('')}
-      <span>You can also select, copy and paste text normally.</span>
+function cvContactEditorHtml() {
+  const rows = _cvEditContacts.length ? _cvEditContacts : [{name:'',title:'',email:'',phone:'',whatsapp:'',is_primary:true}];
+  _cvEditContacts = rows;
+  return `<div class="cv-contact-editor-list">${rows.map((c,i) => `<div class="cv-contact-edit-card" data-contact-index="${i}">
+    <div class="cv-contact-card-head"><b>Contact ${i+1}</b><label><input type="radio" name="cvPrimaryContact" ${c.is_primary || (!rows.some(x=>x.is_primary) && i===0) ? 'checked' : ''}> Primary</label>${rows.length > 1 ? `<button type="button" class="btn-secondary btn-sm" onclick="cvRemoveContact(${i})">Remove</button>` : ''}</div>
+    <div class="cv-contact-fields">
+      <label><span>Name</span><input data-contact-field="name" value="${escapeHtml(c.name || '')}"></label>
+      <label><span>Title / role</span><input data-contact-field="title" value="${escapeHtml(c.title || '')}"></label>
+      <label><span>Email</span><input data-contact-field="email" value="${escapeHtml(c.email || '')}"></label>
+      <label><span>Phone</span><input data-contact-field="phone" value="${escapeHtml(c.phone || '')}"></label>
+      <label><span>WhatsApp</span><input data-contact-field="whatsapp" value="${escapeHtml(c.whatsapp || '')}"></label>
     </div>
-    <div class="cv-compare-head"><div>OLD / CURRENT OR SOURCE</div><div>PROPOSED NEW CONTACT</div></div>
-    <div class="cv-compare-section"><h3>Organization record</h3><div class="cv-compare-grid">
-      <div class="cv-old-column">${CV_RECORD_FIELDS.map(([f,l]) => cvOldFieldRow(f,l)).join('')}</div>
-      <div class="cv-new-column">${CV_RECORD_FIELDS.map(([f,l]) => cvProposedFieldRow(f,l,proposed[f])).join('')}</div>
-    </div></div>
-    <div class="cv-compare-section"><h3>Contact person</h3><div class="cv-compare-grid">
-      <div class="cv-old-column">${CV_CONTACT_FIELDS.map(([f,l]) => cvOldFieldRow(f,l)).join('')}</div>
-      <div class="cv-new-column">${CV_CONTACT_FIELDS.map(([f,l]) => cvProposedFieldRow(f,l,proposed[f])).join('')}</div>
-    </div></div>
-    <p class="cv-safety-note">Safety rule: approval re-reads the live CRM and only fills missing fields. Existing non-empty CRM values are never overwritten.</p>`;
-  const status = document.getElementById('cvEditStatus'); if (status) status.textContent = '';
-  modal.classList.toggle('cv-merge-mode', p.type === 'merge');
-  modal.classList.add('open');
-  document.body.classList.add('modal-open');
+    <input type="hidden" data-contact-field="contact_key" value="${escapeHtml(c.contact_key || '')}">
+    <input type="hidden" data-contact-field="match_contact_key" value="${escapeHtml(c.match_contact_key || '')}">
+  </div>`).join('')}</div><button type="button" class="btn-secondary btn-sm cv-add-contact" onclick="cvAddContact()">+ Add another contact</button>`;
 }
-function cvToggleEdit(id) { cvOpenEdit(id); }
-function cvCloseEdit() {
-  const modal = document.getElementById('cvEditModal'); if (modal) { modal.classList.remove('open'); modal.classList.remove('cv-merge-mode'); }
-  document.body.classList.remove('modal-open');
-  _cvEditId = null; _cvEditOld = {}; _cvEditSources = [];
-}
-function cvEditInput(field) { return document.querySelector(`#cvEditBody [data-cvfield="${field}"]`); }
-function cvCopySourceField(sourceIndex, field) {
-  const input = cvEditInput(field); if (!input) return;
-  const src = _cvEditSources[sourceIndex];
-  input.value = (src && src.record[field]) || ''; input.focus();
-}
-function cvCopyOldField(field) { cvCopySourceField(0, field); }
-function cvCopyAllSource(sourceIndex) {
-  const src = _cvEditSources[sourceIndex]; if (!src) return;
-  [...CV_RECORD_FIELDS, ...CV_CONTACT_FIELDS].forEach(([field]) => {
-    const input = cvEditInput(field);
-    if (input && !String(input.value || '').trim() && String(src.record[field] || '').trim()) input.value = src.record[field];
+function cvSyncContactsFromDom() {
+  const cards = [...document.querySelectorAll('#cvContactEditor .cv-contact-edit-card')];
+  if (!cards.length) return;
+  _cvEditContacts = cards.map(card => {
+    const get = f => { const el=card.querySelector(`[data-contact-field="${f}"]`); return el ? String(el.value || '').trim() : ''; };
+    return { name:get('name'),title:get('title'),email:get('email'),phone:get('phone'),whatsapp:get('whatsapp'),contact_key:get('contact_key'),match_contact_key:get('match_contact_key'),is_primary:!!card.querySelector('input[type="radio"]:checked') };
   });
 }
-function cvCopyAllOld() { cvCopyAllSource(0); }
-function cvCopySourceContact(sourceIndex) {
-  const src = _cvEditSources[sourceIndex]; if (!src) return;
-  CV_CONTACT_FIELDS.forEach(([field]) => {
-    const input = cvEditInput(field); if (input && String(src.record[field] || '').trim()) input.value = src.record[field];
-  });
+function cvRenderContactEditor() { const host=document.getElementById('cvContactEditor'); if(host) host.innerHTML=cvContactEditorHtml(); }
+function cvAddContact(contact) { cvSyncContactsFromDom(); _cvEditContacts.push({name:'',title:'',email:'',phone:'',whatsapp:'',is_primary:!_cvEditContacts.length,...(contact||{})}); cvRenderContactEditor(); }
+function cvRemoveContact(index) { cvSyncContactsFromDom(); _cvEditContacts.splice(index,1); if(_cvEditContacts.length&&!_cvEditContacts.some(c=>c.is_primary))_cvEditContacts[0].is_primary=true; cvRenderContactEditor(); }
+function cvOpenEdit(id) {
+  const p = _cvById(id); if (!p) return;
+  _cvEditId=id; _cvEditSources=cvSourceList(p); _cvEditOld=(_cvEditSources[0]&&_cvEditSources[0].record)||{}; _cvEditContacts=cvProposedContacts(p);
+  const proposed=cvProposedRecord(p),modal=document.getElementById('cvEditModal'),body=document.getElementById('cvEditBody'),subtitle=document.getElementById('cvEditSubtitle'); if(!modal||!body)return;
+  const mode=p.type==='merge'?'Review merged contact':p.type==='restructure'?'Restructure legacy contact':/_new$/.test(p.type||'')?'Create new CRM contact':p.type==='note_contact_update'?'Review notes / Gmail enrichment':'Add missing data to existing CRM contact';
+  document.getElementById('cvEditTitle').textContent=mode;
+  subtitle.textContent=p.type==='merge'?'Both source records are on the left; the editable merged proposal is on the right.':/_new$/.test(p.type||'')?'Source or extracted contact on the left; editable CRM proposal on the right.':'Current CRM data and source evidence are on the left; editable fill-empty-only proposals are on the right.';
+  const evidence = cvEvidenceBox(p) + cvCrossReferenceBox(p) + ((p.before&&cvIsUnknown(p.before.name))?'<div class="cv-unknown-warning"><b>Unknown organization:</b> resolve or verify this before approval.</div>':'');
+  body.innerHTML=`${evidence}<div class="cv-copy-toolbar">${_cvEditSources.map((src,i)=>`<button type="button" class="btn-secondary btn-sm" onclick="cvCopyAllSource(${i})">Copy empty fields from ${escapeHtml(src.label)} &rarr;</button>`).join('')}${_cvEditSources.map((src,i)=>`<button type="button" class="btn-secondary btn-sm" onclick="cvCopySourceContact(${i})">Add contact from ${escapeHtml(src.label)} &rarr;</button>`).join('')}<span>You can also select, copy and paste normally.</span></div>
+    <div class="cv-compare-head"><div>OLD / CURRENT OR SOURCE</div><div>PROPOSED ORGANIZATION</div></div>
+    <div class="cv-compare-section"><h3>Organization record</h3><div class="cv-compare-grid"><div class="cv-old-column">${CV_RECORD_FIELDS.map(([f,l])=>cvOldFieldRow(f,l)).join('')}</div><div class="cv-new-column">${CV_RECORD_FIELDS.map(([f,l])=>cvProposedFieldRow(f,l,proposed[f])).join('')}</div></div></div>
+    <div class="cv-compare-section"><h3>Contact people</h3><div class="cv-compare-grid"><div class="cv-old-column">${CV_CONTACT_FIELDS.map(([f,l])=>cvOldFieldRow(f,l)).join('')}</div><div class="cv-new-column" id="cvContactEditor">${cvContactEditorHtml()}</div></div></div>
+    <p class="cv-safety-note">Approval re-reads the live CRM and fills only fields still empty. A shared promoter may remain linked to several separate organizations; enrichment never merges or archives organizations.</p>`;
+  const status=document.getElementById('cvEditStatus');if(status)status.textContent=''; modal.classList.toggle('cv-merge-mode',p.type==='merge');modal.classList.add('open');document.body.classList.add('modal-open');
 }
-function cvCopyOldContact() { cvCopySourceContact(0); }
-
-async function cvSaveEditDialog() {
-  const p = _cvById(_cvEditId); if (!p) return;
-  const get = field => { const el = cvEditInput(field); return el ? String(el.value || '').trim() : ''; };
-  const record = Object.fromEntries(CV_RECORD_FIELDS.map(([field]) => [field, get(field)]));
-  const contact = { name:get('contact_name'), title:get('contact_title'), email:get('contact_email'), phone:get('contact_phone'), whatsapp:get('contact_whatsapp'), is_primary:true };
-  const btn = document.getElementById('cvEditSaveBtn');
-  const status = document.getElementById('cvEditStatus');
-  if (btn) btn.disabled = true; if (status) status.textContent = 'Saving…';
-  try {
-    await cvCall({ action:'edit', id:p.id, record, contact });
-    cvCloseEdit();
-    showCvStatus('Proposed contact updated. Review it once more before approving.', 'ok');
-    await loadCvProposals();
-  } catch (e) {
-    if (status) status.textContent = 'Save failed: ' + e.message;
-  } finally { if (btn) btn.disabled = false; }
-}
+function cvToggleEdit(id){cvOpenEdit(id);}
+function cvCloseEdit(){const modal=document.getElementById('cvEditModal');if(modal){modal.classList.remove('open');modal.classList.remove('cv-merge-mode');}document.body.classList.remove('modal-open');_cvEditId=null;_cvEditOld={};_cvEditSources=[];_cvEditContacts=[];}
+function cvEditInput(field){return document.querySelector(`#cvEditBody [data-cvfield="${field}"]`);}
+function cvContactFromSource(src){return {name:src.record.contact_name||'',title:src.record.contact_title||'',email:src.record.contact_email||'',phone:src.record.contact_phone||'',whatsapp:src.record.contact_whatsapp||'',is_primary:!_cvEditContacts.length};}
+function cvCopySourceField(sourceIndex,field){const src=_cvEditSources[sourceIndex];if(!src)return;if(field.startsWith('contact_')){cvSyncContactsFromDom();if(!_cvEditContacts.length)_cvEditContacts.push(cvContactFromSource(src));const map={contact_name:'name',contact_title:'title',contact_email:'email',contact_phone:'phone',contact_whatsapp:'whatsapp'};_cvEditContacts[0][map[field]]=src.record[field]||'';cvRenderContactEditor();return;}const input=cvEditInput(field);if(input){input.value=src.record[field]||'';input.focus();}}
+function cvCopyOldField(field){cvCopySourceField(0,field);}
+function cvCopyAllSource(sourceIndex){const src=_cvEditSources[sourceIndex];if(!src)return;CV_RECORD_FIELDS.forEach(([field])=>{const input=cvEditInput(field);if(input&&!String(input.value||'').trim()&&String(src.record[field]||'').trim())input.value=src.record[field];});cvCopySourceContact(sourceIndex);}
+function cvCopyAllOld(){cvCopyAllSource(0);}
+function cvCopySourceContact(sourceIndex){const src=_cvEditSources[sourceIndex];if(!src)return;const c=cvContactFromSource(src);if(!(c.name||c.email||c.phone||c.whatsapp))return;cvSyncContactsFromDom();const key=(c.email||'').toLowerCase();const ix=_cvEditContacts.findIndex(x=>key&&(x.email||'').toLowerCase()===key);if(ix<0)_cvEditContacts.push(c);else Object.keys(c).forEach(f=>{if(!_cvEditContacts[ix][f]&&c[f])_cvEditContacts[ix][f]=c[f];});cvRenderContactEditor();}
+function cvCopyOldContact(){cvCopySourceContact(0);}
+async function cvSaveEditDialog(){const p=_cvById(_cvEditId);if(!p)return;const get=field=>{const el=cvEditInput(field);return el?String(el.value||'').trim():'';};const record=Object.fromEntries(CV_RECORD_FIELDS.map(([field])=>[field,get(field)]));cvSyncContactsFromDom();const contacts=_cvEditContacts.filter(c=>c.name||c.email||c.phone||c.whatsapp||c.title);const btn=document.getElementById('cvEditSaveBtn'),status=document.getElementById('cvEditStatus');if(btn)btn.disabled=true;if(status)status.textContent='Saving…';try{await cvCall({action:'edit',id:p.id,record,contacts});cvCloseEdit();showCvStatus('Proposed contact updated. Review it once more before approving.','ok');await loadCvProposals();}catch(e){if(status)status.textContent='Save failed: '+e.message;}finally{if(btn)btn.disabled=false;}}
 
 async function cvApprove(id) {
   try { await cvCall({ action: 'approve', id }); loadCvProposals(); }

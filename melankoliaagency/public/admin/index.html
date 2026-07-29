@@ -646,11 +646,12 @@
 
         <div class="disc-scanbar">
           <div class="disc-scan-note">
-            Runs entirely against your existing Contact Manager data — no inbox access needed. Nothing changes until you approve a proposal below.
+            Mines explicit missing details from Contact Manager notes first. When evidence is still missing, it queues a read-only booking Gmail lookup for the agent. Nothing changes until you approve a proposal below.
           </div>
           <div class="disc-scan-actions">
             <label class="disc-deep-toggle"><input type="checkbox" id="cvRestructureToggle" checked> Restructure contacts</label>
             <label class="disc-deep-toggle"><input type="checkbox" id="cvDedupeToggle" checked> Find duplicates</label>
+            <label class="disc-deep-toggle"><input type="checkbox" id="cvNotesToggle" checked> Mine notes + queue Gmail</label>
             <button class="btn-primary" id="cvScanBtn" onclick="runContactValidationScan()">▶ Run validation</button>
           </div>
         </div>
@@ -667,6 +668,7 @@
             <button class="chip" data-cvfilter="contract_contact_update" onclick="setCvFilter('contract_contact_update', this)">Contract — update</button>
             <button class="chip" data-cvfilter="contract_contact_new" onclick="setCvFilter('contract_contact_new', this)">Contract — new</button>
             <button class="chip" data-cvfilter="email_contact_update" onclick="setCvFilter('email_contact_update', this)">Email — address</button>
+            <button class="chip" data-cvfilter="note_contact_update" onclick="setCvFilter('note_contact_update', this)">Notes/Gmail — enrichment</button>
             <button class="chip" data-cvfilter="approved" onclick="setCvFilter('approved', this)">Approved</button>
             <button class="chip" data-cvfilter="rejected" onclick="setCvFilter('rejected', this)">Rejected</button>
           </div>

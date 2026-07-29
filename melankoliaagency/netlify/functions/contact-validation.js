@@ -14,9 +14,11 @@
 // Discovery's Gmail scan).
 const { listDocs, getDoc, createDoc, updateDoc, queryDocs, json } = require('./_firebase');
 const { authorize } = require('./_auth');
+const crypto = require('crypto');
 
 const COLL = 'contact_validation_proposals';
 const VENUES = 'route_planner_crm_venues';
+const GMAIL_QUEUE = 'contact_validation_gmail_queue';
 const AGENT_KEY = () => process.env.CONTACT_DISCOVERY_KEY || process.env.MELANKOLIA_ADMIN_PASSWORD || 'melankolia2025';
 const RAG_URL = (process.env.SITE_BASE || 'https://melankoliaagency.com') + '/.netlify/functions/rag-venues';
 const now = () => new Date().toISOString();
@@ -50,6 +52,22 @@ exports.handler = async (event) => {
       if (!isAgent) return json(403, { success: false, error: 'email import requires agent_key' });
       return json(200, await importEmailAddresses(b.contacts || []));
     }
+    if (b.action === 'gmail_queue_list') {
+      if (!isAgent) return json(403, { success: false, error: 'gmail queue requires agent_key' });
+      return json(200, await listGmailQueue(b));
+    }
+    if (b.action === 'gmail_queue_claim') {
+      if (!isAgent) return json(403, { success: false, error: 'gmail queue requires agent_key' });
+      return json(200, await claimGmailQueue(b.limit || 10));
+    }
+    if (b.action === 'gmail_queue_complete') {
+      if (!isAgent) return json(403, { success: false, error: 'gmail queue requires agent_key' });
+      return json(200, await completeGmailQueue(b.id, b.result || {}));
+    }
+    if (b.action === 'gmail_queue_fail') {
+      if (!isAgent) return json(403, { success: false, error: 'gmail queue requires agent_key' });
+      return json(200, await failGmailQueue(b.id, b.error || 'Gmail enrichment failed'));
+    }
     if (b.action === 'purge') {
       if (!isAgent) return json(403, { success: false, error: 'purge requires agent_key' });
       const t0 = Date.now();
@@ -80,11 +98,14 @@ exports.handler = async (event) => {
 };
 
 // ---------- helpers ----------
+const PLACEHOLDERS = new Set(['', 'unknown', 'unknown venue', 'unknown organization', 'unknown organisation', 'n/a', 'na', 'tbd', '-', '--', 'none', 'null', 'no name', 'unnamed']);
 function isFilled(v) {
   if (v == null) return false;
   if (Array.isArray(v)) return v.length > 0;
-  return String(v).trim() !== '' && String(v).trim().toLowerCase() !== 'unknown';
+  return !PLACEHOLDERS.has(String(v).trim().toLowerCase());
 }
+function isPlaceholder(v) { return !isFilled(v); }
+function sha(value) { return crypto.createHash('sha1').update(String(value || '')).digest('hex'); }
 function uniqArr(a) {
   const out = [], seen = new Set();
   (a || []).forEach(x => {
@@ -178,6 +199,215 @@ async function listVenues() {
   return (await listDocs(VENUES, { orderBy: 'updated_at desc', pageSize: 2000, mask: VENUE_MASK })).filter(v => !v.deleted_at);
 }
 
+// ---------- notes / legacy enrichment ----------
+const NOTE_RECORD_FIELDS = ['name','contact_type','address','city','region','country','website','instagram','booking_method'];
+function evidenceValue(raw) { return String(raw || '').trim().replace(/\s+/g, ' ').slice(0, 220); }
+function labelledValue(notes, labels) {
+  const escaped = labels.map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const m = String(notes || '').match(new RegExp(`(?:^|[|;\\n])\\s*(?:${escaped})\\s*:\\s*([^|;\\n]+)`, 'i'));
+  return m ? evidenceValue(m[1]) : '';
+}
+function splitPeople(value) {
+  const raw = evidenceValue(value);
+  if (!isFilled(raw)) return [];
+  return uniqArr(raw.split(/\s+(?:and|&)\s+|\s*;\s*/i).map(x => x.trim()).filter(x => isFilled(x) && !/^(several|multiple|various|team|staff)$/i.test(x)));
+}
+function explicitEmail(notes) {
+  const labelled = labelledValue(notes, ['booking email','contact email','email','e-mail']);
+  const hay = labelled || String(notes || '');
+  const m = hay.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  return m ? normEmail(m[0]) : '';
+}
+function explicitUrl(notes, labels) {
+  const labelled = labelledValue(notes, labels);
+  const hay = labelled || '';
+  const m = hay.match(/https?:\/\/[^\s|,;]+/i);
+  return m ? m[0].replace(/[.)]+$/, '') : '';
+}
+function explicitPhone(notes, labels) {
+  const raw = labelledValue(notes, labels);
+  return isPlausiblePhone(raw) ? raw : '';
+}
+function mapContactType(raw) {
+  const s = String(raw || '').toLowerCase();
+  if (/festival/.test(s)) return 'festival';
+  if (/venue|club|theatre|theater|hall|room/.test(s)) return 'venue';
+  if (/agency|agent|management/.test(s)) return 'agency';
+  if (/promoter|buyer|booker|events|production/.test(s)) return 'promoter';
+  return '';
+}
+function contactKey(c) {
+  const email = normEmail(c && c.email), phone = isPlausiblePhone(c && c.phone) ? normPhone(c.phone) : '', name = normName(c && c.name);
+  return email ? `e:${email}` : phone ? `p:${phone}` : name ? `n:${name}` : '';
+}
+function buildContactIndex(venues) {
+  const idx = new Map();
+  for (const v of venues) {
+    const contacts = [...(v.contacts || [])];
+    if (v.booking_email || v.contact_name || v.phone) contacts.push({ name:v.contact_name || '', email:v.booking_email || '', phone:v.phone || '' });
+    for (const c of contacts) {
+      const key = contactKey(c); if (!key) continue;
+      if (!idx.has(key)) idx.set(key, []);
+      if (!idx.get(key).some(x => x.id === v.id)) idx.get(key).push({ id:v.id, name:v.name || '', city:v.city || '' });
+    }
+  }
+  return idx;
+}
+function buildNoteEnrichment(v, contactIndex) {
+  const notes = String(v.notes || '');
+  const proposedFields = {}, evidence = {}, contacts = [];
+  const addField = (field, value, label, confidence='high') => {
+    value = evidenceValue(value);
+    if (!isFilled(v[field]) && isFilled(value)) {
+      proposedFields[field] = value;
+      evidence[field] = { source:'notes', confidence, snippet:`${label}: ${value}`.slice(0,220) };
+    }
+  };
+  addField('name', labelledValue(notes, ['organization','organisation','company','org','venue name','festival name']), 'Organization');
+  addField('address', labelledValue(notes, ['full address','postal address','address','venue address']), 'Address');
+  addField('city', labelledValue(notes, ['city','town']), 'City');
+  addField('region', labelledValue(notes, ['region','state','province']), 'Region');
+  addField('country', labelledValue(notes, ['country']), 'Country');
+  addField('website', explicitUrl(notes, ['website','web','url']), 'Website');
+  addField('instagram', explicitUrl(notes, ['instagram','ig']), 'Instagram');
+  const typeRaw = labelledValue(notes, ['contact type','type of event','type']);
+  addField('contact_type', mapContactType(typeRaw), 'Type');
+  if (!isFilled(v.booking_method) && (isFilled(v.booking_email) || explicitEmail(notes))) addField('booking_method', 'email', 'Booking method');
+
+  const personRaw = labelledValue(notes, ['promoter name','promoter','contact person','contact name','booker','buyer']);
+  const people = splitPeople(personRaw);
+  const noteEmail = explicitEmail(notes);
+  const notePhone = explicitPhone(notes, ['contact phone','phone','telephone','tel','mobile']);
+  const noteWhatsapp = explicitPhone(notes, ['whatsapp','whats app']);
+  const existingContacts = Array.isArray(v.contacts) ? v.contacts : [];
+  const legacyEmail = isFilled(v.booking_email) ? v.booking_email : (v.emails || []).find(isFilled) || '';
+  const legacyPhone = isPlausiblePhone(v.phone) ? v.phone : (v.phones || []).find(isPlausiblePhone) || '';
+  const email = noteEmail || legacyEmail;
+  const phone = notePhone || legacyPhone;
+  if (people.length) {
+    people.forEach((name, i) => {
+      const existing = existingContacts.find(c => normName(c.name) === normName(name)) || (people.length === 1 ? existingContacts.find(c => !isFilled(c.name) && (normEmail(c.email) === normEmail(email) || (!c.email && email))) : null);
+      const candidate = {
+        contact_key: contactKey({ name, email:i === 0 ? email : '', phone:i === 0 ? phone : '' }),
+        name, title:'Promoter / Buyer', email:i === 0 ? email : '', phone:i === 0 ? phone : '', whatsapp:i === 0 ? noteWhatsapp : '', is_primary: i === 0,
+        match_contact_key: existing ? contactKey(existing) : ''
+      };
+      contacts.push(candidate);
+    });
+    evidence.contacts = { source:'notes', confidence:'high', snippet:`Promoter name: ${personRaw}`.slice(0,220) };
+  } else if (!existingContacts.length && (noteEmail || notePhone || noteWhatsapp)) {
+    contacts.push({ contact_key:contactKey({ email:noteEmail, phone:notePhone }), name:'', title:'', email:noteEmail, phone:notePhone, whatsapp:noteWhatsapp, is_primary:true });
+    evidence.contacts = { source:'notes', confidence:'high', snippet:'Explicit contact details found in notes.' };
+  }
+  const crossReferences = [];
+  for (const c of contacts) {
+    const key = c.contact_key || contactKey(c); if (!key) continue;
+    const others = (contactIndex.get(key) || []).filter(x => x.id !== v.id);
+    if (others.length) crossReferences.push({ contact_key:key, organizations:others.slice(0,12) });
+  }
+  const requested = [];
+  const currentName = proposedFields.name || v.name;
+  if (!isFilled(currentName)) requested.push('organization');
+  const allContacts = [...existingContacts, ...contacts];
+  const emailsWithoutNames = allContacts.filter(c => isFilled(c.email) && !isFilled(c.name));
+  if (emailsWithoutNames.length || (isFilled(v.booking_email) && !isFilled(v.contact_name) && !people.length)) requested.push('contact_name','contact_title');
+  if (!isFilled(v.city) && !isFilled(proposedFields.city)) requested.push('city');
+  if (!isFilled(v.region) && !isFilled(proposedFields.region)) requested.push('region');
+  if (!isFilled(v.country) && !isFilled(proposedFields.country)) requested.push('country');
+  if (!isFilled(v.address) && !isFilled(proposedFields.address)) requested.push('address');
+  const priority = !isFilled(currentName) ? 'unknown' : requested.includes('contact_name') ? 'email_without_name' : (requested.includes('city') || requested.includes('region')) ? 'missing_city_region' : 'standard';
+  return { proposed_fields:proposedFields, proposed_contacts:contacts, evidence, cross_references:crossReferences, gmail_requested_fields:uniqArr(requested), priority };
+}
+function noteProposalHash(v, result) {
+  return sha(JSON.stringify([v.id, v.updated_at || '', v.notes || '', result.proposed_fields, result.proposed_contacts]));
+}
+async function queueGmailItem(item, seenKeys) {
+  const requested = uniqArr(item.requested_fields || []).sort();
+  if (!item.source_id || !requested.length) return false;
+  const queueKey = sha(`${item.source_type}|${item.source_id}|${requested.join(',')}`);
+  if (seenKeys.has(queueKey)) return false;
+  const qid = `cvq_${queueKey.slice(0,24)}`;
+  await createDoc(GMAIL_QUEUE, { ...item, requested_fields:requested, queue_key:queueKey, status:'queued', retry_count:0, created_at:now(), updated_at:now() }, qid).catch(() => {});
+  seenKeys.add(queueKey); return true;
+}
+function proposalNeedsGmail(p) {
+  if ((p.status || 'pending') !== 'pending' || !/_new$/.test(p.type || '')) return [];
+  const a = p.after || {}, fields = [];
+  if (!isFilled(a.name)) fields.push('organization');
+  if (!isFilled(a.city)) fields.push('city');
+  if (!isFilled(a.region)) fields.push('region');
+  if (!isFilled(a.country)) fields.push('country');
+  const contacts = a.contacts || [];
+  if ((isFilled(a.booking_email) || contacts.some(c => isFilled(c.email))) && !contacts.some(c => isFilled(c.name))) fields.push('contact_name','contact_title');
+  return uniqArr(fields);
+}
+
+// ---------- agent-run Gmail enrichment queue ----------
+async function listGmailQueue(b) {
+  let docs = await listDocs(GMAIL_QUEUE, { orderBy:'created_at asc', pageSize:Math.min(Number(b.limit)||200,500) }).catch(() => []);
+  if (b.status && b.status !== 'all') docs = docs.filter(x => (x.status || 'queued') === b.status);
+  return { success:true, data:docs, count:docs.length };
+}
+async function claimGmailQueue(limit) {
+  const docs = (await listDocs(GMAIL_QUEUE, { orderBy:'created_at asc', pageSize:500 }).catch(() => []))
+    .filter(x => ['queued','failed'].includes(x.status || 'queued'))
+    .sort((a,b) => ({unknown:0,email_without_name:1,missing_city_region:2,standard:3}[a.priority] ?? 4) - ({unknown:0,email_without_name:1,missing_city_region:2,standard:3}[b.priority] ?? 4))
+    .slice(0, Math.max(1, Math.min(Number(limit)||10,25)));
+  for (const d of docs) await updateDoc(GMAIL_QUEUE, d.id, { status:'in_progress', updated_at:now() });
+  return { success:true, data:docs, count:docs.length };
+}
+function cleanGmailResult(result) {
+  const allowed = ['name','contact_type','address','city','region','country','website','instagram','booking_method'];
+  const fields = {};
+  for (const f of allowed) if (isFilled(result.fields && result.fields[f])) fields[f] = evidenceValue(result.fields[f]);
+  const contacts = (Array.isArray(result.contacts) ? result.contacts : []).map(cleanEditedContact).filter(Boolean);
+  const evidence = {};
+  for (const [f,e] of Object.entries(result.evidence || {})) evidence[f] = { source:'gmail', confidence:['high','medium','low'].includes(e.confidence)?e.confidence:'medium', snippet:evidenceValue(e.snippet), message_ids:uniqArr(e.message_ids || []).slice(0,10) };
+  return { fields, contacts, evidence, confidence:['high','medium','low'].includes(result.confidence)?result.confidence:'medium', no_evidence:!!result.no_evidence };
+}
+async function completeGmailQueue(qid, rawResult) {
+  if (!qid) throw new Error('id required');
+  const q = await getDoc(GMAIL_QUEUE, qid); if (!q) throw new Error('queue item not found');
+  const result = cleanGmailResult(rawResult);
+  if (q.source_type === 'proposal') {
+    const p = await getDoc(COLL, q.source_id); if (!p) throw new Error('source proposal not found');
+    if ((p.status || 'pending') !== 'pending') { await updateDoc(GMAIL_QUEUE,qid,{status:'completed',note:'source proposal no longer pending',updated_at:now()}); return {success:true,no_op:true}; }
+    const after = { ...(p.after || {}) };
+    for (const [f,v] of Object.entries(result.fields)) if (!isFilled(after[f])) after[f] = v;
+    const mergedContacts = Array.isArray(after.contacts) ? [...after.contacts] : [];
+    for (const c of result.contacts) {
+      const key = contactKey(c); const ix = mergedContacts.findIndex(x => key && contactKey(x) === key);
+      if (ix < 0) mergedContacts.push({ ...c, contact_key:key });
+      else for (const [f,v] of Object.entries(c)) if (!isFilled(mergedContacts[ix][f]) && isFilled(v)) mergedContacts[ix][f] = v;
+    }
+    after.contacts = mergedContacts;
+    await updateDoc(COLL, p.id, { after, gmail_evidence:result.evidence, gmail_enriched_at:now(), updated_at:now() });
+  } else {
+    const venue = await getDoc(VENUES, q.source_id); if (!venue) throw new Error('source venue not found');
+    const pid = q.proposal_id;
+    let p = pid ? await getDoc(COLL,pid).catch(() => null) : null;
+    const after = p ? { ...(p.after || {}) } : { proposed_fields:{}, proposed_contacts:[] };
+    after.proposed_fields = { ...(after.proposed_fields || {}) };
+    for (const [f,v] of Object.entries(result.fields)) if (!isFilled(venue[f]) && !isFilled(after.proposed_fields[f])) after.proposed_fields[f] = v;
+    after.proposed_contacts = uniqArr([...(after.proposed_contacts || []), ...result.contacts.map(c => ({...c,contact_key:contactKey(c)}))]);
+    const patch = { after, gmail_evidence:result.evidence, confidence:result.confidence, updated_at:now(), note:'Missing contact information mined from CRM notes and read-only booking Gmail; review evidence before approval.' };
+    if (p) await updateDoc(COLL,p.id,patch);
+    else {
+      const newId=id();
+      await createDoc(COLL,{ type:'note_contact_update',status:'pending',target_venue_id:venue.id,before:trimSnapshot(venue),...patch,created_at:now() },newId);
+      await updateDoc(GMAIL_QUEUE,qid,{proposal_id:newId});
+    }
+  }
+  await updateDoc(GMAIL_QUEUE,qid,{status:'completed',result_summary:{fields:Object.keys(result.fields),contacts:result.contacts.length,no_evidence:result.no_evidence},updated_at:now()});
+  return { success:true, fields:Object.keys(result.fields), contacts:result.contacts.length };
+}
+async function failGmailQueue(qid, error) {
+  if (!qid) throw new Error('id required');
+  const q=await getDoc(GMAIL_QUEUE,qid); if(!q) throw new Error('queue item not found');
+  await updateDoc(GMAIL_QUEUE,qid,{status:'failed',last_error:evidenceValue(error),retry_count:Number(q.retry_count||0)+1,updated_at:now()});
+  return {success:true};
+}
+
 // ---------- scan ----------
 async function runScan(options) {
   const t0 = Date.now();
@@ -185,13 +415,18 @@ async function runScan(options) {
   const outOfTime = () => (Date.now() - t0) > BUDGET_MS;
   const doRestructure = options.restructure !== false;
   const doDedupe = options.dedupe !== false;
+  const doEnrichNotes = options.enrich_notes === true;
   const venues = await listVenues();
-  const existingProposals = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000, mask: ['type', 'target_venue_id', 'merge_venue_ids'] }).catch(() => []);
+  const existingProposals = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000, mask: ['type', 'status', 'target_venue_id', 'merge_venue_ids', 'note_hash', 'after'] }).catch(() => []);
 
   const restructureSeen = new Set(existingProposals.filter(p => p.type === 'restructure').map(p => p.target_venue_id));
   const mergeSeen = new Set(existingProposals.filter(p => p.type === 'merge').map(p => sigOf(p.target_venue_id, p.merge_venue_ids)));
+  const noteSeen = new Set(existingProposals.filter(p => p.type === 'note_contact_update').map(p => p.note_hash).filter(Boolean));
+  const queueDocs = doEnrichNotes ? await listDocs(GMAIL_QUEUE, { orderBy:'created_at desc', pageSize:2000, mask:['queue_key'] }).catch(() => []) : [];
+  const queueSeen = new Set(queueDocs.map(q => q.queue_key).filter(Boolean));
+  const contactIndex = doEnrichNotes ? buildContactIndex(venues) : new Map();
 
-  let restructureStaged = 0, mergeStaged = 0;
+  let restructureStaged = 0, mergeStaged = 0, noteStaged = 0, gmailQueued = 0;
 
   let restructureTruncated = false;
   if (doRestructure) {
@@ -261,8 +496,57 @@ async function runScan(options) {
     }
   }
 
-  const truncated = restructureTruncated || dedupeTruncated || (doDedupe && outOfTime());
-  return { success: true, scanned: venues.length, restructure_staged: restructureStaged, merge_staged: mergeStaged, truncated, more: truncated };
+  let notesTruncated = false;
+  if (doEnrichNotes && !outOfTime()) {
+    for (const v of venues) {
+      if (outOfTime()) { notesTruncated = true; break; }
+      const result = buildNoteEnrichment(v, contactIndex);
+      const hasLocal = Object.keys(result.proposed_fields).length || result.proposed_contacts.length;
+      const noteHash = noteProposalHash(v, result);
+      let proposalId = '';
+      if (hasLocal && !noteSeen.has(noteHash)) {
+        proposalId = id();
+        await createDoc(COLL, {
+          type:'note_contact_update', status:'pending', target_venue_id:v.id,
+          before:trimSnapshot(v),
+          after:{ proposed_fields:result.proposed_fields, proposed_contacts:result.proposed_contacts },
+          evidence:result.evidence, cross_references:result.cross_references,
+          note_hash:noteHash, confidence:'high',
+          note:'Explicit missing information extracted from CRM notes/legacy fields. Review every field before approval.',
+          created_at:now(), updated_at:now()
+        }, proposalId);
+        noteSeen.add(noteHash); noteStaged++;
+      } else {
+        const existing = existingProposals.find(p => p.type === 'note_contact_update' && p.note_hash === noteHash);
+        proposalId = existing ? existing.id : '';
+      }
+      if (result.gmail_requested_fields.length) {
+        const emails = uniqArr([v.booking_email, ...(v.emails || []), ...(v.contacts || []).map(c => c.email)].filter(isFilled).map(normEmail));
+        const names = uniqArr([v.name, v.contact_name, ...(v.contacts || []).map(c => c.name)].filter(isFilled));
+        if (emails.length || names.length) gmailQueued += await queueGmailItem({
+          source_type:'venue', source_id:v.id, proposal_id:proposalId,
+          priority:result.priority, requested_fields:result.gmail_requested_fields,
+          query_hints:{ emails:emails.slice(0,8), names:names.slice(0,8), organization:isFilled(v.name)?v.name:'' }
+        }, queueSeen) ? 1 : 0;
+      }
+    }
+    // Pending NEW proposals are not yet venue records, but missing city/region
+    // currently blocks approval. Queue them directly and patch only the staged
+    // proposal when evidence is found.
+    for (const p of existingProposals) {
+      if (outOfTime()) { notesTruncated = true; break; }
+      const requested = proposalNeedsGmail(p); if (!requested.length) continue;
+      const a=p.after||{}, contacts=a.contacts||[];
+      const emails=uniqArr([a.booking_email,...(a.emails||[]),...contacts.map(c=>c.email)].filter(isFilled).map(normEmail));
+      const names=uniqArr([a.name,...contacts.map(c=>c.name)].filter(isFilled));
+      if (!emails.length && !names.length) continue;
+      const priority=!isFilled(a.name)?'unknown':requested.includes('contact_name')?'email_without_name':'missing_city_region';
+      gmailQueued += await queueGmailItem({ source_type:'proposal',source_id:p.id,priority,requested_fields:requested,query_hints:{emails:emails.slice(0,8),names:names.slice(0,8),organization:isFilled(a.name)?a.name:''} },queueSeen)?1:0;
+    }
+  }
+
+  const truncated = restructureTruncated || dedupeTruncated || notesTruncated || (doDedupe && outOfTime());
+  return { success: true, scanned: venues.length, restructure_staged: restructureStaged, merge_staged: mergeStaged, note_enrichment_staged:noteStaged, gmail_queued:gmailQueued, truncated, more: truncated };
 }
 function sigOf(targetId, otherIds) { return [targetId, ...(otherIds || [])].sort().join('|'); }
 function trimSnapshot(v) {
@@ -301,12 +585,10 @@ function findDuplicateClusters(venues) {
     usedAsLoser.add(primary.id);
     clusters.push({ primary, losers, matchedOn });
   }
-  // A shared promoter email/phone alone is not proof that two venues or
-  // festivals are duplicates. Require similar organization identities too;
-  // otherwise one promoter who handles several events would collapse them.
-  for (const group of byEmail.values()) for (const similar of similarNameGroups(group)) tryStage(similar, 'shared booking email + similar name');
-  for (const group of byPhone.values()) for (const similar of similarNameGroups(group)) tryStage(similar, 'shared phone number + similar name');
-  for (const group of byNameCity.values()) if (group.length > 1) tryStage(group, 'name+city');
+  // One promoter may represent many venues/festivals. Shared contact details
+  // are cross-reference signals only and NEVER organization-merge evidence.
+  // Merge proposals require the same normalized organization name AND city.
+  for (const group of byNameCity.values()) if (group.length > 1) tryStage(group, 'same organization name + city');
   return clusters;
 }
 
@@ -347,7 +629,7 @@ function normalizeGoogleRow(row) {
   const phoneCols = colsMatching(cols, /^Phone \d+ - Value$/);
   const websiteCols = colsMatching(cols, /^Website \d+ - Value$/);
   const emails = uniqArr(emailCols.map(c => row[c]).filter(Boolean).map(normEmail));
-  const phones = uniqArr(phoneCols.map(c => row[c]).filter(Boolean));
+  const phones = uniqArr(phoneCols.map(c => row[c]).filter(isPlausiblePhone));
   const website = (websiteCols.map(c => row[c]).find(Boolean)) || '';
   const name = row['Name'] || [row['Given Name'], row['Family Name']].filter(Boolean).join(' ').trim();
   const org = row['Organization Name'] || '';
@@ -364,8 +646,32 @@ function normalizeGoogleRow(row) {
   return { name, org, title, emails, phones, website, address, city, region, country, notes };
 }
 function googleContactKey(gc) {
-  return normEmail(gc.emails[0] || '') || normPhone(gc.phones[0] || '') || normName(gc.org || gc.name || '');
+  return normEmail(gc.emails[0] || '') || (isPlausiblePhone(gc.phones[0]) ? normPhone(gc.phones[0]) : '') || normName(gc.org || gc.name || '');
 }
+function findImportVenue(venues, candidate) {
+  const org = candidate.organization || candidate.org || candidate.event_or_venue || '';
+  const city = normName(candidate.city);
+  const emails = uniqArr(candidate.emails || (candidate.email ? [candidate.email] : [])).filter(isFilled).map(normEmail);
+  const phones = uniqArr(candidate.phones || (candidate.phone ? [candidate.phone] : [])).filter(isPlausiblePhone).map(normPhone);
+  const person = normName(candidate.contact_name || candidate.name || candidate.promoter_person_name || '');
+  let orgMatches = [];
+  if (isFilled(org)) {
+    orgMatches = venues.filter(v => namesLikelySame(v.name, org) && (!city || !normName(v.city) || normName(v.city) === city));
+    if (orgMatches.length === 1) return orgMatches[0];
+  }
+  const pool = orgMatches.length ? orgMatches : venues;
+  const contactMatches = pool.filter(v => {
+    const contacts = [...(v.contacts || []), {name:v.contact_name||'',email:v.booking_email||'',phone:v.phone||''}];
+    return contacts.some(c =>
+      (emails.length && emails.includes(normEmail(c.email))) ||
+      (phones.length && isPlausiblePhone(c.phone) && phones.includes(normPhone(c.phone))) ||
+      (person && normName(c.name) === person)
+    );
+  });
+  const unique = uniqArr(contactMatches.map(v => v.id)).map(id => contactMatches.find(v => v.id === id));
+  return unique.length === 1 ? unique[0] : null;
+}
+
 async function importGoogleContacts(csvText, preParsed) {
   const t0 = Date.now();
   const BUDGET_MS = 18000;
@@ -377,13 +683,6 @@ async function importGoogleContacts(csvText, preParsed) {
   if (!rows.length) return { success: true, scanned: 0, matched: 0, staged_new: 0, staged_update: 0, more: false };
 
   const venues = await listVenues();
-  const byEmail = new Map(), byPhone = new Map(), byName = new Map();
-  venues.forEach(v => {
-    uniqArr([].concat(v.booking_email ? [v.booking_email] : [], v.emails || []).map(normEmail)).forEach(e => { if (e) byEmail.set(e, v); });
-    uniqArr([].concat(v.phone ? [v.phone] : [], v.phones || []).map(normPhone)).forEach(p => { if (p && p.length >= 7) byPhone.set(p, v); });
-    if (normName(v.name)) byName.set(normName(v.name), v);
-    (v.contacts || []).forEach(ct => { if (ct.name && normName(ct.name)) byName.set(normName(ct.name), v); });
-  });
 
   const existingProposals = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000, mask: ['type', 'google_key'] }).catch(() => []);
   const seen = new Set(existingProposals.filter(p => p.type === 'google_contact_update' || p.type === 'google_contact_new').map(p => p.google_key).filter(Boolean));
@@ -395,11 +694,7 @@ async function importGoogleContacts(csvText, preParsed) {
     const key = googleContactKey(gc);
     if (!key || seen.has(key)) continue;
 
-    let venue = null;
-    for (const e of gc.emails) { if (byEmail.has(e)) { venue = byEmail.get(e); break; } }
-    if (!venue) for (const p of gc.phones.map(normPhone)) { if (byPhone.has(p)) { venue = byPhone.get(p); break; } }
-    if (!venue && gc.org && byName.has(normName(gc.org))) venue = byName.get(normName(gc.org));
-    if (!venue && gc.name && byName.has(normName(gc.name))) venue = byName.get(normName(gc.name));
+    const venue = findImportVenue(venues, { org:gc.org, city:gc.city, emails:gc.emails, phones:gc.phones, contact_name:gc.name });
 
     if (venue) {
       matched++;
@@ -462,17 +757,6 @@ async function importContractContacts(contacts) {
   if (!Array.isArray(contacts)) throw new Error('contacts[] required');
   const rows = contacts.slice(0, 200).filter(x => x && (x.organization || x.promoter_person_name || x.email || x.phone || x.address));
   const venues = await listVenues();
-  const byEmail = new Map(), byPhone = new Map(), byName = new Map();
-  venues.forEach(v => {
-    uniqArr([].concat(v.booking_email ? [v.booking_email] : [], v.emails || []).map(normEmail)).forEach(e => { if (e) byEmail.set(e, v); });
-    uniqArr([].concat(v.phone ? [v.phone] : [], v.phones || []).map(normPhone)).forEach(p => { if (p && p.length >= 7) byPhone.set(p, v); });
-    if (normName(v.name)) byName.set(normName(v.name), v);
-    (v.contacts || []).forEach(ct => {
-      if (ct.email) byEmail.set(normEmail(ct.email), v);
-      if (ct.phone && normPhone(ct.phone).length >= 7) byPhone.set(normPhone(ct.phone), v);
-      if (ct.name) byName.set(normName(ct.name), v);
-    });
-  });
   const existing = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000, mask: ['type', 'contract_key'] }).catch(() => []);
   const seen = new Set(existing.filter(p => /^contract_contact_/.test(p.type || '')).map(p => p.contract_key).filter(Boolean));
   let matched = 0, stagedUpdate = 0, stagedNew = 0, skipped = 0;
@@ -480,11 +764,7 @@ async function importContractContacts(contacts) {
     const sourceIds = uniqArr(ct.source_file_ids || (ct.drive_file_id ? [ct.drive_file_id] : []));
     const key = String(ct.contract_key || sourceIds.join('|') || normEmail(ct.email) || normPhone(ct.phone) || normName(ct.organization || ct.promoter_person_name)).trim();
     if (!key || seen.has(key)) { skipped++; continue; }
-    let venue = null;
-    if (ct.email) venue = byEmail.get(normEmail(ct.email)) || null;
-    if (!venue && ct.phone) venue = byPhone.get(normPhone(ct.phone)) || null;
-    if (!venue && ct.organization) venue = byName.get(normName(ct.organization)) || null;
-    if (!venue && ct.promoter_person_name) venue = byName.get(normName(ct.promoter_person_name)) || null;
+    const venue = findImportVenue(venues, { organization:ct.organization || ct.event_or_venue, event_or_venue:ct.event_or_venue, city:ct.city, email:ct.email, phone:ct.phone, promoter_person_name:ct.promoter_person_name });
     const source = { drive_file_ids: sourceIds, file_names: uniqArr(ct.file_names || (ct.file_name ? [ct.file_name] : [])), contract_references: uniqArr(ct.contract_references || (ct.contract_number ? [ct.contract_number] : [])), event_or_venue: ct.event_or_venue || '', evidence_notes: ct.evidence_notes || '' };
     if (venue) {
       matched++;
@@ -570,7 +850,7 @@ async function listProposals(b) {
 }
 async function statsProposals() {
   const docs = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 2000 }).catch(() => []);
-  const s = { pending: 0, approved: 0, rejected: 0, restructure: 0, merge: 0, google_contact_update: 0, google_contact_new: 0, contract_contact_update: 0, contract_contact_new: 0, email_contact_update: 0, total: docs.length };
+  const s = { pending: 0, approved: 0, rejected: 0, restructure: 0, merge: 0, google_contact_update: 0, google_contact_new: 0, contract_contact_update: 0, contract_contact_new: 0, email_contact_update: 0, note_contact_update: 0, total: docs.length };
   docs.forEach(d => {
     const st = d.status || 'pending'; if (s[st] != null) s[st]++;
     if (st === 'pending' && s[d.type] != null) s[d.type]++;
@@ -581,17 +861,25 @@ async function statsProposals() {
   s.duplicate_restructure_proposals = restructureTargets.length - s.unique_restructure_targets;
   s.unique_merge_signatures = new Set(mergeSignatures).size;
   s.duplicate_merge_proposals = mergeSignatures.length - s.unique_merge_signatures;
+  const queue = await listDocs(GMAIL_QUEUE, { orderBy:'created_at desc', pageSize:2000, mask:['status'] }).catch(() => []);
+  s.gmail_queued = queue.filter(q => (q.status || 'queued') === 'queued').length;
+  s.gmail_in_progress = queue.filter(q => q.status === 'in_progress').length;
+  s.gmail_completed = queue.filter(q => q.status === 'completed').length;
+  s.gmail_failed = queue.filter(q => q.status === 'failed').length;
   return { success: true, data: s };
 }
 
 const EDITABLE_RECORD_FIELDS = ['name','contact_type','address','city','region','country','market','website','booking_email','phone','instagram','booking_method','notes'];
 function cleanEditedContact(c) {
   if (!c || !(c.name || c.email || c.phone || c.whatsapp || c.title)) return null;
-  return {
+  const clean = {
     name: String(c.name || '').trim(), title: String(c.title || '').trim(),
     email: String(c.email || '').trim(), phone: String(c.phone || '').trim(),
-    whatsapp: String(c.whatsapp || '').trim(), is_primary: c.is_primary !== false,
+    whatsapp: String(c.whatsapp || '').trim(), is_primary: c.is_primary === true,
   };
+  clean.contact_key = String(c.contact_key || contactKey(clean) || '').trim();
+  if (c.match_contact_key) clean.match_contact_key = String(c.match_contact_key).trim();
+  return clean;
 }
 async function editProposal(pid, patch) {
   if (!pid) throw new Error('id required');
@@ -599,25 +887,26 @@ async function editProposal(pid, patch) {
   if (!p) return { success: false, error: 'Proposal not found' };
   if ((p.status || 'pending') !== 'pending') return { success: false, error: 'Only pending proposals can be edited' };
   const incomingRecord = patch.record || patch.proposed_fields || {};
-  const incomingContact = cleanEditedContact(patch.contact || (Array.isArray(patch.contacts) ? patch.contacts[0] : patch.new_contact));
+  const incomingContacts = (Array.isArray(patch.contacts) ? patch.contacts : [patch.contact || patch.new_contact]).map(cleanEditedContact).filter(Boolean);
+  const incomingContact = incomingContacts[0] || null;
   const after = { ...(p.after || {}) };
 
-  if (p.type === 'merge') {
+  if (p.type === 'note_contact_update') {
+    const proposed = { ...((after && after.proposed_fields) || {}) };
+    for (const f of EDITABLE_RECORD_FIELDS) if (incomingRecord[f] !== undefined) proposed[f] = String(incomingRecord[f] || '').trim();
+    after.proposed_fields = proposed;
+    after.proposed_contacts = incomingContacts;
+  } else if (p.type === 'merge') {
     for (const f of EDITABLE_RECORD_FIELDS) if (incomingRecord[f] !== undefined) after[f] = String(incomingRecord[f] || '').trim();
-    if (incomingContact) {
-      const contacts = Array.isArray(after.contacts) ? [...after.contacts] : [];
-      if (contacts.length) contacts[0] = { ...contacts[0], ...incomingContact, is_primary: true };
-      else contacts.push(incomingContact);
-      after.contacts = contacts;
-    }
+    after.contacts = incomingContacts;
   } else if (p.type === 'restructure') {
     if (incomingRecord.name !== undefined) after.name = String(incomingRecord.name || '').trim();
-    after.contacts = incomingContact ? [incomingContact] : [];
+    after.contacts = incomingContacts;
   } else if (p.type === 'google_contact_new' || p.type === 'contract_contact_new') {
     for (const f of EDITABLE_RECORD_FIELDS) if (incomingRecord[f] !== undefined) after[f] = String(incomingRecord[f] || '').trim();
     after.emails = after.booking_email ? [after.booking_email] : [];
     after.phones = after.phone ? [after.phone] : [];
-    after.contacts = incomingContact ? [incomingContact] : [];
+    after.contacts = incomingContacts;
   } else if (p.type === 'google_contact_update' || p.type === 'contract_contact_update' || p.type === 'email_contact_update') {
     const proposed = {};
     for (const f of EDITABLE_RECORD_FIELDS) {
@@ -627,6 +916,7 @@ async function editProposal(pid, patch) {
     }
     after.proposed_fields = proposed;
     after.new_contact = incomingContact;
+    after.additional_contacts = incomingContacts.slice(1);
   } else {
     return { success: false, error: 'This proposal type is not editable' };
   }
@@ -642,24 +932,29 @@ async function editProposal(pid, patch) {
 // match the city when a city is present.
 async function findLiveDuplicateFast(candidate) {
   const c = candidate || {};
+  const candidateName = c.name || c.organization || '';
+  const candidateCity = normName(c.city);
+  const sameOrganization = v => {
+    if (!isFilled(candidateName) || !namesLikelySame(v.name, candidateName)) return false;
+    if (candidateCity && normName(v.city) && normName(v.city) !== candidateCity) return false;
+    return true;
+  };
   const emails = uniqArr([c.booking_email, ...(c.emails || [])]).filter(isFilled);
   for (const email of emails) {
-    const hits = await queryDocs(VENUES, 'booking_email', email, { limit: 5 }).catch(() => []);
-    const v = hits.find(x => x && !x.deleted_at);
-    if (v) return { venue: v, matched_on: 'email' };
+    const hits = await queryDocs(VENUES, 'booking_email', email, { limit: 10 }).catch(() => []);
+    const matches = hits.filter(v => v && !v.deleted_at && sameOrganization(v));
+    if (matches.length === 1) return { venue: matches[0], matched_on: 'organization+email' };
   }
   const phones = uniqArr([c.phone, ...(c.phones || [])]).filter(isPlausiblePhone);
   for (const phone of phones) {
-    const hits = await queryDocs(VENUES, 'phone', phone, { limit: 5 }).catch(() => []);
-    const v = hits.find(x => x && !x.deleted_at);
-    if (v) return { venue: v, matched_on: 'phone' };
+    const hits = await queryDocs(VENUES, 'phone', phone, { limit: 10 }).catch(() => []);
+    const matches = hits.filter(v => v && !v.deleted_at && sameOrganization(v));
+    if (matches.length === 1) return { venue: matches[0], matched_on: 'organization+phone' };
   }
-  const name = String(c.name || '').trim();
-  const city = normName(c.city);
-  if (name) {
-    const hits = await queryDocs(VENUES, 'name', name, { limit: 10 }).catch(() => []);
-    const v = hits.filter(x => x && !x.deleted_at).find(x => !city || normName(x.city) === city);
-    if (v) return { venue: v, matched_on: city ? 'name+city' : 'name' };
+  if (isFilled(candidateName) && candidateCity) {
+    const hits = await queryDocs(VENUES, 'name', candidateName, { limit: 10 }).catch(() => []);
+    const matches = hits.filter(v => v && !v.deleted_at && normName(v.city) === candidateCity);
+    if (matches.length === 1) return { venue: matches[0], matched_on: 'name+city' };
   }
   return null;
 }
@@ -716,6 +1011,30 @@ async function approveProposal(pid) {
     return { success: true, venue_id: primary.id, merged_count: losers.length };
   }
 
+  if (p.type === 'note_contact_update') {
+    const venue = await getDoc(VENUES, p.target_venue_id);
+    if (!venue) throw new Error('Target venue no longer exists');
+    const payload = { ...venue };
+    for (const [field,value] of Object.entries((p.after && p.after.proposed_fields) || {})) {
+      if (EDITABLE_RECORD_FIELDS.includes(field) && !isFilled(payload[field]) && isFilled(value)) payload[field] = value;
+    }
+    const contacts = Array.isArray(payload.contacts) ? payload.contacts.map(c => ({...c})) : [];
+    for (const incoming of ((p.after && p.after.proposed_contacts) || [])) {
+      if (!incoming || !Object.values(incoming).some(isFilled)) continue;
+      const key = incoming.match_contact_key || incoming.contact_key || contactKey(incoming);
+      let ix = contacts.findIndex(c => key && (contactKey(c) === key || c.contact_key === key));
+      if (ix < 0 && incoming.email) ix = contacts.findIndex(c => normEmail(c.email) === normEmail(incoming.email));
+      if (ix < 0 && incoming.name) ix = contacts.findIndex(c => normName(c.name) === normName(incoming.name));
+      if (ix < 0) contacts.push({ ...incoming, contact_key:incoming.contact_key || contactKey(incoming) });
+      else for (const [field,value] of Object.entries(incoming)) if (!isFilled(contacts[ix][field]) && isFilled(value)) contacts[ix][field] = value;
+    }
+    payload.contacts = contacts;
+    const res = await fetch(RAG_URL, { method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'upsert',venue:payload,skip_embeddings:true,agent_key:AGENT_KEY()}) });
+    const j=await res.json().catch(()=>({})); if(!res.ok||!j.success) throw new Error('CRM write failed: '+(j.error||res.status));
+    await updateDoc(COLL,pid,{status:'approved',updated_at:now()});
+    return {success:true,venue_id:venue.id,fields_added:Object.keys((p.after&&p.after.proposed_fields)||{}).length,contacts_reviewed:((p.after&&p.after.proposed_contacts)||[]).length};
+  }
+
   if (p.type === 'google_contact_update' || p.type === 'contract_contact_update' || p.type === 'email_contact_update') {
     const venue = await getDoc(VENUES, p.target_venue_id);
     if (!venue) throw new Error('Target venue no longer exists');
@@ -726,9 +1045,11 @@ async function approveProposal(pid) {
     for (const [field, value] of Object.entries(p.after.proposed_fields || {})) {
       if (!isFilled(venue[field]) && isFilled(value)) payload[field] = value;
     }
-    if (p.after.new_contact) {
-      const dup = (payload.contacts || []).some(ct => normEmail(ct.email) === normEmail(p.after.new_contact.email) || (p.after.new_contact.name && normName(ct.name) === normName(p.after.new_contact.name)));
-      if (!dup) payload.contacts = [...(payload.contacts || []), p.after.new_contact];
+    for (const incoming of [p.after.new_contact, ...(p.after.additional_contacts || [])].filter(Boolean)) {
+      const contacts = payload.contacts || [];
+      const ix = contacts.findIndex(ct => (incoming.email && normEmail(ct.email) === normEmail(incoming.email)) || (incoming.name && normName(ct.name) === normName(incoming.name)));
+      if (ix < 0) payload.contacts = [...contacts, incoming];
+      else for (const [field,value] of Object.entries(incoming)) if (!isFilled(payload.contacts[ix][field]) && isFilled(value)) payload.contacts[ix][field] = value;
     }
     const res = await fetch(RAG_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upsert', venue: payload, skip_embeddings: true, agent_key: AGENT_KEY() }) });
     const j = await res.json().catch(() => ({}));
