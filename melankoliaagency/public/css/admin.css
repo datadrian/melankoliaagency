@@ -1742,8 +1742,7 @@ select.form-input option { background: #111; }
 .route-generated-head { border:1px solid var(--border); background:var(--card); padding:1rem; display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; }
 .route-generated-head h2 { color:var(--white); margin:0 0 .35rem; font-size:1.25rem; }
 .route-generated-head p { color:var(--muted); font-size:.78rem; line-height:1.55; margin:0; max-width:760px; }
-.route-leg { grid-template-columns:58px minmax(0,1fr) 90px 90px auto; }
-.route-leg-actions { display:flex; gap:.35rem; justify-content:flex-end; flex-wrap:wrap; }
+.route-leg-actions { display:flex; gap:.35rem; justify-content:flex-start; flex-wrap:wrap; }
 .route-tool-card { border:1px solid var(--border); background:var(--card); padding:1rem; margin-top:1rem; }
 .route-tool-card h3 { color:var(--white); margin:0 0 1rem; font-size:1rem; }
 .route-tool-card pre { white-space:pre-wrap; color:var(--muted); background:#050505; border:1px solid var(--border); padding:1rem; max-height:420px; overflow:auto; }
@@ -1757,7 +1756,7 @@ select.form-input option { background: #111; }
 .route-empty-small { padding:1rem; color:var(--muted); background:var(--card); border:1px solid var(--border); }
 .btn-danger { background:transparent; color:#c86f6f; border:1px solid rgba(200,111,111,.35); padding:.7rem 1rem; cursor:pointer; }
 .btn-sm { padding:.45rem .65rem !important; font-size:.62rem !important; }
-@media (max-width: 980px) { .route-builder-grid { grid-template-columns:1fr; } .route-leg { grid-template-columns:42px minmax(0,1fr); } .route-leg > div:nth-child(3), .route-leg > div:nth-child(4), .route-leg-actions { grid-column:2; justify-content:flex-start; } }
+@media (max-width: 980px) { .route-builder-grid { grid-template-columns:1fr; } }
 
 /* =========================================================
    ROUTE PLANNER UX V2 — map-first operations dashboard
@@ -1841,7 +1840,11 @@ select.form-input option { background: #111; }
 .route-generated-head span { color:var(--accent); font-size:.68rem; letter-spacing:.08em; text-transform:uppercase; }
 .route-generated-head p { color:var(--muted); font-size:.78rem; line-height:1.55; max-width:780px; margin-top:.45rem; }
 .route-leg-list { display:flex; flex-direction:column; gap:.65rem; }
-.route-leg { display:grid; grid-template-columns:70px minmax(0,1fr) 180px auto; gap:.8rem; align-items:center; border:1px solid var(--border); background:#0f0f0f; padding:.85rem; }
+.route-leg { display:grid; grid-template-columns:64px minmax(0,1fr) 190px; grid-template-areas:"day main meta" "day actions actions"; gap:.45rem .9rem; align-items:start; border:1px solid var(--border); background:#0f0f0f; padding:.85rem; }
+.route-leg-day { grid-area:day; align-self:center; }
+.route-leg-main { grid-area:main; min-width:0; }
+.route-leg-meta { grid-area:meta; min-width:0; align-self:start; }
+.route-leg-actions { grid-area:actions; justify-content:flex-start; margin-top:.35rem; }
 .route-leg.day-off { opacity:.7; background:#090909; }
 .route-leg-day { text-align:center; border-right:1px solid var(--border); padding-right:.7rem; }
 .route-leg-day b { color:var(--white); display:block; font-size:1.25rem; }
@@ -1849,9 +1852,9 @@ select.form-input option { background: #111; }
 .route-leg-main strong { color:var(--white); display:block; font-size:.93rem; }
 .route-leg-main span, .route-leg-main em, .route-leg-main p { display:block; color:var(--muted); font-style:normal; font-size:.72rem; line-height:1.45; margin-top:.2rem; }
 .route-leg-main em { color:var(--accent); text-transform:uppercase; letter-spacing:.08em; }
-.route-leg-meta { display:flex; flex-direction:column; gap:.25rem; color:var(--muted); font-size:.66rem; }
+.route-leg-meta { display:flex; flex-direction:column; gap:.28rem; color:var(--muted); font-size:.66rem; }
 .route-leg-meta span:first-child { color:var(--white); text-transform:uppercase; letter-spacing:.1em; }
-.route-leg-actions { display:flex; gap:.35rem; justify-content:flex-end; flex-wrap:wrap; }
+.route-leg-actions { display:flex; gap:.35rem; justify-content:flex-start; flex-wrap:wrap; }
 .route-workbench-grid { display:grid; grid-template-columns:1fr 1fr; gap:.65rem; margin-bottom:1rem; }
 .route-workbench-grid button { text-align:left; background:#101010; border:1px solid var(--border); padding:.85rem; color:var(--off); transition:border-color .2s; }
 .route-workbench-grid button:hover { border-color:var(--accent); }
@@ -1889,8 +1892,8 @@ select.form-input option { background: #111; }
 .route-guide-grid section { background:#101010; padding:1rem; }
 .route-guide-grid b { color:var(--accent); display:block; margin-bottom:.4rem; }
 .route-guide-grid p { color:var(--muted); line-height:1.55; font-size:.8rem; }
-@media (max-width:1180px){ .route-ops-shell,.route-plan-grid,.route-output-grid,.route-detail-grid,.route-overview-grid{grid-template-columns:1fr}.route-library-panel{min-height:auto}.route-control-panel{position:static;max-height:none}.route-map-home,.route-map-planner{min-height:420px}.route-workflow-steps{grid-template-columns:1fr 1fr}.route-leg{grid-template-columns:60px minmax(0,1fr)}.route-leg-meta,.route-leg-actions{grid-column:2;justify-content:flex-start}.route-dashboard-grid,.route-metrics{grid-template-columns:1fr 1fr}}
-@media (max-width:720px){ .view{padding:1rem}.route-command-bar,.route-plan-topbar{flex-direction:column}.route-workflow-steps,.route-two-col,.route-builder-actions,.route-workbench-grid,.route-dashboard-grid,.route-metrics{grid-template-columns:1fr}.route-map{min-height:340px}.route-leg{grid-template-columns:1fr}.route-leg-day{text-align:left;border-right:0;border-bottom:1px solid var(--border);padding:0 0 .5rem}.route-panel-title{flex-direction:column;align-items:flex-start}.route-panel-title em{text-align:left}}
+@media (max-width:1180px){ .route-ops-shell,.route-plan-grid,.route-output-grid,.route-detail-grid,.route-overview-grid{grid-template-columns:1fr}.route-library-panel{min-height:auto}.route-control-panel{position:static;max-height:none}.route-map-home,.route-map-planner{min-height:420px}.route-workflow-steps{grid-template-columns:1fr 1fr}.route-leg{grid-template-columns:60px minmax(0,1fr);grid-template-areas:"day main" "day meta" "day actions"}.route-leg-meta{align-self:start}.route-leg-actions{justify-content:flex-start}.route-dashboard-grid,.route-metrics{grid-template-columns:1fr 1fr}}
+@media (max-width:720px){ .view{padding:1rem}.route-command-bar,.route-plan-topbar{flex-direction:column}.route-workflow-steps,.route-two-col,.route-builder-actions,.route-workbench-grid,.route-dashboard-grid,.route-metrics{grid-template-columns:1fr}.route-map{min-height:340px}.route-leg{grid-template-columns:1fr;grid-template-areas:"day" "main" "meta" "actions"}.route-leg-day{text-align:left;border-right:0;border-bottom:1px solid var(--border);padding:0 0 .5rem;align-self:auto}.route-panel-title{flex-direction:column;align-items:flex-start}.route-panel-title em{text-align:left}}
 
 /* =========================================================
    INTERNAL OPS FAMILY — emails, advancing, band access
