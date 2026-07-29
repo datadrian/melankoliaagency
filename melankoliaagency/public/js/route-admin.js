@@ -452,15 +452,25 @@
   // click on a leg-row button (Details, Backline, Contact Finder, etc.) gives
   // clear feedback — the output renders in the workbench panel further down the
   // page, which previously made those buttons feel like they did nothing.
-  function focusToolOut(){
+  function focusToolOut(target){
     const out = toolOut(); if(!out) return out;
     try{
-      const card = out.firstElementChild || out;
-      card.scrollIntoView({behavior:'smooth', block:'center'});
+      const card = target || out.firstElementChild || out;
+      card.scrollIntoView({behavior:'smooth', block:'start'});
       card.classList.add('route-tool-flash');
       setTimeout(()=>card.classList.remove('route-tool-flash'), 1200);
     }catch(e){}
     return out;
+  }
+  // Scroll to a specific sub-section of the currently-rendered tool output
+  // (e.g. the outreach board within Stop Detail) rather than the top of the
+  // whole card — used after actions whose RESULT lives further down the page,
+  // so the scroll actually lands on what changed instead of a spot the user
+  // then has to go hunting from.
+  function focusToolOutSection(selector){
+    const out = toolOut(); if(!out) return;
+    const el = out.querySelector(selector);
+    if(el) focusToolOut(el); else focusToolOut();
   }
   function renderAnalysisCard(title,data){ return `<div class="route-tool-card"><h3>${esc(title)}</h3>${renderObject(data)}${renderSuggestedActions(data?.suggested_actions||[])}</div>`; }
   function niceKey(k){ return String(k||'').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase()); }
@@ -556,12 +566,11 @@
   }
   function venueAddress(v={}){ return v.address || v.formatted_address || v.full_address || v.venue_address || v.location_address || v.street_address || [v.street, v.city, v.country].filter(Boolean).join(', '); }
   function venueMeta(v={}){ return [venueAddress(v), v.capacity?`Cap: ${v.capacity}`:'', v.booking_method, v.website].filter(Boolean).join(' · '); }
-  function openStop(idx){
+  function openStop(idx, opts={}){
     const t = activeRoute(); const l = t?.legs?.[idx]; if(!l) return;
     const out = toolOut();
     const candidates = Array.isArray(l.candidate_venues) ? l.candidate_venues : [];
     out.innerHTML = `<div class="route-tool-card route-stop-detail"><h3>Stop Detail — ${esc(l.city || 'TBD')}</h3>
-      <div id="marketVenuesPanel" class="route-stop-venues route-stop-venues-top"></div>
       <div class="route-stop-grid">
         <label>Date<input id="stopDate" class="form-input" value="${attr(l.date||'')}"></label>
         <label>City<input id="stopCity" class="form-input" value="${attr(l.city||'')}"></label>
@@ -586,9 +595,11 @@
       <label>Next Action<textarea id="stopNextAction" class="form-input form-textarea" rows="2">${esc(l.next_action||'')}</textarea></label>
       <label>Internal Notes<textarea id="stopNotes" class="form-input form-textarea" rows="3">${esc(l.notes||'')}</textarea></label>
       <div class="route-stop-actions"><button class="btn-primary" onclick="RouteAdmin.saveStopEdits(${idx})">Save Stop Edits</button><button class="btn-secondary" onclick="RouteAdmin.insertBlankDayAfter(${idx})">Add Blank Day After</button>${l.day_off?`<button class="btn-secondary" onclick="RouteAdmin.convertBlankDayToProspect(${idx})">Convert To Prospect</button><button class="btn-secondary" onclick="RouteAdmin.removeBlankDay(${idx})">Remove Blank Day</button>`:''}<button class="btn-secondary" onclick="RouteAdmin.venueFinderForStop(${idx},event)">Search Web For New Contacts</button><button class="btn-secondary" onclick="RouteAdmin.backlineForStop(${idx})">Backline Finder</button><button class="btn-secondary" onclick="RouteAdmin.manualVenueForm(${idx})">Manual Add Contact</button><button class="btn-secondary" onclick="RouteAdmin.generateEmail(${idx})">Generate Email</button></div>
-      ${renderBacklineMini(l)}${renderOutreachBoard(l,idx)}
+      <div id="stopOutreachAnchor">${renderBacklineMini(l)}${renderOutreachBoard(l,idx)}</div>
+      <div id="marketVenuesPanel" class="route-stop-venues"></div>
     </div>`;
-    focusToolOut();
+    if(opts.focus==='outreach') focusToolOutSection('#stopOutreachAnchor');
+    else focusToolOut();
     if(!l.day_off) loadMarketVenues(idx);
   }
   function saveStopEdits(idx){
@@ -753,7 +764,7 @@
       if(!l.suggested_venue && l.candidate_venues[0]) l.suggested_venue=l.candidate_venues[0].name;
       if(t.id) await persistStop(idx,l);
       rerenderActiveRoute();
-      openStop(idx);
+      openStop(idx,{focus:'outreach'});
       const n=(l.candidate_venues||[]).length;
       if(n>0) toast(t.id?`✓ Venue Finder found ${n} new contact${n===1?'':'s'}, saved to Firestore`:`✓ Venue Finder found ${n} new contact${n===1?'':'s'}`,'success');
       else toast(`Live web search found nothing new for ${l.city} — see "Promoters/Venues in ${l.city}" above, pulled straight from your CRM`,'error');
@@ -785,7 +796,7 @@
     l.candidate_venues.unshift(venue);
     if(!l.suggested_venue) { l.suggested_venue=name; l.venue_address=venue.address||''; }
     await upsertVenueToMaster(venue,l,'manual_route_add').catch(()=>null);
-    try{ if(t.id) await persistStop(idx,l); toast(t.id?'✓ Manual venue added, saved, and added to Contact Manager':'✓ Manual venue added to draft and Contact Manager','success'); rerenderActiveRoute(); openStop(idx); }
+    try{ if(t.id) await persistStop(idx,l); toast(t.id?'✓ Manual venue added, saved, and added to Contact Manager':'✓ Manual venue added to draft and Contact Manager','success'); rerenderActiveRoute(); openStop(idx,{focus:'outreach'}); }
     catch(e){ toast('Manual venue save failed: '+e.message,'error'); }
   }
   function daysSince(d){ if(!d) return null; const t=Date.parse(d); if(isNaN(t)) return null; return Math.floor((Date.now()-t)/86400000); }
@@ -871,7 +882,7 @@
       const m=r&&r.match; if(!m){ if(!silent) toast(`No CRM match for ${v.name||'venue'}`,'error'); return []; }
       const added=_fillEmpty(v,m); v.crm_matched=true; v.crm_venue_id=m.id||v.crm_venue_id;
       if(added.length){ if(activeRoute()?.id) await persistStop(idx,l).catch(()=>null); }
-      if(!silent){ toast(added.length?`✓ Filled from CRM: ${added.join(', ')}`:'CRM match found — nothing new to add','success'); rerenderActiveRoute(); openStop(idx); }
+      if(!silent){ toast(added.length?`✓ Filled from CRM: ${added.join(', ')}`:'CRM match found — nothing new to add','success'); rerenderActiveRoute(); openStop(idx,{focus:'outreach'}); }
       return added;
     }catch(e){ if(!silent) toast('CRM lookup failed: '+e.message,'error'); return []; }
   }
@@ -1210,7 +1221,7 @@
     l.candidate_venues.push(crmToOutreachContact(v));
     if(!l.suggested_venue) l.suggested_venue = v.name||'';
     _persistLeg(idx,l,`✓ ${v.name||'Venue'} added to outreach`);
-    rerenderActiveRoute(); openStop(idx);
+    rerenderActiveRoute(); openStop(idx,{focus:'outreach'});
   }
   function _persistLeg(idx,l,msg){ if(activeRoute()?.id){ persistStop(idx,l).then(()=>toast(msg,'success')).catch(e=>toast('Save failed: '+e.message,'error')); } else toast(msg+' (unsaved draft)','success'); }
   function setVenueOutreach(idx,vi,status){
@@ -1218,19 +1229,19 @@
     v.outreach_status=status;
     if(status==='contacted' && !v.outreach_date) v.outreach_date=new Date().toISOString().slice(0,10);
     _persistLeg(idx,l,`✓ ${v.name||'Venue'} → ${OUTREACH_LABEL[status]||status}`);
-    rerenderActiveRoute(); openStop(idx);
+    rerenderActiveRoute(); openStop(idx,{focus:'outreach'});
   }
   function logVenueContacted(idx,vi){
     const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[vi]; if(!v) return;
     v.outreach_status='contacted'; v.outreach_date=new Date().toISOString().slice(0,10);
     _persistLeg(idx,l,`✓ Logged: ${v.name||'Venue'} contacted ${v.outreach_date}`);
-    rerenderActiveRoute(); openStop(idx);
+    rerenderActiveRoute(); openStop(idx,{focus:'outreach'});
   }
   function venueOutreachNote(idx,vi){
     const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[vi]; if(!v) return;
     const note=prompt(`Note for ${v.name||'venue'} (e.g. "emailed booker, waiting on hold confirmation"):`, v.outreach_note||''); if(note===null) return;
     v.outreach_note=note.trim();
-    _persistLeg(idx,l,'✓ Note saved'); rerenderActiveRoute(); openStop(idx);
+    _persistLeg(idx,l,'✓ Note saved'); rerenderActiveRoute(); openStop(idx,{focus:'outreach'});
   }
   function confirmVenue(idx,vi){
     const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[vi]; if(!v) return;
@@ -1240,7 +1251,7 @@
     l.suggested_venue=v.name||l.suggested_venue; l.venue_address=v.address||l.venue_address||'';
     l.confirmed_venue=v.name||''; l.booking_status='confirmed'; l.deal_status='confirmed'; l.locked=true;
     _persistLeg(idx,l,`✅ ${v.name} confirmed — backups kept`);
-    rerenderActiveRoute(); renderMap(t.legs||[]); openStop(idx);
+    rerenderActiveRoute(); renderMap(t.legs||[]); openStop(idx,{focus:'outreach'});
   }
   function venueFellThrough(idx,vi){
     const t=activeRoute(); const l=t?.legs?.[idx]; const v=l?.candidate_venues?.[vi]; if(!v) return;
@@ -1249,7 +1260,7 @@
     if(l.confirmed_venue===v.name || l.suggested_venue===v.name){ l.confirmed_venue=''; l.suggested_venue=''; }
     l.booking_status='negotiating'; l.deal_status=(l.deal_status==='confirmed'?'countered':l.deal_status); l.locked=false;
     _persistLeg(idx,l,`↩ ${v.name} marked fell through — backups reopened`);
-    rerenderActiveRoute(); renderMap(t.legs||[]); openStop(idx);
+    rerenderActiveRoute(); renderMap(t.legs||[]); openStop(idx,{focus:'outreach'});
   }
 
   function useCandidateVenue(idx, venueIdx){
@@ -1529,7 +1540,7 @@
     toast(`✨ Filled ${keys.length} field(s) on ${v.name}`,'success');
   }
 
-  async function venueManagerSendToRoute(i){ const v=venueManagerRows[i]; const t=activeRoute(); if(!v) return; if(!t?.legs?.length) return toast('Open or generate a route first, then send venues into it.','error'); const answer=prompt('Send to which stop number?', '1'); if(answer===null) return; const idx=Math.max(0,Math.min(t.legs.length-1,Number(answer)-1||0)); const l=t.legs[idx]; l.candidate_venues=Array.isArray(l.candidate_venues)?l.candidate_venues:[]; const candidate={name:v.name,address:v.address,capacity:v.actual_capacity||v.capacity,booking_method:v.booking_email||v.booking_method||'master list',email:v.booking_email,phone:v.phone,website:v.website,instagram:v.instagram,fit_reason:v.notes||'Selected from Venue Manager.',outreach_angle:v.notes||'Master venue list option',crm_source:true,crm_id:v.id}; l.candidate_venues.unshift(candidate); if(!l.suggested_venue){ l.suggested_venue=v.name; l.venue_address=v.address||''; } if(t.id) await persistStop(idx,l); toast(`✓ ${v.name} added to stop ${idx+1}`,'success'); rerenderActiveRoute(); openStop(idx); }
+  async function venueManagerSendToRoute(i){ const v=venueManagerRows[i]; const t=activeRoute(); if(!v) return; if(!t?.legs?.length) return toast('Open or generate a route first, then send venues into it.','error'); const answer=prompt('Send to which stop number?', '1'); if(answer===null) return; const idx=Math.max(0,Math.min(t.legs.length-1,Number(answer)-1||0)); const l=t.legs[idx]; l.candidate_venues=Array.isArray(l.candidate_venues)?l.candidate_venues:[]; const candidate={name:v.name,address:v.address,capacity:v.actual_capacity||v.capacity,booking_method:v.booking_email||v.booking_method||'master list',email:v.booking_email,phone:v.phone,website:v.website,instagram:v.instagram,fit_reason:v.notes||'Selected from Venue Manager.',outreach_angle:v.notes||'Master venue list option',crm_source:true,crm_id:v.id}; l.candidate_venues.unshift(candidate); if(!l.suggested_venue){ l.suggested_venue=v.name; l.venue_address=v.address||''; } if(t.id) await persistStop(idx,l); toast(`✓ ${v.name} added to stop ${idx+1}`,'success'); rerenderActiveRoute(); openStop(idx,{focus:'outreach'}); }
 
 
   // ---- Transport & gear feasibility gate ----

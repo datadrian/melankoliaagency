@@ -16,7 +16,7 @@ const MASTER = () => process.env.MELANKOLIA_ADMIN_PASSWORD || 'melankolia2025';
 async function authorize(body, moduleKey) {
   const b = body || {};
   if (b.password && String(b.password) === MASTER()) {
-    return { ok: true, owner: true, username: b.username || 'owner', modules: ['*'] };
+    return { ok: true, owner: true, username: b.username || 'owner', display_name: (b.username && b.username.trim()) || 'Adrian', modules: ['*'] };
   }
   const tok = b.session_token;
   if (tok) {
@@ -29,7 +29,7 @@ async function authorize(body, moduleKey) {
     if (sess.active === false) return { ok: false, error: 'Your login has been deactivated.' };
     const modules = Array.isArray(sess.modules) ? sess.modules : [];
     if (sess.is_owner || !moduleKey || modules.includes(moduleKey)) {
-      return { ok: true, owner: !!sess.is_owner, username: sess.username || '', modules };
+      return { ok: true, owner: !!sess.is_owner, username: sess.username || '', display_name: sess.display_name || sess.username || (sess.is_owner ? 'Adrian' : 'staff'), modules };
     }
     return { ok: false, error: 'Your login does not have access to this module.' };
   }

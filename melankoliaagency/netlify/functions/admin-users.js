@@ -59,7 +59,7 @@ async function createSession({ user_id, username, display_name, modules, is_owne
 async function login(b) {
   const master = b.password && String(b.password) === (process.env.MELANKOLIA_ADMIN_PASSWORD || 'melankolia2025');
   if (master) {
-    const sess = await createSession({ username: b.username || 'owner', display_name: 'Owner', modules: ['*'], is_owner: true });
+    const sess = await createSession({ username: b.username || 'owner', display_name: (b.username && b.username.trim()) || 'Adrian', modules: ['*'], is_owner: true });
     return { success: true, token: sess.token, user: { username: sess.username, display_name: sess.display_name, modules: ALL_MODULES, is_owner: true } };
   }
   if (!b.username || !b.password) return { success: false, error: 'Username and password required' };
