@@ -30,6 +30,18 @@ p{margin-bottom:12px}
 .step-num{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#1a1508;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:15px}
 .step h3{font-size:19px;font-weight:600}
 .step p{color:#cfc9be}
+.deep{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;padding-bottom:14px}
+.deep summary{cursor:pointer;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);list-style:none;display:flex;align-items:center;gap:7px;user-select:none;font-weight:600}
+.deep summary::-webkit-details-marker{display:none}
+.deep summary::before{content:'+';font-size:16px;line-height:1;width:14px;text-align:center;flex:0 0 auto}
+.deep[open] summary::before{content:'\2212'}
+.deep-body{padding:14px 2px 2px;color:#cfc9be;font-size:14px}
+.deep-body p{margin-bottom:11px}
+.deep-body ul{margin:0 0 12px 18px}
+.deep-body li{margin-bottom:7px}
+.deep-body b{color:var(--white)}
+.deep-body .tip{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:8px;padding:10px 14px;font-size:13px;color:#cfc9be;margin-top:4px}
+.deep-body .tip b{color:var(--blue)}
 .shot{margin:14px 0 18px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#000}
 .shot img{display:block;width:100%}
 .shot-cap{padding:8px 12px;font-size:12px;color:#8a8a8a;border-top:1px solid var(--line);background:#0c0c0c}
@@ -70,46 +82,125 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
       <div class="step-head"><span class="step-num">1</span><h3>Open the Tour Library &amp; start a project</h3></div>
       <p>Log in to the Melankolia Ops Platform and open <b>Route Planner</b> from the sidebar. The left <b>Tour Library</b> panel is your archive of draft, confirmed and historic runs. Click <b>+ New Tour</b> at the top to open a fresh, blank configuration sheet.</p>
       <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/01-tour-library.png?v=realshots-v1" alt="Route Planner workspace &amp; Tour Library" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>The <b>Tour Library</b> is more than a file list &mdash; every card shows artist, region, date range, and a status pill (Draft / Active / Completed). Three actions live on each card:</p>
+<ul>
+<li><b>Open</b> &mdash; loads the full saved workspace: map, legs, pipeline, and every Outreach Board exactly where you left them.</li>
+<li><b>Duplicate</b> &mdash; clones an entire past route (stops, deal structure, even backup venues) as a starting template. This is the fastest way to re-route a similar region for a different artist or a repeat run.</li>
+<li><b>Delete</b> &mdash; archives the tour. Its linked advancing show records are archived alongside it, not orphaned.</li>
+</ul>
+<p><b>+ New Tour</b> opens a blank Route Builder form on the left rail &mdash; nothing is written to the database yet. You can walk away and come back; a half-filled builder isn&rsquo;t auto-saved as a tour until you generate or save.</p>
+<div class="tip"><b>Tip:</b> If you&rsquo;re booking a near-identical region you&rsquo;ve routed before (say, last year&rsquo;s West Coast run for a different band), Duplicate a past tour instead of starting from scratch &mdash; you inherit the venue list and just re-date it.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">2</span><h3>Configure the Route Builder form</h3></div>
       <p>In the <b>Route Builder</b> on the left rail, enter Sacred Skin&rsquo;s parameters: artist <b>Sacred Skin</b>, region <b>US West Coast</b>, dates <b>Aug 2026</b>, show count, start <b>Los Angeles</b>, end <b>Seattle</b>, travel <b>Van (ground)</b>, party size <b>4</b>, gear <b>~300 lbs</b>, and a <b>door-split-versus-guarantee</b> deal type.</p>
       <div class="shot"><img src="https://media.base44.com/images/public/6a3d15df8aa127b443c49b56/ed205af64_generated_image.png" alt="Configure the Route Builder form" loading="lazy"></div>
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>Every field in the builder feeds a different downstream system, so it&rsquo;s worth knowing what each one actually drives:</p>
+<ul>
+<li><b>Artist</b> &mdash; autocompletes from your roster; pulls genre/market data used to match compatible venues later.</li>
+<li><b>Region</b> &mdash; scopes which cities and venues the AI considers when generating stops. A tighter region (e.g. "Pacific Northwest" vs "US West Coast") produces a denser, shorter run.</li>
+<li><b>Dates &amp; show count</b> &mdash; the engine spaces stops across the window, targeting your requested number of shows without back-to-back grueling drives where avoidable.</li>
+<li><b>Start / end city</b> &mdash; anchors the geographic shape of the whole route; everything else routes between these two points.</li>
+<li><b>Travel mode, party size, gear weight</b> &mdash; these are the exact inputs the <b>Transport Optimizer</b> (Step 6) reuses, so fill them in accurately now to save re-entry later.</li>
+<li><b>Deal type preference</b> &mdash; guarantee / door split / versus &mdash; informs the target-rate suggestions you&rsquo;ll see per stop and the language <b>Estimate Budget</b> uses.</li>
+</ul>
+<p>None of this is locked in. You can tweak any field and re-run <b>Generate Tour</b> as many times as you want &mdash; it won&rsquo;t touch stops you&rsquo;ve already moved to Negotiating or Confirmed.</p></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">3</span><h3>Establish your anchor shows</h3></div>
       <p>Lock your non-negotiable dates first so the engine routes around them. In <b>Anchor Shows</b>, add the Friday <b>Aug 14, 2026</b> slot at <b>San Francisco Gothic Fest</b> (Grand Ballroom) with its guarantee, marked <b>Confirmed</b>.</p>
       
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>An <b>anchor</b> is a date the AI treats as gravity, not a suggestion &mdash; the engine will never reassign, move, or overwrite an anchor slot when it generates or regenerates the route. Everything else gets built around it.</p>
+<ul>
+<li>You can add <b>multiple anchors</b> to one tour &mdash; for example, a Friday festival plus an already-locked radio session two days later. The engine routes the drive-in and drive-out around both.</li>
+<li>The <b>Confirmed</b> vs <b>Hold</b> marker isn&rsquo;t cosmetic: only <b>Confirmed</b> anchors count toward <b>Projected Revenue</b> in the metrics row. A Hold anchor shows in the pipeline but won&rsquo;t inflate your numbers until it&rsquo;s locked.</li>
+<li>Anchors typically carry the highest guarantee in the run &mdash; use them to set the financial floor, then let the rest of the route fill in around profitability.</li>
+</ul>
+<div class="tip"><b>Tip:</b> Add anchors before you hit Generate, not after &mdash; the routing engine uses them as fixed points when calculating the whole path, so anchoring first produces a tighter, more realistic itinerary.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">4</span><h3>Generate the AI route leg list</h3></div>
       <p>Click <b>Generate Tour</b>. The engine processes live highway networks, venue histories and drive guidelines to output a day-by-day itinerary: <b>Los Angeles &rarr; San Francisco (anchor) &rarr; Sacramento &rarr; Portland &rarr; Seattle</b>. Each stop lands in the <b>Booking Pipeline</b> board (Prospects &rarr; Holds &rarr; Negotiating &rarr; Confirmed) with its target rate and projected net.</p>
       <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/04-booking-pipeline.png?v=realshots-v1" alt="Generated leg list &amp; Booking Pipeline" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p><b>Generate Tour</b> runs several passes at once: it checks live highway feasibility between candidate cities, cross-references your CRM&rsquo;s venue history for genre/market fit, and applies spacing logic so you&rsquo;re not routed into three 8-hour drives in a row without a rest day.</p>
+<p>The <b>Booking Pipeline</b> board that appears is a live Kanban, not a static summary:</p>
+<ul>
+<li><b>Prospects</b> &mdash; stops the engine suggested but you haven&rsquo;t reached out on yet.</li>
+<li><b>Holds / Challenges</b> &mdash; a venue has offered a hold, or there&rsquo;s a routing conflict to resolve.</li>
+<li><b>Negotiating</b> &mdash; active back-and-forth on rate/deal terms.</li>
+<li><b>Confirmed</b> &mdash; locked. Only Confirmed stops count toward Projected Revenue.</li>
+</ul>
+<p>Drag any card between columns and it <b>autosaves to Firestore instantly</b> &mdash; there&rsquo;s no separate save step for pipeline moves. The metrics row above the board (Shows / Days / Est. KM / Drive Hrs, then Currency / Projected Revenue / Fuel / Lodging / Per Diems / Projected Net) recalculates live as stops move and rates change. Fuel, Lodging and Per Diems are editable estimates &mdash; adjust them to sharpen your Projected Net before you pitch.</p>
+<div class="tip"><b>Tip:</b> Regenerating after you&rsquo;ve started negotiating is safe &mdash; the engine only re-routes stops still in Prospects; anything in Negotiating or Confirmed is left untouched.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">5</span><h3>Analyze real driving paths &amp; transit times</h3></div>
       <p>The map now draws real, highway-specific driving paths between stops. Each leg shows the true metrics: LA&rarr;SF (~380 mi, ~6 h), SF&rarr;Sacramento (~90 mi, ~1.5 h), Sacramento&rarr;Portland (~580 mi, ~9 h), Portland&rarr;Seattle (~175 mi, ~3 h). Flights render as dashed lines.</p>
       <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/05-driving-paths.png?v=realshots-v1" alt="Real driving paths &amp; transit times on the map" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>This isn&rsquo;t a straight-line estimate between pins &mdash; the map calls a real routing engine (Google Routes API under the hood) to draw the actual highway path and return true drive time and distance for every ground leg. That&rsquo;s why you see specific numbers like <b>580 mi / 9 h</b> instead of a rounded guess.</p>
+<ul>
+<li><b>Solid lines</b> = driving legs, labeled with live drive-time and distance.</li>
+<li><b>Dashed lines</b> = flight legs (no road path to draw).</li>
+</ul>
+<p>Use this view as your sanity check before locking anything in: a 9-hour overnight-adjacent drive is exactly the kind of thing that looks fine on a spreadsheet but breaks a crew in real life. If a leg looks brutal, that&rsquo;s your cue to either add an off-day (Step 7) or re-open the Transport Optimizer (Step 6) to see if flying that leg is actually cheaper once you factor in an extra hotel night and drive-day per diems.</p>
+<div class="tip"><b>Tip:</b> Real drive times also feed the <b>Transport Optimizer</b>&rsquo;s dead-mile math directly &mdash; there&rsquo;s no need to re-enter mileage; it reads the same route data.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">6</span><h3>Compare transport: drive, one-way van, or fly</h3></div>
       <p>Before you commit to the van, open <b>Transport &amp; gear feasibility</b> in the builder. Set the <b>ground vehicle</b> (rented or band-owned) and <b>rental shape</b> (return-to-origin or one-way drop). Tick <b>Gear is flight-ready</b> and add each flight case with its weight &mdash; Sacred Skin&rsquo;s 66&nbsp;lb drum-hardware case, 48&nbsp;lb synth case, and so on.</p>
       <p>Click <b>Compare transport options</b>. The planner pulls <b>live flight fares and van rates</b> and ranks three costed scenarios &mdash; <b>van round-trip</b>, <b>one-way van + fly crew home</b>, and <b>fly the whole tour</b> &mdash; then recommends the cheapest viable one. For this LA&rarr;Seattle run it flags <b>one-way van + fly home (~$2,040)</b> as the winner, because dragging the van 1,150 miles back to LA adds fuel and extra rental days. Any case over <b>70&nbsp;lbs</b> is auto-flagged as too heavy to fly, so flying is ruled out and you&rsquo;re told to ship freight or drive.</p>
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>This is the tool that answers &ldquo;should we drive this whole thing, or is flying actually cheaper?&rdquo; &mdash; and it&rsquo;s doing real math with live pricing, not a rule of thumb.</p>
+<ul>
+<li><b>Ground vehicle: rented vs owned</b> &mdash; if the band owns the van, rental-cost scenarios drop out entirely; you&rsquo;re only comparing fuel/dead-miles against flying.</li>
+<li><b>Rental shape</b> matters more than people expect: a <b>return-to-origin</b> rental means the van (and someone to drive it) has to go all the way back to the start city after the last show &mdash; that&rsquo;s extra rental days, extra fuel, and extra crew time for miles that earn nothing. A <b>one-way drop</b> avoids all of that but usually carries a drop fee from the rental company.</li>
+<li><b>Weekly vs daily rate</b> is baked into the math automatically &mdash; a 7-day rental is priced at the weekly rate (roughly 4.6&times; daily, not 7&times;), so longer tours favor renting over owning or flying more than you&rsquo;d guess.</li>
+<li><b>Gear &amp; flight rules</b> (Adrian&rsquo;s house rules, hard-coded): any single case <b>over 50 lb</b> triggers a heavy-bag fee (~$150); additional oversized cases are ~$40 each; any case <b>over 70 lb</b> hits the airline hard cap and <b>blocks flying entirely</b> for that piece &mdash; the tool marks fly-only infeasible and tells you to ship freight or drive instead.</li>
+</ul>
+<p>The three scenarios it prices &mdash; <b>van round-trip</b>, <b>one-way van + fly crew home</b>, and <b>fly the whole tour</b> &mdash; use <b>live flight fares and rental rates</b> pulled via grounded web search (or real-time Amadeus pricing if that&rsquo;s connected), not static averages. It ranks every <em>feasible</em> option by total cost and marks the cheapest one <b>Recommended</b>, with a plain-English reason (e.g. &ldquo;dragging the van back 1,150 miles costs more than flying home&rdquo;).</p>
+<div class="tip"><b>Tip:</b> Re-run this any time party size, gear list, or the route&rsquo;s start/end cities change &mdash; the recommendation can flip, especially once a route gets long enough that weekly rental pricing kicks in.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">7</span><h3>Review with AI Oversight &amp; the Fix chat</h3></div>
       <p>The Sacramento&rarr;Portland leg is a grueling 9-hour drive. Click <b>AI Oversight</b> to scan for risks &mdash; it flags the long leg. Use the inline <b>Ask AI / Propose Fix</b> box: type &ldquo;<i>add a travel/off-day in Ashland, OR between Sacramento and Portland</i>&rdquo;, review the proposed change summary, and click <b>Apply</b>.</p>
       
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p><b>AI Oversight</b> scans the whole generated route for risk patterns &mdash; not just long drives, but thin margins, day-of-week mismatches (a Tuesday stop in a market that only draws on weekends), and missing rest days between back-to-back long legs.</p>
+<p>The inline <b>Ask AI / Propose Fix</b> box is deliberately a two-step flow, not an instant edit:</p>
+<ul>
+<li>You describe the change in plain English (e.g. &ldquo;add an off-day in Ashland between Sacramento and Portland&rdquo;).</li>
+<li>The AI returns a <b>plain-English summary of exactly what will change</b> &mdash; which stop, which date, which field &mdash; before anything is written.</li>
+<li>You review that diff, then click <b>Apply</b> to commit it or <b>Dismiss</b> to discard it. Nothing is auto-applied.</li>
+</ul>
+<div class="tip"><b>Tip:</b> Use this for anything you&rsquo;d otherwise do by hand in the leg list &mdash; adding an off-day, nudging a date, or flagging a stop as high-risk &mdash; it&rsquo;s faster than manually editing the leg row and it leaves you a paper trail of what changed and why.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">8</span><h3>Expand stop details &amp; the Outreach Board</h3></div>
       <p>Click the <b>Portland</b> stop in the leg list to open the <b>Stop Detail</b> pane and its nested <b>Outreach Board</b>. Compatible darkwave venues are pre-pulled: Holocene (325), Star Theater (450), Mississippi Studios (300).</p>
       
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>Clicking any stop in the leg list expands the <b>Stop Detail</b> pane: the date, market size, target rate, and any notes you&rsquo;ve logged for that city. Nested inside is the <b>Outreach Board</b> for that single stop.</p>
+<p>Venue suggestions here aren&rsquo;t generic &mdash; they&rsquo;re pulled directly from the <b>venue CRM</b> (1,100+ cleaned records) filtered by genre compatibility and capacity fit for the artist, so a darkwave/post-punk band sees rooms like Holocene or Star Theater rather than a country bar with the right zip code.</p>
+<div class="tip"><b>Tip:</b> If none of the pre-pulled venues feel right, you can add one manually from the Contact Manager and it&rsquo;ll show up here for this stop &mdash; the board isn&rsquo;t limited to auto-suggestions.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">9</span><h3>Manage parallel outreach &amp; keep backups</h3></div>
       <p>Pitch all three Portland venues to move them from <b>To contact</b> to <b>Contacted</b>. When Holocene offers a strong versus deal, set it <b>Confirmed</b> and flip the others to <b>Backup</b> &mdash; their holds stay on file, ready if the primary falls through.</p>
       <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/08-outreach-board.png?v=realshots-v1" alt="Per-venue Outreach Board with statuses, confirm &amp; backups" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>The Outreach Board&rsquo;s status flow is built around real booking behavior &mdash; you rarely pitch just one room per date, and rooms fall through constantly, so the system is designed for <b>parallel</b> conversations from the start.</p>
+<ul>
+<li>Status path: <b>To contact &rarr; Contacted &rarr; Interested &rarr; Confirmed</b> (or <b>Fell Through</b> at any point).</li>
+<li>Only <b>one</b> venue per stop can be Confirmed at a time. The moment you confirm one, every other candidate for that date automatically flips to <b>Backup</b> &mdash; they&rsquo;re not deleted, just deprioritized.</li>
+<li>If a confirmed venue later falls through, promote the strongest backup with one click. Its full contact history, prior outreach notes, and any rate discussion are still attached &mdash; you&rsquo;re not starting that conversation over.</li>
+</ul>
+<div class="tip"><b>Tip:</b> Keep at least one backup live even after confirming, especially for markets with few compatible rooms &mdash; it costs nothing to leave a backup warm, and it saves the whole leg if a confirmed date cancels close to the tour.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">10</span><h3>Monitor the tour-wide Outreach Board</h3></div>
       <p>Open the <b>Outreach Board</b> tab for a pipeline overview. The KPI strip shows confirmed / in-conversation / follow-ups due. Hit <b>Draft all follow-ups</b> to batch-generate warm nudges for anyone contacted 7+ days ago, and watch the hold-deadline alerts.</p>
       
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>This is the tour-wide command center &mdash; while the per-stop board (Step 9) manages one city, this view rolls every stop into one pipeline so nothing quietly stalls.</p>
+<ul>
+<li>The <b>KPI strip</b> gives an at-a-glance count of confirmed stops, stops still in active conversation, and how many contacts are overdue for a follow-up.</li>
+<li><b>Draft all follow-ups</b> batch-generates warm, on-brand nudge emails (using the same Melankolia booking voice/style guide as the Email Generator) for every contact with no reply in <b>7+ days</b>. You still review and send each one individually &mdash; nothing goes out automatically.</li>
+<li><b>Hold-deadline alerts</b> surface any venue hold that&rsquo;s about to expire, so you don&rsquo;t lose a date to another act simply because a deadline slipped past unnoticed.</li>
+</ul>
+<div class="tip"><b>Tip:</b> Check this board at the start of your booking day, not just when something reminds you to &mdash; it&rsquo;s built to be the first place you look, not a report you have to remember to run.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">11</span><h3>Save &amp; persist your tour</h3></div>
       <p>Click <b>Save Tour</b>. Your map, driving lines and outreach boards persist to the Melankolia database, and draft show records are auto-created in your advancing database &mdash; bridging booking into production.</p>
       
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p><b>Save Tour</b> is your explicit checkpoint, but it&rsquo;s not the only thing keeping your work safe &mdash; the workspace already autosaves continuously in the background (pipeline moves, outreach status changes, and builder edits all persist as you make them). Save Tour is really about naming the run and creating a clean, findable card in the Tour Library.</p>
+<p>The bigger thing Save does: it <b>bridges booking into production</b>. For every stop, it auto-creates a matching draft show record in the <b>Advancing</b> module &mdash; so the moment a tour is saved, your production/advancing team already has a starting record for each date instead of needing manual re-entry.</p>
+<div class="tip"><b>Tip:</b> Once saved, this tour becomes a Duplicate-able template (Step 1) &mdash; if you book this region again next year, clone this exact tour and just shift the dates instead of rebuilding from zero.</div></div></details>
     </div>
 </div></section>
 
