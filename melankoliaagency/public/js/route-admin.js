@@ -1043,26 +1043,26 @@
     const s = v==null ? '' : String(v);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
   }
-  function venueManagerExportCsv(){
-    const rows = (venueManagerAllRows && venueManagerAllRows.length) ? venueManagerAllRows : venueManagerRows;
-    if (!rows.length) return toast('No contacts loaded yet — load the full contact list first.', 'error');
-    const headers = ['Country','Region','City','Name','Contact Type','Contact Name','Contact Title','Market',
+  function contactAddedDate(v){
+    // Firestore's immutable createTime is the reliable "date added"; fall back to created_at/updated_at.
+    const t = v._createTime || v.created_at || v.updated_at || '';
+    const d = t ? new Date(t) : null;
+    return (d && !isNaN(d)) ? d : null;
+  }
+  function buildContactsCsv(rows){
+    const headers = ['Date Added','Country','Region','City','Name','Contact Type','Contact Name','Contact Title','Market',
       'Booking Email','All Emails','Phone','All Phones','WhatsApp','Website','Instagram','Facebook','Twitter/X',
       'TikTok','YouTube','LinkedIn','SoundCloud','Spotify','Bandcamp','Telegram','Address','Booking Method',
       'Relationship Status','Capacity','Rating','Associated Venues','Genre Affinity','Notes'];
-    const sorted = rows.slice().sort((a,b)=>{
-      const ca=(a.country||'Unknown').toLowerCase(), cb=(b.country||'Unknown').toLowerCase();
-      if (ca!==cb) return ca<cb?-1:1;
-      const na=(a.name||'').toLowerCase(), nb=(b.name||'').toLowerCase();
-      return na<nb?-1:na>nb?1:0;
-    });
     const lines = [headers.join(',')];
-    sorted.forEach(v=>{
+    rows.forEach(v=>{
       const emails = Array.isArray(v.emails)&&v.emails.length ? v.emails.join('; ') : (v.booking_email||'');
       const phones = Array.isArray(v.phones)&&v.phones.length ? v.phones.join('; ') : (v.phone||'');
       const assocVenues = Array.isArray(v.associated_venues) ? v.associated_venues.map(av=>av.city?`${av.name} (${av.city})`:av.name).join('; ') : '';
       const genres = Array.isArray(v.genre_affinity) ? v.genre_affinity.join('; ') : (v.genre_affinity||'');
+      const dAdded = contactAddedDate(v);
       const row = [
+        dAdded ? dAdded.toISOString().slice(0,10) : '',
         v.country||'Unknown', v.region||'', v.city||'', v.name||'', v.contact_type||'', v.contact_name||'', v.contact_title||'',
         v.market||'', v.booking_email||'', emails, v.phone||'', phones, v.whatsapp||'', v.website||'', v.instagram||'',
         v.facebook||'', v.twitter||'', v.tiktok||'', v.youtube||'', v.linkedin||'', v.soundcloud||'', v.spotify||'',
@@ -1071,16 +1071,127 @@
       ];
       lines.push(row.map(csvCell).join(','));
     });
-    const csv = '\uFEFF' + lines.join('\r\n');
+    return '\uFEFF' + lines.join('\r\n');
+  }
+  function downloadCsv(csv, name){
     const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const stamp = new Date().toISOString().slice(0,10);
-    a.href = url; a.download = `melankolia-contacts-${stamp}.csv`;
+    a.href = url; a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url), 2000);
-    toast(`✓ Exported ${sorted.length} contacts to CSV`, 'success');
   }
-  window.VenueManager = { init:initVenueManager, load:venueManagerLoad, search:venueManagerSearch, findWeb:venueManagerFinder, edit:venueManagerEdit, newVenue:venueManagerNew, cancelEdit:venueManagerCancel, save:venueManagerSave, sendToRoute:venueManagerSendToRoute, filter:venueManagerFilter, exportCsv:venueManagerExportCsv };
+  function _uniqSorted(rows, key){
+    return Array.from(new Set(rows.map(r=>String(r[key]||'').trim()).filter(Boolean))).sort((a,b)=>a.toLowerCase()<b.toLowerCase()?-1:1);
+  }
+  function venueManagerExportDialog(){
+    const rows = (venueManagerAllRows && venueManagerAllRows.length) ? venueManagerAllRows : venueManagerRows;
+    if (!rows.length) return toast('No contacts loaded yet — load the full contact list first.', 'error');
+    const countries = _uniqSorted(rows,'country');
+    const markets = _uniqSorted(rows,'market');
+    const types = _uniqSorted(rows,'contact_type');
+    const statuses = _uniqSorted(rows,'relationship_status');
+    const opt = (arr)=>['<option value="">All</option>'].concat(arr.map(x=>`<option value="${attr(x)}">${esc(x)}</option>`)).join('');
+    const existing = document.getElementById('vmExportOverlay'); if(existing) existing.remove();
+    const wrap = document.createElement('div');
+    wrap.id='vmExportOverlay';
+    wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    wrap.innerHTML = `<div class="route-tool-card" style="max-width:560px;width:100%;max-height:90vh;overflow:auto">
+      <div class="route-panel-title"><span>Export contacts to CSV</span><em>${rows.length} total</em></div>
+      <p class="route-kicker" style="margin:.25rem 0 1rem">Filter by when contacts were added, plus location, type, market and status. Leave a field on “All” to include everything.</p>
+      <label class="form-label">Date added</label>
+      <select id="vmExDatePreset" class="form-input" onchange="VenueManager._exToggleCustom()">
+        <option value="7">Past 7 days</option>
+        <option value="30">Past 30 days</option>
+        <option value="90">Past 90 days</option>
+        <option value="ytd">This year</option>
+        <option value="all" selected>All time</option>
+        <option value="custom">Custom range…</option>
+      </select>
+      <div id="vmExCustom" class="route-two-col" style="display:none;margin-top:.5rem">
+        <div><label class="form-label">From</label><input id="vmExFrom" type="date" class="form-input"></div>
+        <div><label class="form-label">To</label><input id="vmExTo" type="date" class="form-input"></div>
+      </div>
+      <div class="route-two-col" style="margin-top:.75rem">
+        <div><label class="form-label">Country</label><select id="vmExCountry" class="form-input">${opt(countries)}</select></div>
+        <div><label class="form-label">Contact type</label><select id="vmExType" class="form-input">${opt(types)}</select></div>
+      </div>
+      <div class="route-two-col" style="margin-top:.5rem">
+        <div><label class="form-label">Market</label><select id="vmExMarket" class="form-input">${opt(markets)}</select></div>
+        <div><label class="form-label">Relationship</label><select id="vmExStatus" class="form-input">${opt(statuses)}</select></div>
+      </div>
+      <label class="form-label" style="margin-top:.5rem">Only with</label>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.25rem 0 1rem">
+        <label style="font-size:.85rem"><input type="checkbox" id="vmExHasEmail"> Email</label>
+        <label style="font-size:.85rem"><input type="checkbox" id="vmExHasPhone"> Phone</label>
+      </div>
+      <div id="vmExCount" class="route-kicker" style="margin-bottom:.75rem"></div>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end">
+        <button class="btn-secondary" onclick="document.getElementById('vmExportOverlay').remove()">Cancel</button>
+        <button class="btn-primary" onclick="VenueManager._exRun()">⇩ Download CSV</button>
+      </div>
+    </div>`;
+    wrap.addEventListener('click', e=>{ if(e.target===wrap) wrap.remove(); });
+    document.body.appendChild(wrap);
+    ['vmExDatePreset','vmExFrom','vmExTo','vmExCountry','vmExType','vmExMarket','vmExStatus','vmExHasEmail','vmExHasPhone'].forEach(idn=>{
+      const el=document.getElementById(idn); if(el) el.addEventListener('change', venueManagerExportPreview);
+    });
+    venueManagerExportPreview();
+  }
+  function _exCutoff(){
+    const preset = (document.getElementById('vmExDatePreset')||{}).value || 'all';
+    if (preset==='all') return {from:null,to:null};
+    if (preset==='ytd') return {from:new Date(new Date().getFullYear(),0,1), to:null};
+    if (preset==='custom'){
+      const f=(document.getElementById('vmExFrom')||{}).value, t=(document.getElementById('vmExTo')||{}).value;
+      return {from: f?new Date(f+'T00:00:00'):null, to: t?new Date(t+'T23:59:59'):null};
+    }
+    const days=Number(preset)||0;
+    return {from:new Date(Date.now()-days*86400000), to:null};
+  }
+  function venueManagerFilteredExportRows(){
+    const rows = (venueManagerAllRows && venueManagerAllRows.length) ? venueManagerAllRows : venueManagerRows;
+    const {from,to} = _exCutoff();
+    const gv = id => (document.getElementById(id)||{}).value || '';
+    const country=gv('vmExCountry').toLowerCase(), type=gv('vmExType').toLowerCase(),
+          market=gv('vmExMarket').toLowerCase(), status=gv('vmExStatus').toLowerCase();
+    const hasEmail=(document.getElementById('vmExHasEmail')||{}).checked;
+    const hasPhone=(document.getElementById('vmExHasPhone')||{}).checked;
+    const out = rows.filter(v=>{
+      if (from || to){ const d=contactAddedDate(v); if(!d) return false; if(from && d<from) return false; if(to && d>to) return false; }
+      if (country && String(v.country||'').toLowerCase()!==country) return false;
+      if (type && String(v.contact_type||'').toLowerCase()!==type) return false;
+      if (market && String(v.market||'').toLowerCase()!==market) return false;
+      if (status && String(v.relationship_status||'').toLowerCase()!==status) return false;
+      if (hasEmail && !(v.booking_email || (Array.isArray(v.emails)&&v.emails.length))) return false;
+      if (hasPhone && !(v.phone || (Array.isArray(v.phones)&&v.phones.length))) return false;
+      return true;
+    });
+    out.sort((a,b)=>{
+      const ca=(a.country||'Unknown').toLowerCase(), cb=(b.country||'Unknown').toLowerCase();
+      if (ca!==cb) return ca<cb?-1:1;
+      const na=(a.name||'').toLowerCase(), nb=(b.name||'').toLowerCase();
+      return na<nb?-1:na>nb?1:0;
+    });
+    return out;
+  }
+  function venueManagerExportPreview(){
+    const el=document.getElementById('vmExCount'); if(!el) return;
+    const n=venueManagerFilteredExportRows().length;
+    el.textContent = `${n} contact${n===1?'':'s'} match these filters`;
+  }
+  function venueManagerRunExport(){
+    const rows = venueManagerFilteredExportRows();
+    if (!rows.length) return toast('No contacts match those filters.', 'error');
+    downloadCsv(buildContactsCsv(rows), `melankolia-contacts-${new Date().toISOString().slice(0,10)}.csv`);
+    const ov=document.getElementById('vmExportOverlay'); if(ov) ov.remove();
+    toast(`✓ Exported ${rows.length} contacts to CSV`, 'success');
+  }
+  function venueManagerExportToggleCustom(){
+    const preset=(document.getElementById('vmExDatePreset')||{}).value;
+    const c=document.getElementById('vmExCustom'); if(c) c.style.display = preset==='custom' ? '' : 'none';
+    venueManagerExportPreview();
+  }
+  window.VenueManager = { init:initVenueManager, load:venueManagerLoad, search:venueManagerSearch, findWeb:venueManagerFinder, edit:venueManagerEdit, newVenue:venueManagerNew, cancelEdit:venueManagerCancel, save:venueManagerSave, sendToRoute:venueManagerSendToRoute, filter:venueManagerFilter, exportCsv:venueManagerExportDialog, _exRun:venueManagerRunExport, _exToggleCustom:venueManagerExportToggleCustom };
   document.addEventListener('DOMContentLoaded',()=>{ if($('routeAdminShell')) initRoutePlannerAdmin(); if($('venueAdminShell')) initVenueManager(); });
 })();
