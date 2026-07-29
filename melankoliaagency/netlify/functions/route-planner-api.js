@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { listDocs, getDoc, createDoc, updateDoc, json } = require('./_firebase');
+const { listDocs, getDoc, createDoc, updateDoc, deleteDoc, json } = require('./_firebase');
 const { authorize } = require('./_auth');
 
 const TOURS = 'route_planner_tours';
@@ -88,6 +88,26 @@ exports.handler = async (event) => {
       const doc = await createDoc(TOURS, copy, id('tour'));
       if (Array.isArray(copy.legs)) await createShows(doc.id, doc, copy.legs);
       return json(200, { success:true, data:doc });
+    }
+
+    if (a === 'hardDeleteTour') {
+      // One-shot cleanup for ghost/custom-id tour docs that resist soft-delete.
+      const target = String(b.id||'').trim();
+      if (!target) return json(400, { success:false, error:'id required' });
+      let removed = 0, tried = [];
+      // 1) direct delete by id
+      try { await deleteDoc(TOURS, target); removed++; tried.push('direct'); } catch(e){ tried.push('direct:'+e.message); }
+      // 2) match any remaining docs whose derived id === target and delete each
+      const all = await listDocs(TOURS, { pageSize:300 });
+      for (const t of all) {
+        if (String(t.id).trim() === target) {
+          try { await deleteDoc(TOURS, t.id); removed++; tried.push('byid:'+t.id); } catch(e){ tried.push('byid-fail:'+e.message); }
+        }
+      }
+      // 3) archive its shows too
+      const shows = (await listDocs(SHOWS, { orderBy:'date' })).filter(s => s.tour_id === target && !s.deleted_at);
+      await Promise.all(shows.map(s => updateDoc(SHOWS, s.id, { ...s, deleted_at:now(), updated_at:now() }).catch(()=>{})));
+      return json(200, { success:true, removed, archived_shows:shows.length, tried });
     }
 
     return json(400, { success:false, error:'Unknown action' });
