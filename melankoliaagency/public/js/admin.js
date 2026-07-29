@@ -2668,27 +2668,51 @@ async function handleScreenshotImages(input) {
   await runScreenshotScan(files.map(f => ({ name: f.name, blob: f })));
 }
 
+const _SHOT_ZIP_MAX = 100 * 1024 * 1024; // 100 MB
+
 async function handleScreenshotZip(input) {
   const file = input.files && input.files[0];
   input.value = '';
   if (!file) return;
-  if (file.size > 22 * 1024 * 1024) { _shotStatus('That zip is larger than ~22 MB. Please split it into smaller zips.', 'err'); return; }
-  _shotStatus('Unpacking zip\u2026');
+  if (file.size > _SHOT_ZIP_MAX) {
+    _shotStatus(`That zip is ${(file.size/1048576).toFixed(0)} MB \u2014 the limit is 100 MB. Please split it into smaller zips.`, 'err');
+    return;
+  }
+  _shotStatus(`Unpacking zip (${(file.size/1048576).toFixed(1)} MB)\u2026`);
   _shotBusy(true);
   try {
     const fflate = await _loadFflate();
     const buf = new Uint8Array(await file.arrayBuffer());
-    const entries = fflate.unzipSync(buf, {
-      filter: (f) => /\.(png|jpe?g|webp|heic|heif)$/i.test(f.name) && !/(^|\/)__MACOSX\//.test(f.name) && !/(^|\/)\._/.test(f.name)
+    const isImg = (n) => /\.(png|jpe?g|webp|heic|heif)$/i.test(n) && !/(^|\/)__MACOSX\//.test(n) && !/(^|\/)\._/.test(n);
+    // Stream-unzip so a 100 MB archive with hundreds of images doesn't block the tab.
+    const items = await new Promise((resolve, reject) => {
+      const out = [];
+      let pending = 0, ended = false;
+      const maybeDone = () => { if (ended && pending === 0) resolve(out); };
+      const unzipper = new fflate.Unzip((stream) => {
+        if (!isImg(stream.name)) return; // skip non-images entirely
+        const nm = stream.name.split('/').pop();
+        const chunks = [];
+        pending++;
+        stream.ondata = (err, chunk, final) => {
+          if (err) { reject(err); return; }
+          if (chunk && chunk.length) chunks.push(chunk);
+          if (final) {
+            out.push({ name: nm, blob: new Blob(chunks, { type: _mimeFromName(nm) }) });
+            _shotStatus(`Unpacking zip\u2026 ${out.length} image${out.length === 1 ? '' : 's'} found`);
+            pending--; maybeDone();
+          }
+        };
+        stream.start();
+      });
+      unzipper.register(fflate.UnzipInflate);
+      try { unzipper.push(buf, true); } catch (e) { reject(e); return; }
+      ended = true; maybeDone();
     });
-    const items = Object.keys(entries).map(name => ({
-      name: name.split('/').pop(),
-      blob: new Blob([entries[name]], { type: _mimeFromName(name) })
-    }));
     if (!items.length) { _shotStatus('No images found in that zip.', 'err'); _shotBusy(false); return; }
     await runScreenshotScan(items);
   } catch (e) {
-    _shotStatus('Could not read that zip: ' + escapeHtml(e.message), 'err');
+    _shotStatus('Could not read that zip: ' + escapeHtml(e.message || String(e)), 'err');
     _shotBusy(false);
   }
 }
@@ -2714,36 +2738,51 @@ function _loadFflate() {
 async function runScreenshotScan(items) {
   _shotBusy(true);
   const total = items.length;
-  let done = 0, staged = 0, skipped = 0, noncontact = 0, errors = 0;
-  _shotStatus(`Preparing ${total} image${total > 1 ? 's' : ''}\u2026`);
+  let done = 0, staged = 0, skipped = 0, noncontact = 0, errors = 0, prepared = 0;
 
-  // Encode (downscale) all images first, with light concurrency
-  const encoded = [];
-  let ei = 0;
-  async function encWorker() {
-    while (ei < items.length) {
-      const it = items[ei++];
-      const dataUrl = await _shotToDataUrl(it.blob);
-      if (dataUrl) encoded.push({ filename: it.name, dataUrl });
-      _shotStatus(`Preparing images\u2026 ${encoded.length}/${total}`);
-    }
-  }
-  await Promise.all(Array.from({ length: 4 }, encWorker));
-
-  // Chunk into small batches
-  const batches = [];
-  for (let i = 0; i < encoded.length; i += _SHOT_BATCH) batches.push(encoded.slice(i, i + _SHOT_BATCH));
-
-  function progress() {
+  function progress(phase) {
     const pct = total ? Math.round((done / total) * 100) : 0;
-    _shotStatus(`<b>Scanning screenshots\u2026 ${pct}%</b> &middot; ${done}/${total} read &middot; ${staged} staged &middot; ${skipped} dupes &middot; ${noncontact} no-contact${errors ? ` &middot; ${errors} errors` : ''}`);
+    const head = phase === 'prep'
+      ? `<b>Preparing images\u2026 ${prepared}/${total}</b>`
+      : `<b>Scanning screenshots\u2026 ${pct}%</b>`;
+    _shotStatus(`${head} &middot; ${done}/${total} read &middot; ${staged} staged &middot; ${skipped} dupes &middot; ${noncontact} no-contact${errors ? ` &middot; ${errors} errors` : ''}`);
   }
-  progress();
+  progress('prep');
 
-  let bi = 0;
-  async function batchWorker() {
-    while (bi < batches.length) {
-      const batch = batches[bi++];
+  // Streaming pipeline: encode (downscale) images on demand and feed a bounded queue,
+  // so we never hold hundreds of full-size images / data URLs in memory at once.
+  const QUEUE_MAX = _SHOT_BATCH * (_SHOT_CONCURRENCY + 1); // small look-ahead buffer
+  const queue = [];        // encoded {filename, dataUrl} waiting to be batched
+  let srcIdx = 0;          // next item to encode
+  let encodeDone = false;
+
+  async function producer() {
+    // up to 4 concurrent encoders, but pause when the queue is full
+    async function encWorker() {
+      while (srcIdx < items.length) {
+        while (queue.length >= QUEUE_MAX) { await _sleep(40); }
+        const it = items[srcIdx++];
+        const dataUrl = await _shotToDataUrl(it.blob);
+        it.blob = null; // release the decoded blob
+        if (dataUrl) queue.push({ filename: it.name, dataUrl });
+        prepared++;
+        progress('prep');
+      }
+    }
+    await Promise.all(Array.from({ length: 4 }, encWorker));
+    encodeDone = true;
+  }
+
+  async function consumer() {
+    while (true) {
+      // pull up to _SHOT_BATCH encoded images
+      const batch = [];
+      while (batch.length < _SHOT_BATCH && queue.length) batch.push(queue.shift());
+      if (!batch.length) {
+        if (encodeDone && !queue.length) return;
+        await _sleep(40);
+        continue;
+      }
       try {
         const res = await fetch(SCREENSHOT_SCAN_API, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -2754,14 +2793,17 @@ async function runScreenshotScan(items) {
         else { errors += batch.length; }
       } catch (e) { errors += batch.length; }
       done += batch.length;
-      progress();
+      progress('scan');
       loadProposals(); // live-refresh the queue as results land
     }
   }
-  await Promise.all(Array.from({ length: _SHOT_CONCURRENCY }, batchWorker));
+
+  await Promise.all([producer(), ...Array.from({ length: _SHOT_CONCURRENCY }, consumer)]);
 
   _shotStatus(`<b>\u2713 Done.</b> ${staged} contact${staged === 1 ? '' : 's'} staged from ${total} screenshot${total === 1 ? '' : 's'}. ${skipped} duplicate${skipped === 1 ? '' : 's'}, ${noncontact} with no contact${errors ? `, ${errors} error${errors === 1 ? '' : 's'}` : ''}. Review them below.`, errors ? 'warn' : 'ok');
   _shotBusy(false);
   if (typeof setDiscFilter === 'function') { const chip = document.querySelector('.disc-filters .chip[data-dfilter="screenshot"]'); setDiscFilter('screenshot', chip); }
   loadProposals();
 }
+
+function _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
