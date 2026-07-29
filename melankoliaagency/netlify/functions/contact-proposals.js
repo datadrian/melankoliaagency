@@ -61,17 +61,6 @@ async function listProposals(b) {
   const status = b.status || 'pending';
   if (status !== 'all') docs = docs.filter(d => (d.status || 'pending') === status);
   if (b.type && b.type !== 'all') docs = docs.filter(d => d.type === b.type);
-  // Flag likely CRM duplicates for pending 'new' proposals so the admin sees a warning
-  // before approving (one shared venues read for the whole page, not per-proposal).
-  const needsCheck = docs.some(d => (d.status || 'pending') === 'pending' && d.type !== 'update');
-  if (needsCheck) {
-    const venues = await fetchLiveVenues();
-    docs = docs.map(d => {
-      if ((d.status || 'pending') !== 'pending' || d.type === 'update') return d;
-      const dupe = findDuplicateVenue(d.candidate || {}, venues);
-      return dupe ? { ...d, possible_duplicate: { venue_id: dupe.venue.id, venue_name: dupe.venue.name, matched_on: dupe.matched_on } } : d;
-    });
-  }
   return { success: true, data: docs, count: docs.length };
 }
 
@@ -170,7 +159,7 @@ async function editProposal(pid, patch) {
   return { success: true, candidate: c };
 }
 
-async function approveProposal(pid, venuesCache) {
+async function approveProposal(pid) {
   if (!pid) throw new Error('id required');
   const p = await getDoc(COLL, pid);
   if (!p) throw new Error('proposal not found');
@@ -178,10 +167,8 @@ async function approveProposal(pid, venuesCache) {
 
   let effective = p, deduped = false, matchedOn = '', matchedVenueId = '';
   if (!(p.type === 'update' && p.match_target_venue_id)) {
-    // Not already targeting a known record — run the duplicate safety net against the LIVE CRM
-    // before creating a new one. Reuses a passed-in cache across a bulk batch when available.
-    const venues = venuesCache || await fetchLiveVenues();
-    const dupe = findDuplicateVenue(p.candidate || {}, venues);
+    // Not already targeting a known record — fast duplicate safety net before creating a new one.
+    const dupe = await findDuplicateVenueFast(p.candidate || {});
     if (dupe) {
       deduped = true; matchedOn = dupe.matched_on; matchedVenueId = dupe.venue.id;
       effective = { ...p, type: 'update', match_target_venue_id: dupe.venue.id, existing_snapshot: dupe.venue };
@@ -192,21 +179,14 @@ async function approveProposal(pid, venuesCache) {
     status: 'approved', venue_id: venue.id || '', updated_at: now(),
     deduped, ...(deduped ? { duplicate_of: matchedVenueId, duplicate_matched_on: matchedOn } : {}),
   });
-  // keep a shared cache (bulk_approve) in sync so later items in the same batch dedupe
-  // against records just created/merged earlier in the batch too.
-  if (venuesCache && venue && venue.id) {
-    const idx = venuesCache.findIndex(v => v.id === venue.id);
-    if (idx >= 0) venuesCache[idx] = venue; else venuesCache.push(venue);
-  }
   return { success: true, venue_id: venue.id || '', venue, deduped, matched_existing_id: matchedVenueId, matched_on: matchedOn };
 }
 
 async function bulkApprove(ids) {
-  const venuesCache = await fetchLiveVenues();
   const results = [];
   for (const pid of ids) {
     try {
-      const r = await approveProposal(pid, venuesCache);
+      const r = await approveProposal(pid);
       results.push({ id: pid, ok: true, venue_id: r.venue_id, deduped: r.deduped, matched_on: r.matched_on });
     } catch (e) { results.push({ id: pid, ok: false, error: e.message }); }
   }
@@ -332,25 +312,34 @@ function isFilled(v) {
 }
 function norm(s) { return String(s || '').trim().toLowerCase(); }
 function normPhone(s) { return String(s || '').replace(/[^0-9]/g, ''); }
+const notDeleted = (v) => v && !v.deleted_at;
 
 // Duplicate safety net: run before creating any brand-new CRM venue record.
-// Matches on (in order of confidence): shared email, shared phone, or same
-// normalized name + city. Returns the existing venue doc, or null.
-async function fetchLiveVenues() {
-  return (await listDocs(VENUES, { orderBy: 'updated_at desc', pageSize: 2000 }).catch(() => [])).filter(v => !v.deleted_at);
-}
-function findDuplicateVenue(candidate, venues) {
+// Uses FAST targeted Firestore queries (indexed EQUAL lookups) rather than scanning
+// the whole collection — a full venue read pulls embeddings and takes ~20s (timeout).
+// Matches on: shared booking email, shared phone, or same name + city.
+async function findDuplicateVenueFast(candidate) {
   const c = candidate || {};
-  const candEmails = new Set([].concat(c.email ? [c.email] : [], Array.isArray(c.emails) ? c.emails : []).map(norm).filter(Boolean));
-  const candPhones = new Set([].concat(c.phone ? [c.phone] : [], Array.isArray(c.phones) ? c.phones : []).map(normPhone).filter(Boolean));
-  const nameKey = norm(c.venue_name || c.org || c.name);
+  const emails = [].concat(c.email ? [c.email] : [], Array.isArray(c.emails) ? c.emails : [])
+    .map(x => String(x || '').trim()).filter(Boolean);
+  for (const em of emails) {
+    const hits = await queryDocs(VENUES, 'booking_email', em, { limit: 5 }).catch(() => []);
+    const v = (hits || []).find(notDeleted);
+    if (v) return { venue: v, matched_on: 'email' };
+  }
+  const phones = [].concat(c.phone ? [c.phone] : [], Array.isArray(c.phones) ? c.phones : [])
+    .map(x => String(x || '').trim()).filter(Boolean);
+  for (const ph of phones) {
+    const hits = await queryDocs(VENUES, 'phone', ph, { limit: 5 }).catch(() => []);
+    const v = (hits || []).find(notDeleted);
+    if (v) return { venue: v, matched_on: 'phone' };
+  }
+  const name = String(c.venue_name || c.org || c.name || '').trim();
   const cityKey = norm(c.city);
-  for (const v of (venues || [])) {
-    const vEmails = [].concat(v.booking_email ? [v.booking_email] : [], Array.isArray(v.emails) ? v.emails : []).map(norm).filter(Boolean);
-    if (candEmails.size && vEmails.some(e => candEmails.has(e))) return { venue: v, matched_on: 'email' };
-    const vPhones = [].concat(v.phone ? [v.phone] : [], Array.isArray(v.phones) ? v.phones : []).map(normPhone).filter(Boolean);
-    if (candPhones.size && vPhones.some(ph => candPhones.has(ph))) return { venue: v, matched_on: 'phone' };
-    if (nameKey && cityKey && norm(v.name) === nameKey && norm(v.city) === cityKey) return { venue: v, matched_on: 'name+city' };
+  if (name) {
+    const hits = await queryDocs(VENUES, 'name', name, { limit: 10 }).catch(() => []);
+    const v = (hits || []).filter(notDeleted).find(x => !cityKey || norm(x.city) === cityKey);
+    if (v) return { venue: v, matched_on: cityKey ? 'name+city' : 'name' };
   }
   return null;
 }
