@@ -2132,3 +2132,17 @@ select.form-input option { background: #111; }
 /* Contact Discovery — social/contact chips */
 .disc-socials{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 2px;}
 .disc-soc-chip{font-size:.72rem;padding:2px 8px;border-radius:999px;background:#f2f4f8;border:1px solid #dde3ee;color:#3b4a66;}
+
+/* ==================== Team Access + shared admin-card/table/form-grid (also backfills Page Editor) ==================== */
+.admin-card{background:#151515;border:1px solid #262626;border-radius:8px;padding:1.1rem 1.25rem;}
+.form-grid{display:grid;gap:.9rem;}
+.form-grid.two-col{grid-template-columns:1fr 1fr;}
+@media (max-width:720px){.form-grid.two-col{grid-template-columns:1fr;}}
+.form-label{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:.35rem;}
+.admin-table{width:100%;border-collapse:collapse;font-size:.85rem;}
+.admin-table th{text-align:left;font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#888;padding:.5rem .6rem;border-bottom:1px solid #2a2a2a;}
+.admin-table td{padding:.6rem;border-bottom:1px solid #1f1f1f;vertical-align:middle;}
+.admin-table tr:last-child td{border-bottom:none;}
+
+/* Contact Discovery — duplicate warning badge */
+.disc-badge.dupe{background:#3a1f1f;color:#e07a5f;border:1px solid rgba(224,122,95,.4);}

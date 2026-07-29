@@ -38,7 +38,7 @@
   const toast = (msg,type='success') => typeof showToast === 'function' ? showToast(msg,type) : alert(msg);
 
   async function post(url,payload){
-    const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload||{})});
+    const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ session_token: (typeof mkSessionToken==='function'?mkSessionToken():''), ...(payload||{}) })});
     const text = await res.text();
     let json = null;
     try { json = text ? JSON.parse(text) : {}; }
@@ -995,7 +995,7 @@
     const root=$('venueAdminShell'); if(!root) return;
     venueManagerRows=Array.isArray(rows)?rows:[];
     const shown=venueManagerRows.slice(0,80);
-    root.innerHTML=`<section class="route-ops-shell venue-manager-shell"><aside class="route-library-panel"><div class="route-mini-brand"><img src="/images/logo-mark-white.svg" alt=""><div><b>Contact Manager</b><span>Promoters, venues + booking contacts</span></div></div><button class="btn-primary route-full-btn" onclick="VenueManager.newVenue()">+ Add Contact</button><div class="route-library-tools"><input id="vmQuery" class="form-input" placeholder="Instant search name, city, country, phone, email, notes…" value="${attr(venueManagerFilters.query||'')}" oninput="VenueManager.filter()"><div class="route-two-col"><input id="vmCity" class="form-input" placeholder="City" value="${attr(venueManagerFilters.city||'')}" oninput="VenueManager.filter()"><input id="vmCountry" class="form-input" placeholder="Country" value="${attr(venueManagerFilters.country||'')}" oninput="VenueManager.filter()"></div><div class="route-two-col"><input id="vmGenre" class="form-input" placeholder="Genre / scene" value="${attr(venueManagerFilters.genre||'')}" oninput="VenueManager.filter()"><input id="vmCapacity" class="form-input" placeholder="Target cap" value="${attr(venueManagerFilters.capacity||'')}" oninput="VenueManager.filter()"></div><button class="btn-secondary route-full-btn" onclick="VenueManager.search()">Search Deep / Semantic</button><button class="btn-secondary route-full-btn" onclick="VenueManager.findWeb()">Find Promoters/Venues + Add Results</button><button class="btn-secondary route-full-btn" onclick="VenueManager.load()">Show Full Contact List</button></div><div class="route-help-card"><h2>How this works</h2><p>Promoters and venues live in Firestore. Route searches, manual adds, and Finder discoveries are upserted automatically, deduped by name/city/country. Promoters are prioritized because they are usually the real booking relationship.</p></div></aside><main class="route-main-panel"><div class="route-command-bar"><div><p class="route-kicker">Master contact CRM</p><h1>Contact Manager</h1><p>Instant-search promoters, venues, collectives, bookers, phone/email contacts, ratings, capacity, and notes — then send selected contacts into the active route.</p></div><div class="route-command-actions"><button class="btn-secondary" onclick="VenueManager.newVenue()">Manual Contact</button><button class="btn-primary" onclick="VenueManager.findWeb()">Finder Module</button></div></div>${note?`<div id="venueManagerNote" class="route-tool-card"><p>${esc(note)}</p></div>`:`<div id="venueManagerNote"></div>`}<div id="venueManagerForm"></div><section id="venueManagerResults" class="venue-manager-results"><div class="route-panel-title"><span>${esc(venueManagerMode==='finder'?'Finder results added to master list':'Contact list results')}</span><em>${venueManagerRows.length} matched · showing ${shown.length}</em></div>${shown.length?shown.map(venueCard).join(''):'<div class="route-ai-empty">No contacts loaded yet. Search the master list or run the Finder module.</div>'}</section></main></section>`;
+    root.innerHTML=`<section class="route-ops-shell venue-manager-shell"><aside class="route-library-panel"><div class="route-mini-brand"><img src="/images/logo-mark-white.svg" alt=""><div><b>Contact Manager</b><span>Promoters, venues + booking contacts</span></div></div><button class="btn-primary route-full-btn" onclick="VenueManager.newVenue()">+ Add Contact</button><div class="route-library-tools"><input id="vmQuery" class="form-input" placeholder="Instant search name, city, country, phone, email, notes…" value="${attr(venueManagerFilters.query||'')}" oninput="VenueManager.filter()"><div class="route-two-col"><input id="vmCity" class="form-input" placeholder="City" value="${attr(venueManagerFilters.city||'')}" oninput="VenueManager.filter()"><input id="vmCountry" class="form-input" placeholder="Country" value="${attr(venueManagerFilters.country||'')}" oninput="VenueManager.filter()"></div><div class="route-two-col"><input id="vmGenre" class="form-input" placeholder="Genre / scene" value="${attr(venueManagerFilters.genre||'')}" oninput="VenueManager.filter()"><input id="vmCapacity" class="form-input" placeholder="Target cap" value="${attr(venueManagerFilters.capacity||'')}" oninput="VenueManager.filter()"></div><button class="btn-secondary route-full-btn" onclick="VenueManager.search()">Search Deep / Semantic</button><button class="btn-secondary route-full-btn" onclick="VenueManager.findWeb()">Find Promoters/Venues + Add Results</button><button class="btn-secondary route-full-btn" onclick="VenueManager.load()">Show Full Contact List</button></div><div class="route-help-card"><h2>How this works</h2><p>Promoters and venues live in Firestore. Route searches, manual adds, and Finder discoveries are upserted automatically, deduped by name/city/country. Promoters are prioritized because they are usually the real booking relationship.</p></div></aside><main class="route-main-panel"><div class="route-command-bar"><div><p class="route-kicker">Master contact CRM</p><h1>Contact Manager</h1><p>Instant-search promoters, venues, collectives, bookers, phone/email contacts, ratings, capacity, and notes — then send selected contacts into the active route.</p></div><div class="route-command-actions"><button class="btn-secondary" onclick="VenueManager.newVenue()">Manual Contact</button><button class="btn-secondary" onclick="VenueManager.exportCsv()">⇩ Export CSV</button><button class="btn-primary" onclick="VenueManager.findWeb()">Finder Module</button></div></div>${note?`<div id="venueManagerNote" class="route-tool-card"><p>${esc(note)}</p></div>`:`<div id="venueManagerNote"></div>`}<div id="venueManagerForm"></div><section id="venueManagerResults" class="venue-manager-results"><div class="route-panel-title"><span>${esc(venueManagerMode==='finder'?'Finder results added to master list':'Contact list results')}</span><em>${venueManagerRows.length} matched · showing ${shown.length}</em></div>${shown.length?shown.map(venueCard).join(''):'<div class="route-ai-empty">No contacts loaded yet. Search the master list or run the Finder module.</div>'}</section></main></section>`;
   }
   function updateVenueManagerResults(rows=venueManagerRows,note=''){
     venueManagerRows=Array.isArray(rows)?rows:[];
@@ -1039,6 +1039,48 @@
   async function venueManagerSendToRoute(i){ const v=venueManagerRows[i]; const t=activeRoute(); if(!v) return; if(!t?.legs?.length) return toast('Open or generate a route first, then send venues into it.','error'); const answer=prompt('Send to which stop number?', '1'); if(answer===null) return; const idx=Math.max(0,Math.min(t.legs.length-1,Number(answer)-1||0)); const l=t.legs[idx]; l.candidate_venues=Array.isArray(l.candidate_venues)?l.candidate_venues:[]; const candidate={name:v.name,address:v.address,capacity:v.actual_capacity||v.capacity,booking_method:v.booking_email||v.booking_method||'master list',email:v.booking_email,phone:v.phone,website:v.website,instagram:v.instagram,fit_reason:v.notes||'Selected from Venue Manager.',outreach_angle:v.notes||'Master venue list option',crm_source:true,crm_id:v.id}; l.candidate_venues.unshift(candidate); if(!l.suggested_venue){ l.suggested_venue=v.name; l.venue_address=v.address||''; } if(t.id) await persistStop(idx,l); toast(`✓ ${v.name} added to stop ${idx+1}`,'success'); rerenderActiveRoute(); openStop(idx); }
 
   window.RouteAdmin = { init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, askAboutCurrentReview };
-  window.VenueManager = { init:initVenueManager, load:venueManagerLoad, search:venueManagerSearch, findWeb:venueManagerFinder, edit:venueManagerEdit, newVenue:venueManagerNew, cancelEdit:venueManagerCancel, save:venueManagerSave, sendToRoute:venueManagerSendToRoute, filter:venueManagerFilter };
+  function csvCell(v){
+    const s = v==null ? '' : String(v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+  }
+  function venueManagerExportCsv(){
+    const rows = (venueManagerAllRows && venueManagerAllRows.length) ? venueManagerAllRows : venueManagerRows;
+    if (!rows.length) return toast('No contacts loaded yet — load the full contact list first.', 'error');
+    const headers = ['Country','Region','City','Name','Contact Type','Contact Name','Contact Title','Market',
+      'Booking Email','All Emails','Phone','All Phones','WhatsApp','Website','Instagram','Facebook','Twitter/X',
+      'TikTok','YouTube','LinkedIn','SoundCloud','Spotify','Bandcamp','Telegram','Address','Booking Method',
+      'Relationship Status','Capacity','Rating','Associated Venues','Genre Affinity','Notes'];
+    const sorted = rows.slice().sort((a,b)=>{
+      const ca=(a.country||'Unknown').toLowerCase(), cb=(b.country||'Unknown').toLowerCase();
+      if (ca!==cb) return ca<cb?-1:1;
+      const na=(a.name||'').toLowerCase(), nb=(b.name||'').toLowerCase();
+      return na<nb?-1:na>nb?1:0;
+    });
+    const lines = [headers.join(',')];
+    sorted.forEach(v=>{
+      const emails = Array.isArray(v.emails)&&v.emails.length ? v.emails.join('; ') : (v.booking_email||'');
+      const phones = Array.isArray(v.phones)&&v.phones.length ? v.phones.join('; ') : (v.phone||'');
+      const assocVenues = Array.isArray(v.associated_venues) ? v.associated_venues.map(av=>av.city?`${av.name} (${av.city})`:av.name).join('; ') : '';
+      const genres = Array.isArray(v.genre_affinity) ? v.genre_affinity.join('; ') : (v.genre_affinity||'');
+      const row = [
+        v.country||'Unknown', v.region||'', v.city||'', v.name||'', v.contact_type||'', v.contact_name||'', v.contact_title||'',
+        v.market||'', v.booking_email||'', emails, v.phone||'', phones, v.whatsapp||'', v.website||'', v.instagram||'',
+        v.facebook||'', v.twitter||'', v.tiktok||'', v.youtube||'', v.linkedin||'', v.soundcloud||'', v.spotify||'',
+        v.bandcamp||'', v.telegram||'', v.address||'', v.booking_method||'', v.relationship_status||'', v.capacity||'',
+        v.rating||'', assocVenues, genres, v.notes||'',
+      ];
+      lines.push(row.map(csvCell).join(','));
+    });
+    const csv = '\uFEFF' + lines.join('\r\n');
+    const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url; a.download = `melankolia-contacts-${stamp}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+    toast(`✓ Exported ${sorted.length} contacts to CSV`, 'success');
+  }
+  window.VenueManager = { init:initVenueManager, load:venueManagerLoad, search:venueManagerSearch, findWeb:venueManagerFinder, edit:venueManagerEdit, newVenue:venueManagerNew, cancelEdit:venueManagerCancel, save:venueManagerSave, sendToRoute:venueManagerSendToRoute, filter:venueManagerFilter, exportCsv:venueManagerExportCsv };
   document.addEventListener('DOMContentLoaded',()=>{ if($('routeAdminShell')) initRoutePlannerAdmin(); if($('venueAdminShell')) initVenueManager(); });
 })();

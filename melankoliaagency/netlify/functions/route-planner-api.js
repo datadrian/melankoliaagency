@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const { listDocs, getDoc, createDoc, updateDoc, json } = require('./_firebase');
+const { authorize } = require('./_auth');
 
 const TOURS = 'route_planner_tours';
 const SHOWS = 'route_planner_shows';
@@ -16,6 +17,9 @@ exports.handler = async (event) => {
 
   try {
     const a = b.action;
+
+    const auth = await authorize(b, 'routes');
+    if (!auth.ok) return json(401, { success:false, error: auth.error });
 
     if (a === 'listTours') {
       const tours = (await listDocs(TOURS)).filter(x => !x.deleted_at);

@@ -6,7 +6,7 @@ let _advShows = [], _advBands = [], _advTours = [], _advNotifs = [];
 const advEsc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const advAttr = v => advEsc(v).replace(/`/g,'&#96;');
 async function advApi(body){
-  try{ const r = await fetch(ADV_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})}); return await r.json(); }
+  try{ const r = await fetch(ADV_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ session_token: (typeof mkSessionToken==='function'?mkSessionToken():''), ...(body||{}) })}); return await r.json(); }
   catch(e){ return {success:false,error:e.message}; }
 }
 async function emailApi(data){

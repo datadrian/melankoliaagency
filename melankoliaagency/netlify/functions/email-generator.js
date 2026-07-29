@@ -1,4 +1,5 @@
 const { json } = require('./_firebase');
+const { authorize } = require('./_auth');
 
 function esc(v='') { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function clean(v='') { return String(v ?? '').replace(/\s+/g, ' ').trim(); }
@@ -107,6 +108,12 @@ exports.handler = async (event) => {
 
   let body = {};
   try { body = JSON.parse(event.body || '{}'); } catch {}
+
+  // Used as a shared drafting utility from the Email Generator tab, Advancing, and
+  // Route Planner alike — require any valid staff login, not a specific module.
+  const auth = await authorize(body, null);
+  if (!auth.ok) return json(401, { success:false, error: auth.error });
+
   const d = body.data || body;
 
   const artistData = d.artistContext || d.artistData || {};

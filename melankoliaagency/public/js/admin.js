@@ -5,7 +5,37 @@
 const RESEARCH_FUNCTION_URL = '/.netlify/functions/researchArtist';
 const SITE_DATA_API = '/.netlify/functions/site-data';
 const MEDIA_UPLOAD_API = '/.netlify/functions/media-upload';
-const ADMIN_PUBLISH_PASSWORD = 'melankolia2025';
+const ADMIN_USERS_API = '/.netlify/functions/admin-users';
+const ALL_ADMIN_MODULES = ['artists','videos','bookings','venues','discovery','routes','emails','advancing','bands','pages','settings'];
+
+function mkSessionToken(){ return sessionStorage.getItem('mk_session_token') || ''; }
+function mkSessionUser(){ try { return JSON.parse(sessionStorage.getItem('mk_session_user') || 'null'); } catch(e) { return null; } }
+function mkIsOwner(){ const u = mkSessionUser(); return !!(u && u.is_owner); }
+function mkHasModule(m){ const u = mkSessionUser(); return !!(u && (u.is_owner || (u.modules||[]).includes(m))); }
+function mkLogout(){
+  const t = mkSessionToken();
+  sessionStorage.removeItem('mk_session_token');
+  sessionStorage.removeItem('mk_session_user');
+  if (t) fetch(ADMIN_USERS_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'logout', session_token:t }) }).catch(()=>{});
+  location.reload();
+}
+function applySessionUI(user){
+  if (!user) return;
+  document.querySelectorAll('.sidebar-link[data-module]').forEach(link => {
+    link.style.display = mkHasModule(link.dataset.module) ? '' : 'none';
+  });
+  document.querySelectorAll('.sidebar-link[data-owner-only]').forEach(link => {
+    link.style.display = user.is_owner ? '' : 'none';
+  });
+  const who = document.getElementById('sessionWhoAmI');
+  if (who) who.textContent = user.is_owner ? 'Signed in as Owner' : ('Signed in as ' + (user.display_name || 'staff'));
+  // if the currently active view isn't permitted (e.g. deep link), bounce to dashboard
+  const activeLink = document.querySelector('.sidebar-link.active[data-module]');
+  if (activeLink && activeLink.style.display === 'none') showView('dashboard');
+}
+window.onSessionReady = applySessionUI;
+if (window.MK_SESSION_USER) applySessionUI(window.MK_SESSION_USER);
+
 
 /* ==================== DATA LAYER ==================== */
 
@@ -199,7 +229,7 @@ async function publishArtistsToSite(showSuccess=true) {
   const artists = getArtists().sort(artistAlphaSort);
   const videos = getVideos();
   if (!artists.length) throw new Error('No artists to publish');
-  const res = await fetch(SITE_DATA_API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action:'publishArtists', password:ADMIN_PUBLISH_PASSWORD, artists, videos, pages:getPages(), data_version:DATA_VERSION }) });
+  const res = await fetch(SITE_DATA_API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action:'publishArtists', session_token:mkSessionToken(), artists, videos, pages:getPages(), data_version:DATA_VERSION }) });
   const data = await res.json().catch(()=>({}));
   if (!res.ok || data.success === false) throw new Error(data.error || ('Publish failed: ' + res.status));
   localStorage.setItem('mk_last_site_publish', new Date().toISOString());
@@ -369,19 +399,27 @@ Join us on a journey where each note, beat, and frame contributes to a story wor
 };}
 function getPages(){ try { return {...defaultPages(), ...JSON.parse(localStorage.getItem('mk_pages')||'{}')}; } catch { return defaultPages(); } }
 function savePages(pages){ localStorage.setItem('mk_pages', JSON.stringify(pages)); }
-async function publishPagesToSite(){ const pages=getPages(); const res=await fetch(SITE_DATA_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'publishPages',password:ADMIN_PUBLISH_PASSWORD,pages,data_version:DATA_VERSION})}); const data=await res.json().catch(()=>({})); if(!res.ok||!data.success) throw new Error(data.error||'Publish failed'); return data.data; }
+async function publishPagesToSite(){ const pages=getPages(); const res=await fetch(SITE_DATA_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'publishPages',session_token:mkSessionToken(),pages,data_version:DATA_VERSION})}); const data=await res.json().catch(()=>({})); if(!res.ok||!data.success) throw new Error(data.error||'Publish failed'); return data.data; }
 function renderPageEditor(){ const pages=getPages(); const ids=Object.keys(pages); const host=document.getElementById('pageEditorHost'); if(!host) return; const active=localStorage.getItem('mk_page_editor_active')||'about'; const page=pages[active]||pages.about; host.innerHTML=`<div class="view-header"><h1>Page Editor</h1><button class="btn-primary" onclick="savePageEditorForm(true)">Save + Publish Pages</button></div><div style="display:grid;grid-template-columns:220px 1fr;gap:1rem"><div class="admin-card">${ids.map(id=>`<button type="button" class="qa-btn" style="width:100%;margin-bottom:.4rem;${id===active?'border-color:#fff;color:#fff':''}" onclick="localStorage.setItem('mk_page_editor_active','${id}');renderPageEditor()">${escHtml(pages[id].label||id)}${pages[id].hidden?' <span style=&quot;color:#e07a5f&quot;>(hidden)</span>':''}</button>`).join('')}</div><form class="admin-card" onsubmit="savePageEditorForm(false);return false"><input type="hidden" id="pageEditId" value="${escHtml(active)}"><div class="form-group"><label>Label</label><input id="pageLabel" class="form-input" value="${escHtml(page.label||active)}"></div><div class="form-group" style="display:flex;align-items:center;gap:.55rem;padding:.6rem .75rem;border:1px solid #333;border-radius:6px;background:#1a1a1a"><input type="checkbox" id="pageHidden" ${page.hidden?'checked':''} style="width:16px;height:16px;cursor:pointer"><label for="pageHidden" style="margin:0;cursor:pointer">Hide this page (removes it from the site nav and blocks the page)</label></div>${Object.keys(page).filter(k=>!['id','label','hidden','order','published_at','created_at','updated_at'].includes(k)).map(k=>`<div class="form-group"><label>${escHtml(k)}</label><textarea class="form-input form-textarea page-field-input" data-key="${escHtml(k)}" rows="${String(page[k]||'').length>180?8:3}">${escHtml(page[k]||'')}</textarea></div>`).join('')}<button class="btn-secondary">Save locally</button></form></div><p class="view-sub" style="margin-top:1rem">About and Submit are live-wired to these records. Other page records are staged here for the next templates.</p>`; }
 function savePageEditorForm(publish){ const pages=getPages(); const id=document.getElementById('pageEditId')?.value||'about'; pages[id]=pages[id]||{id}; pages[id].id=id; pages[id].label=document.getElementById('pageLabel')?.value||id; document.querySelectorAll('.page-field-input').forEach(el=>pages[id][el.dataset.key]=el.value); pages[id].hidden=!!document.getElementById('pageHidden')?.checked; savePages(pages); showToast('✓ Page saved locally','success'); if(publish) publishPagesToSite().then(()=>showToast('✓ Pages published','success')).catch(e=>showToast('✗ Page publish failed — '+e.message,'error')); }
 
 /* ==================== NAVIGATION ==================== */
 
 function showView(name) {
+  const targetLink = document.querySelector(`.sidebar-link[data-view="${name}"]`);
+  const moduleReq = targetLink && targetLink.dataset.module;
+  const ownerOnly = targetLink && targetLink.hasAttribute('data-owner-only');
+  if ((moduleReq && !mkHasModule(moduleReq)) || (ownerOnly && !mkIsOwner())) {
+    showToast('You do not have access to that section', 'error');
+    name = 'dashboard';
+  }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.sidebar-link[data-view]').forEach(l => l.classList.remove('active'));
   const v = document.getElementById('view-' + name);
   if (v) v.classList.add('active');
   const link = document.querySelector(`.sidebar-link[data-view="${name}"]`);
   if (link) link.classList.add('active');
+  if (name === 'team') renderTeamAccess();
   if (name === 'dashboard') renderDashboard();
   if (name === 'artists')   renderArtistGrid();
   if (name === 'research')  initResearchPage();
@@ -1300,7 +1338,7 @@ async function compressImageFile(file) {
 }
 async function uploadAdminMediaFile(file) {
   const dataUrl = await compressImageFile(file);
-  const res = await fetch(MEDIA_UPLOAD_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: ADMIN_PUBLISH_PASSWORD, filename:file.name, dataUrl }) });
+  const res = await fetch(MEDIA_UPLOAD_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ session_token: mkSessionToken(), filename:file.name, dataUrl }) });
   const data = await res.json().catch(()=>({}));
   if (!res.ok || data.success === false || !data.url) throw new Error(data.error || ('Image upload failed: ' + res.status));
   return data.url;
@@ -2362,7 +2400,7 @@ function initContactDiscovery() {
 async function proposalsCall(payload) {
   const res = await fetch(CONTACT_PROPOSALS_API, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: ADMIN_PUBLISH_PASSWORD, ...payload }),
+    body: JSON.stringify({ session_token: mkSessionToken(), ...payload }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || j.success === false) throw new Error(j.error || 'request failed');
@@ -2420,6 +2458,8 @@ function renderProposals() {
     const lowb = low ? '<span class="disc-badge lowconf">Verify match</span>' : '';
     const marketb = c.market ? `<span class="disc-badge market-chip">${escapeHtml(c.market)}</span>` : '';
     const shotb = p.source === 'screenshot' ? '<span class="disc-badge shot">\uD83D\uDCF7 Screenshot</span>' : '';
+    const dupe = p.possible_duplicate;
+    const dupeb = dupe ? `<span class="disc-badge dupe" title="Matched on ${escapeHtml(dupe.matched_on||'')}">\u26a0 Possible duplicate of ${escapeHtml(dupe.venue_name||'existing venue')}</span>` : '';
     const fields = [];
     const emails = (Array.isArray(c.emails) && c.emails.length) ? c.emails : (c.email ? [c.email] : []);
     const phones = (Array.isArray(c.phones) && c.phones.length) ? c.phones : (c.phone ? [c.phone] : []);
@@ -2463,7 +2503,7 @@ function renderProposals() {
     return `<div class="disc-card">
       <input type="checkbox" class="disc-check" data-pid="${p.id}" ${pending ? '' : 'disabled'}>
       <div class="disc-main">
-        <div>${badge}${shotb}${lowb}${marketb}<span class="disc-name">${escapeHtml(c.venue_name || c.org || c.name || c.email || 'Unknown')}</span></div>${p.source==="screenshot"&&p.source_image_url?`<a class="disc-shot-thumb" href="${escapeHtml(p.source_image_url)}" target="_blank" title="View original screenshot"><img src="${escapeHtml(p.source_image_url)}" loading="lazy" alt="screenshot"></a>`:""}
+        <div>${badge}${shotb}${lowb}${marketb}${dupeb}<span class="disc-name">${escapeHtml(c.venue_name || c.org || c.name || c.email || 'Unknown')}</span></div>${p.source==="screenshot"&&p.source_image_url?`<a class="disc-shot-thumb" href="${escapeHtml(p.source_image_url)}" target="_blank" title="View original screenshot"><img src="${escapeHtml(p.source_image_url)}" loading="lazy" alt="screenshot"></a>`:""}
         <div class="disc-sub">${escapeHtml(c.name || '')}${c.name && c.org ? ' \u2014 ' : ''}${escapeHtml(c.org && c.org !== c.venue_name ? c.org : '')}</div>
         <div class="disc-fields">${fields.join('')}</div>
         ${socialsHtml}
@@ -2562,8 +2602,10 @@ async function saveProposalEdit(id) {
 
 async function approveProposal(id) {
   try {
-    await proposalsCall({ action: 'approve', id });
-    showDiscStatus('Approved \u2014 saved to Contact Manager.', 'ok');
+    const r = await proposalsCall({ action: 'approve', id });
+    showDiscStatus(r.deduped
+      ? `Matched an existing contact (by ${escapeHtml(r.matched_on||'')}) \u2014 merged in instead of creating a duplicate.`
+      : 'Approved \u2014 saved to Contact Manager.', 'ok');
     loadProposals();
   } catch (e) { showDiscStatus('Approve failed: ' + e.message, 'err'); }
 }
@@ -2582,7 +2624,8 @@ async function bulkApproveProposals() {
   showDiscStatus(`Approving ${ids.length}\u2026`, 'working');
   try {
     const j = await proposalsCall({ action: 'bulk_approve', ids });
-    showDiscStatus(`Approved ${j.approved}, ${j.failed} failed.`, j.failed ? 'err' : 'ok');
+    const dedupeNote = j.deduped ? ` (${j.deduped} merged into existing contacts, no duplicates created)` : '';
+    showDiscStatus(`Approved ${j.approved}, ${j.failed} failed.${dedupeNote}`, j.failed ? 'err' : 'ok');
     loadProposals();
   } catch (e) { showDiscStatus('Bulk approve failed: ' + e.message, 'err'); }
 }
@@ -2596,7 +2639,7 @@ async function requestContactScan() {
   try {
     await fetch(SCAN_REQUEST_API, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: ADMIN_PUBLISH_PASSWORD, action: 'request', days: Number(days) }),
+      body: JSON.stringify({ session_token: mkSessionToken(), action: 'request', days: Number(days) }),
     }).catch(() => {});
     showDiscStatus(`Scan requested for the last ${days} days. Your agent scans the inbox and files proposals here \u2014 this list auto-refreshes. You can also just tell the agent: \u201cscan the booking inbox for new contacts\u201d.`, 'working');
     // poll for new proposals for ~2 min
@@ -2786,7 +2829,7 @@ async function runScreenshotScan(items) {
       try {
         const res = await fetch(SCREENSHOT_SCAN_API, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: ADMIN_PUBLISH_PASSWORD, images: batch })
+          body: JSON.stringify({ session_token: mkSessionToken(), images: batch })
         });
         const j = await res.json().catch(() => ({}));
         if (j && j.success) { staged += j.staged || 0; skipped += j.skipped || 0; noncontact += j.noncontact || 0; errors += j.errors || 0; }
@@ -2807,3 +2850,148 @@ async function runScreenshotScan(items) {
 }
 
 function _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ==================== TEAM ACCESS (staff logins + module permissions) ==================== */
+
+const MODULE_LABELS = {
+  artists: 'Artists / AI Research / EPK', videos: 'Videos', bookings: 'Booking Requests',
+  venues: 'Contact Manager', discovery: 'Contact Discovery', routes: 'Route Planner',
+  emails: 'Email Generator', advancing: 'Advancing', bands: 'Band Access',
+  pages: 'Page Editor', settings: 'Site Settings',
+};
+
+async function teamApi(payload) {
+  const res = await fetch(ADMIN_USERS_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ session_token: mkSessionToken(), ...payload }) });
+  const data = await res.json().catch(() => ({}));
+  if (!data.success) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+function moduleCheckboxes(idPrefix, checked) {
+  checked = checked || [];
+  return ALL_ADMIN_MODULES.map(m => `
+    <label style="display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border:1px solid #292929;border-radius:6px;cursor:pointer">
+      <input type="checkbox" class="${idPrefix}-mod" value="${m}" ${checked.includes(m) ? 'checked' : ''} style="width:15px;height:15px;cursor:pointer">
+      ${escHtml(MODULE_LABELS[m] || m)}
+    </label>`).join('');
+}
+
+async function renderTeamAccess() {
+  const host = document.getElementById('teamAccessShell');
+  if (!host) return;
+  if (!mkIsOwner()) { host.innerHTML = '<p class="view-sub">Only the owner can manage team access.</p>'; return; }
+  host.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const { data: users } = await teamApi({ action: 'list_users' });
+    host.innerHTML = `
+      <div class="view-header"><h1>Team Access</h1><button class="btn-primary" onclick="teamShowNewForm()">+ New login</button></div>
+      <p class="view-sub">Create logins for other agents/staff and choose exactly which sections of the admin they can use. You (the owner) always have full access via the master password.</p>
+      <div id="teamNewFormHost"></div>
+      <div class="admin-card" style="margin-top:1rem">
+        <table class="admin-table">
+          <thead><tr><th>Username</th><th>Display name</th><th>Modules</th><th>Status</th><th>Last login</th><th></th></tr></thead>
+          <tbody>
+            ${users.length ? users.map(u => `
+              <tr>
+                <td>${escHtml(u.username)}</td>
+                <td>${escHtml(u.display_name || u.username)}</td>
+                <td>${(u.modules||[]).map(m=>`<span class="disc-badge" style="margin:2px">${escHtml(MODULE_LABELS[m]||m)}</span>`).join('') || '<span class="view-sub">none</span>'}</td>
+                <td>${u.active === false ? '<span style="color:#e07a5f">Disabled</span>' : '<span style="color:#8fbf7f">Active</span>'}</td>
+                <td>${u.last_login ? new Date(u.last_login).toLocaleString() : '—'}</td>
+                <td style="white-space:nowrap">
+                  <button class="btn-ghost" onclick="teamShowEditForm('${u.id}')">Edit</button>
+                  <button class="btn-ghost" onclick="teamToggleActive('${u.id}', ${u.active === false})">${u.active === false ? 'Enable' : 'Disable'}</button>
+                  <button class="btn-ghost" onclick="teamDeleteUser('${u.id}','${escHtml(u.username)}')">Delete</button>
+                </td>
+              </tr>`).join('') : '<tr><td colspan="6" class="view-sub">No staff logins yet.</td></tr>'}
+          </tbody>
+        </table>
+      </div>`;
+  } catch (e) {
+    host.innerHTML = `<p class="view-sub" style="color:#e07a5f">Failed to load: ${escHtml(e.message)}</p>`;
+  }
+}
+
+function teamShowNewForm() {
+  const host = document.getElementById('teamNewFormHost');
+  if (!host) return;
+  host.innerHTML = `
+    <div class="admin-card">
+      <h3 style="margin-top:0">New login</h3>
+      <div class="form-grid two-col">
+        <div class="form-group"><label class="form-label">Username</label><input id="teamNewUsername" class="form-input" placeholder="e.g. jordan"></div>
+        <div class="form-group"><label class="form-label">Display name</label><input id="teamNewDisplayName" class="form-input" placeholder="Jordan"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Password</label><input id="teamNewPassword" type="text" class="form-input" placeholder="Temporary password (6+ chars)"></div>
+      <div class="form-group"><label class="form-label">Modules this login can access</label>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.4rem">${moduleCheckboxes('teamNew')}</div>
+      </div>
+      <div class="video-form-actions">
+        <button class="btn-primary" onclick="teamSaveNewUser()">Create login</button>
+        <button class="btn-secondary" onclick="document.getElementById('teamNewFormHost').innerHTML=''">Cancel</button>
+      </div>
+    </div>`;
+}
+
+async function teamSaveNewUser() {
+  const username = document.getElementById('teamNewUsername').value.trim();
+  const display_name = document.getElementById('teamNewDisplayName').value.trim();
+  const password = document.getElementById('teamNewPassword').value;
+  const modules = Array.from(document.querySelectorAll('.teamNew-mod:checked')).map(el => el.value);
+  try {
+    await teamApi({ action: 'create_user', username, display_name, password, modules });
+    showToast('✓ Login created', 'success');
+    renderTeamAccess();
+  } catch (e) { showToast('✗ ' + e.message, 'error'); }
+}
+
+async function teamShowEditForm(id) {
+  const { data: users } = await teamApi({ action: 'list_users' });
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  const host = document.getElementById('teamNewFormHost');
+  host.innerHTML = `
+    <div class="admin-card">
+      <h3 style="margin-top:0">Edit ${escHtml(u.username)}</h3>
+      <div class="form-grid two-col">
+        <div class="form-group"><label class="form-label">Display name</label><input id="teamEditDisplayName" class="form-input" value="${escHtml(u.display_name||u.username)}"></div>
+        <div class="form-group"><label class="form-label">Reset password (optional)</label><input id="teamEditPassword" type="text" class="form-input" placeholder="Leave blank to keep current"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Modules this login can access</label>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.4rem">${moduleCheckboxes('teamEdit', u.modules)}</div>
+      </div>
+      <div class="video-form-actions">
+        <button class="btn-primary" onclick="teamSaveEdit('${id}')">Save changes</button>
+        <button class="btn-secondary" onclick="document.getElementById('teamNewFormHost').innerHTML=''">Cancel</button>
+      </div>
+    </div>`;
+}
+
+async function teamSaveEdit(id) {
+  const display_name = document.getElementById('teamEditDisplayName').value.trim();
+  const new_password = document.getElementById('teamEditPassword').value;
+  const modules = Array.from(document.querySelectorAll('.teamEdit-mod:checked')).map(el => el.value);
+  try {
+    await teamApi({ action: 'update_user', id, display_name, modules, ...(new_password ? { new_password } : {}) });
+    showToast('✓ Login updated', 'success');
+    document.getElementById('teamNewFormHost').innerHTML = '';
+    renderTeamAccess();
+  } catch (e) { showToast('✗ ' + e.message, 'error'); }
+}
+
+async function teamToggleActive(id, makeActive) {
+  try {
+    await teamApi({ action: 'update_user', id, active: !!makeActive });
+    showToast(makeActive ? '✓ Login enabled' : '✓ Login disabled — any open sessions were logged out', 'success');
+    renderTeamAccess();
+  } catch (e) { showToast('✗ ' + e.message, 'error'); }
+}
+
+async function teamDeleteUser(id, username) {
+  if (!confirm(`Delete the login "${username}"? This can't be undone.`)) return;
+  try {
+    await teamApi({ action: 'delete_user', id });
+    showToast('✓ Login deleted', 'success');
+    renderTeamAccess();
+  } catch (e) { showToast('✗ ' + e.message, 'error'); }
+}

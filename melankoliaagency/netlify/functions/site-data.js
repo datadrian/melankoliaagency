@@ -1,4 +1,5 @@
 const { listDocs, getDoc, createDoc, updateDoc, json } = require('./_firebase');
+const { authorize } = require('./_auth');
 let getStore = null;
 try { ({ getStore } = require('@netlify/blobs')); } catch (_) { getStore = null; }
 let STATIC_SEED = { artists:[], videos:[], state:{} };
@@ -39,15 +40,18 @@ exports.handler = async (event) => {
     if (action === 'getArtists') return json(200, { success:true, data: await getArtists() });
     if (action === 'getPages') return json(200, { success:true, data: await getPages() });
     if (action === 'publishArtists') {
-      if (String(body.password || '') !== ADMIN_PASSWORD) return json(403, { success:false, error:'Invalid admin password' });
+      const auth = await authorize(body, 'artists');
+      if (!auth.ok) return json(403, { success:false, error: auth.error });
       return json(200, { success:true, data: await publishArtists(body) });
     }
     if (action === 'publishArtist') {
-      if (String(body.password || '') !== ADMIN_PASSWORD) return json(403, { success:false, error:'Invalid admin password' });
+      const auth = await authorize(body, 'artists');
+      if (!auth.ok) return json(403, { success:false, error: auth.error });
       return json(200, { success:true, data: await publishArtist(body) });
     }
     if (action === 'publishPages') {
-      if (String(body.password || '') !== ADMIN_PASSWORD) return json(403, { success:false, error:'Invalid admin password' });
+      const auth = await authorize(body, 'pages');
+      if (!auth.ok) return json(403, { success:false, error: auth.error });
       return json(200, { success:true, data: await publishPages(body) });
     }
     return json(400, { success:false, error:'Unknown action' });

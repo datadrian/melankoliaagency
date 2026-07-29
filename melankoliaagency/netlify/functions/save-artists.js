@@ -16,6 +16,7 @@
  *   MELANKOLIA_ADMIN_PASSWORD (optional; defaults to melankolia2025)
  */
 // build: rev2
+const { authorize } = require('./_auth');
 const OWNER = 'datadrian';
 const REPO = 'melankoliaagency';
 const BRANCH = 'main';
@@ -85,9 +86,10 @@ exports.handler = async (event) => {
       return resp(200, { success: true, artists: json.artists || [] });
     }
 
-    // write actions require the admin password
-    if (String(body.password || '') !== ADMIN_PASSWORD) {
-      return resp(403, { success: false, error: 'Invalid admin password' });
+    // write actions require a valid staff login with 'artists' module access (or the master password)
+    {
+      const auth = await authorize(body, 'artists');
+      if (!auth.ok) return resp(403, { success: false, error: auth.error });
     }
 
     if (action === 'upload') {

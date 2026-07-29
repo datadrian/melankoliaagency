@@ -9,6 +9,7 @@
 // to stay under the Netlify function timeout.
 
 const { listDocs, createDoc, json } = require('./_firebase');
+const { authorize } = require('./_auth');
 
 const COLL = 'contact_discovery_proposals';
 const ADMIN_PW = () => process.env.MELANKOLIA_ADMIN_PASSWORD || 'melankolia2025';
@@ -79,7 +80,11 @@ exports.handler = async (event) => {
   let b = {};
   try { b = JSON.parse(event.body || '{}'); } catch { return json(400, { success: false, error: 'Invalid JSON' }); }
 
-  if (b.password !== ADMIN_PW() && b.agent_key !== AGENT_KEY()) return json(401, { success: false, error: 'Unauthorized' });
+  const isAgent = b.agent_key === AGENT_KEY();
+  if (!isAgent) {
+    const auth = await authorize(b, 'discovery');
+    if (!auth.ok) return json(401, { success: false, error: auth.error });
+  }
 
   const images = Array.isArray(b.images) ? b.images.slice(0, 4) : [];
   if (!images.length) return json(400, { success: false, error: 'images[] required (max 4 per call)' });

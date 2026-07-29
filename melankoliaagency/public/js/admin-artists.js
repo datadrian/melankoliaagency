@@ -22,7 +22,7 @@
   var fresh = {};   // path -> dataURL just uploaded (instant preview)
   var dirty = false;
 
-  function pw() { return sessionStorage.getItem('mk_admin_pw') || ''; }
+  function pw() { return sessionStorage.getItem('mk_session_token') || ''; }
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function slugify(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
@@ -37,23 +37,25 @@
   var EMBED = /[?&]embed=1/.test(location.search);
 
   /* ---------- gate ---------- */
+  function currentUser() { try { return JSON.parse(sessionStorage.getItem('mk_session_user') || 'null'); } catch (e) { return null; } }
+  function hasArtistsAccess() { var u = currentUser(); return !!(u && (u.is_owner || (u.modules || []).indexOf('artists') !== -1)); }
+
   function initGate() {
-    // When embedded in the main dashboard, the dashboard already handled auth.
-    if (EMBED) {
-      if (!sessionStorage.getItem('mk_admin_pw')) sessionStorage.setItem('mk_admin_pw', 'melankolia2025');
-      sessionStorage.setItem('mk_admin_ok', '1');
-      var g = $('gate'); if (g) g.style.display = 'none';
-      document.body.classList.add('embed');
-      return load();
+    // Auth is handled by the parent /admin/ login — this iframe (or a direct load)
+    // just checks the SAME shared, same-origin session token/user.
+    if (!pw() || !hasArtistsAccess()) {
+      if (EMBED) {
+        var g = $('gate');
+        if (g) { g.style.display = 'flex'; g.innerHTML = '<p style="color:#ccc;max-width:320px;text-align:center">You do not have access to the Artist Manager. Ask the owner to grant the "artists" module on your login.</p>'; }
+        document.body.classList.add('embed');
+        return;
+      }
+      location.href = '/admin/';
+      return;
     }
-    if (sessionStorage.getItem('mk_admin_ok') === '1') { $('gate').style.display = 'none'; return load(); }
-    $('gateForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      sessionStorage.setItem('mk_admin_pw', $('gatePw').value);
-      sessionStorage.setItem('mk_admin_ok', '1');
-      $('gate').style.display = 'none';
-      load();
-    });
+    var g = $('gate'); if (g) g.style.display = 'none';
+    document.body.classList.add('embed');
+    load();
   }
 
   /* ---------- load ---------- */
@@ -258,7 +260,7 @@
       setStatus('Uploading ' + file.name + '…');
       resize(file, 1800, function (dataUrl) {
         if (!dataUrl) { setStatus('Could not read ' + file.name, 'err'); return next(); }
-        fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upload', password: pw(), slug: a.slug, filename: file.name, dataUrl: dataUrl }) })
+        fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upload', session_token: pw(), slug: a.slug, filename: file.name, dataUrl: dataUrl }) })
           .then(function (r) { return r.json(); })
           .then(function (d) {
             if (!d.success) throw new Error(d.error || 'upload failed');
@@ -391,12 +393,12 @@
   function save() {
     setStatus('Saving…'); $('saveBtn').disabled = true;
     artists.forEach(function (a) { if (a.links) Object.keys(a.links).forEach(function (k) { if (!a.links[k]) delete a.links[k]; }); });
-    fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save', password: pw(), artists: artists }) })
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save', session_token: pw(), artists: artists }) })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
         $('saveBtn').disabled = false;
         if (!res.ok || !res.d.success) {
-          if (res.d && /password/i.test(res.d.error || '')) { sessionStorage.removeItem('mk_admin_ok'); location.reload(); return; }
+          if (res.d && /(password|session|log in)/i.test(res.d.error || '')) { location.href = '/admin/'; return; }
           throw new Error((res.d && res.d.error) || 'save failed');
         }
         dirty = false;

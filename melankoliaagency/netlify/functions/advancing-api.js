@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const { listDocs, getDoc, createDoc, updateDoc, json } = require('./_firebase');
+const { authorize } = require('./_auth');
 
 const SHOWS='route_planner_shows', TOURS='route_planner_tours', BANDS='route_planner_bands', NOTIFS='route_planner_notifications';
 const now = () => new Date().toISOString();
@@ -51,6 +52,13 @@ exports.handler = async (event) => {
 
   try {
     const a=b.action;
+
+    // Admin-only actions (agency_*) require a staff login with 'advancing' module access.
+    // band_*/promoter_* actions keep their own separate auth (band password / show-scoped links).
+    if (typeof a === 'string' && a.indexOf('agency_') === 0) {
+      const auth = await authorize(b, 'advancing');
+      if (!auth.ok) return json(401, { success:false, error: auth.error });
+    }
 
     if (a==='agency_get_dashboard') {
       const [allShows,tours,bands,notifications] = await Promise.all([list(SHOWS),list(TOURS),list(BANDS),list(NOTIFS)]);

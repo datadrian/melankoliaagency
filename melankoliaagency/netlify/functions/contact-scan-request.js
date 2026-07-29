@@ -2,6 +2,7 @@
 // the Superagent reads pending requests, performs the Gmail scan + extraction,
 // stages proposals via contact-proposals `stage`, then marks the request done.
 const { listDocs, getDoc, createDoc, updateDoc, json } = require('./_firebase');
+const { authorize } = require('./_auth');
 const COLL = 'contact_scan_requests';
 const ADMIN_PW = () => process.env.MELANKOLIA_ADMIN_PASSWORD || 'melankolia2025';
 const AGENT_KEY = () => process.env.CONTACT_DISCOVERY_KEY || process.env.MELANKOLIA_ADMIN_PASSWORD || 'melankolia2025';
@@ -13,9 +14,10 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { success: false, error: 'POST only' });
   let b = {}; try { b = JSON.parse(event.body || '{}'); } catch { return json(400, { success: false, error: 'Invalid JSON' }); }
   try {
-    const isAdmin = b.password === ADMIN_PW();
     const isAgent = b.agent_key === AGENT_KEY();
-    if (!isAdmin && !isAgent) return json(401, { success: false, error: 'Unauthorized' });
+    const auth = isAgent ? { ok: true } : await authorize(b, 'discovery');
+    const isAdmin = auth.ok;
+    if (!isAdmin && !isAgent) return json(401, { success: false, error: auth.error || 'Unauthorized' });
 
     if (b.action === 'request') {
       const doc = { status: 'pending', days: Number(b.days) || 90, created_at: now(), updated_at: now() };

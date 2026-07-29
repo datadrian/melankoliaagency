@@ -1,4 +1,5 @@
 const { getDoc, createDoc, json } = require('./_firebase');
+const { authorize } = require('./_auth');
 let getStore = null;
 try { ({ getStore } = require('@netlify/blobs')); } catch (_) { getStore = null; }
 
@@ -21,7 +22,10 @@ exports.handler = async (event) => {
     if (event.httpMethod === 'GET') return serve(event);
     if (event.httpMethod !== 'POST') return json(405, { success:false, error:'POST only' });
     let body = {}; try { body = JSON.parse(event.body || '{}'); } catch(e) {}
-    if (String(body.password || '') !== ADMIN_PASSWORD) return json(403, { success:false, error:'Invalid admin password' });
+    {
+      const auth = await authorize(body, 'artists');
+      if (!auth.ok) return json(403, { success:false, error: auth.error });
+    }
     const dataUrl = String(body.dataUrl || '');
     const m = dataUrl.match(/^data:(image\/(?:png|jpeg|jpg|webp));base64,([A-Za-z0-9+/=]+)$/i);
     if (!m) return json(400, { success:false, error:'Expected compressed image dataUrl' });

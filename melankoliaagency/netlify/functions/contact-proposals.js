@@ -5,6 +5,7 @@
 //
 // Nothing here writes to route_planner_crm_venues except the `approve` action.
 const { listDocs, getDoc, createDoc, updateDoc, deleteDoc, queryDocs, json } = require('./_firebase');
+const { authorize } = require('./_auth');
 
 const COLL = 'contact_discovery_proposals';
 const VENUES = 'route_planner_crm_venues';
@@ -24,9 +25,10 @@ exports.handler = async (event) => {
   let b = {};
   try { b = JSON.parse(event.body || '{}'); } catch { return json(400, { success: false, error: 'Invalid JSON' }); }
   try {
-    const isAdmin = b.password === ADMIN_PW();
     const isAgent = b.agent_key === AGENT_KEY();
-    if (!isAdmin && !isAgent) return json(401, { success: false, error: 'Unauthorized' });
+    const auth = isAgent ? { ok: true } : await authorize(b, 'discovery');
+    const isAdmin = auth.ok;
+    if (!isAdmin && !isAgent) return json(401, { success: false, error: auth.error || 'Unauthorized' });
 
     if (b.action === 'list') return json(200, await withGuard(listProposals(b)));
     if (b.action === 'stats') return json(200, await withGuard(statsProposals()));
@@ -59,6 +61,17 @@ async function listProposals(b) {
   const status = b.status || 'pending';
   if (status !== 'all') docs = docs.filter(d => (d.status || 'pending') === status);
   if (b.type && b.type !== 'all') docs = docs.filter(d => d.type === b.type);
+  // Flag likely CRM duplicates for pending 'new' proposals so the admin sees a warning
+  // before approving (one shared venues read for the whole page, not per-proposal).
+  const needsCheck = docs.some(d => (d.status || 'pending') === 'pending' && d.type !== 'update');
+  if (needsCheck) {
+    const venues = await fetchLiveVenues();
+    docs = docs.map(d => {
+      if ((d.status || 'pending') !== 'pending' || d.type === 'update') return d;
+      const dupe = findDuplicateVenue(d.candidate || {}, venues);
+      return dupe ? { ...d, possible_duplicate: { venue_id: dupe.venue.id, venue_name: dupe.venue.name, matched_on: dupe.matched_on } } : d;
+    });
+  }
   return { success: true, data: docs, count: docs.length };
 }
 
@@ -157,24 +170,49 @@ async function editProposal(pid, patch) {
   return { success: true, candidate: c };
 }
 
-async function approveProposal(pid) {
+async function approveProposal(pid, venuesCache) {
   if (!pid) throw new Error('id required');
   const p = await getDoc(COLL, pid);
   if (!p) throw new Error('proposal not found');
   if (p.status === 'approved') return { success: true, already: true, venue_id: p.venue_id };
-  const venue = await writeToCRM(p);
-  await updateDoc(COLL, pid, { status: 'approved', venue_id: venue.id || '', updated_at: now() });
-  return { success: true, venue_id: venue.id || '', venue };
+
+  let effective = p, deduped = false, matchedOn = '', matchedVenueId = '';
+  if (!(p.type === 'update' && p.match_target_venue_id)) {
+    // Not already targeting a known record — run the duplicate safety net against the LIVE CRM
+    // before creating a new one. Reuses a passed-in cache across a bulk batch when available.
+    const venues = venuesCache || await fetchLiveVenues();
+    const dupe = findDuplicateVenue(p.candidate || {}, venues);
+    if (dupe) {
+      deduped = true; matchedOn = dupe.matched_on; matchedVenueId = dupe.venue.id;
+      effective = { ...p, type: 'update', match_target_venue_id: dupe.venue.id, existing_snapshot: dupe.venue };
+    }
+  }
+  const venue = await writeToCRM(effective);
+  await updateDoc(COLL, pid, {
+    status: 'approved', venue_id: venue.id || '', updated_at: now(),
+    deduped, ...(deduped ? { duplicate_of: matchedVenueId, duplicate_matched_on: matchedOn } : {}),
+  });
+  // keep a shared cache (bulk_approve) in sync so later items in the same batch dedupe
+  // against records just created/merged earlier in the batch too.
+  if (venuesCache && venue && venue.id) {
+    const idx = venuesCache.findIndex(v => v.id === venue.id);
+    if (idx >= 0) venuesCache[idx] = venue; else venuesCache.push(venue);
+  }
+  return { success: true, venue_id: venue.id || '', venue, deduped, matched_existing_id: matchedVenueId, matched_on: matchedOn };
 }
 
 async function bulkApprove(ids) {
+  const venuesCache = await fetchLiveVenues();
   const results = [];
   for (const pid of ids) {
-    try { const r = await approveProposal(pid); results.push({ id: pid, ok: true, venue_id: r.venue_id }); }
-    catch (e) { results.push({ id: pid, ok: false, error: e.message }); }
+    try {
+      const r = await approveProposal(pid, venuesCache);
+      results.push({ id: pid, ok: true, venue_id: r.venue_id, deduped: r.deduped, matched_on: r.matched_on });
+    } catch (e) { results.push({ id: pid, ok: false, error: e.message }); }
   }
   const ok = results.filter(r => r.ok).length;
-  return { success: true, approved: ok, failed: results.length - ok, results };
+  const deduped = results.filter(r => r.ok && r.deduped).length;
+  return { success: true, approved: ok, failed: results.length - ok, deduped, results };
 }
 
 async function rejectProposal(pid, reason) {
@@ -280,7 +318,7 @@ async function writeToCRM(p) {
   }
   const res = await fetch(RAG_URL, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'upsert', venue: venuePayload, skip_embeddings: true }),
+    body: JSON.stringify({ action: 'upsert', venue: venuePayload, skip_embeddings: true, agent_key: AGENT_KEY() }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.success) throw new Error('CRM write failed: ' + (j.error || res.status));
@@ -293,3 +331,26 @@ function isFilled(v) {
   return String(v).trim() !== '' && String(v).trim().toLowerCase() !== 'unknown';
 }
 function norm(s) { return String(s || '').trim().toLowerCase(); }
+function normPhone(s) { return String(s || '').replace(/[^0-9]/g, ''); }
+
+// Duplicate safety net: run before creating any brand-new CRM venue record.
+// Matches on (in order of confidence): shared email, shared phone, or same
+// normalized name + city. Returns the existing venue doc, or null.
+async function fetchLiveVenues() {
+  return (await listDocs(VENUES, { orderBy: 'updated_at desc', pageSize: 2000 }).catch(() => [])).filter(v => !v.deleted_at);
+}
+function findDuplicateVenue(candidate, venues) {
+  const c = candidate || {};
+  const candEmails = new Set([].concat(c.email ? [c.email] : [], Array.isArray(c.emails) ? c.emails : []).map(norm).filter(Boolean));
+  const candPhones = new Set([].concat(c.phone ? [c.phone] : [], Array.isArray(c.phones) ? c.phones : []).map(normPhone).filter(Boolean));
+  const nameKey = norm(c.venue_name || c.org || c.name);
+  const cityKey = norm(c.city);
+  for (const v of (venues || [])) {
+    const vEmails = [].concat(v.booking_email ? [v.booking_email] : [], Array.isArray(v.emails) ? v.emails : []).map(norm).filter(Boolean);
+    if (candEmails.size && vEmails.some(e => candEmails.has(e))) return { venue: v, matched_on: 'email' };
+    const vPhones = [].concat(v.phone ? [v.phone] : [], Array.isArray(v.phones) ? v.phones : []).map(normPhone).filter(Boolean);
+    if (candPhones.size && vPhones.some(ph => candPhones.has(ph))) return { venue: v, matched_on: 'phone' };
+    if (nameKey && cityKey && norm(v.name) === nameKey && norm(v.city) === cityKey) return { venue: v, matched_on: 'name+city' };
+  }
+  return null;
+}

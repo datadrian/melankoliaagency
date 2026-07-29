@@ -1,4 +1,5 @@
 const { listDocs, queryDocs, createDoc, updateDoc, json } = require('./_firebase');
+const { authorize } = require('./_auth');
 
 const VENUES = 'route_planner_crm_venues';
 const EMBED_MODEL = process.env.GEMINI_EMBED_MODEL || 'gemini-embedding-001';
@@ -11,14 +12,32 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { success:false, error:'POST only' });
   let b={}; try { b=JSON.parse(event.body||'{}'); } catch { return json(400,{success:false,error:'Invalid JSON'}); }
   try {
-    if (b.action === 'list') return json(200,{success:true,data:(await listVenues()).map(publicVenue)});
-    if (b.action === 'upsert') return json(200,{success:true,data:publicVenue(await upsertVenue(b.venue||{},{skipEmbedding:!!b.skip_embeddings}))});
-    if (b.action === 'bulk_upsert') {
+    const AGENT_KEY = () => process.env.CONTACT_DISCOVERY_KEY || process.env.MELANKOLIA_ADMIN_PASSWORD || 'melankolia2025';
+    const isAgent = b.agent_key === AGENT_KEY();
+
+    // Reads: any logged-in staff session (module-agnostic — Route Planner, Contact
+    // Manager, and Contact Discovery matching all need to read the venue list).
+    if (b.action === 'list' || b.action === 'search') {
+      if (!isAgent) {
+        const auth = await authorize(b, null);
+        if (!auth.ok) return json(401, { success:false, error: auth.error });
+      }
+      if (b.action === 'list') return json(200,{success:true,data:(await listVenues()).map(publicVenue)});
+      return json(200,{success:true,data:await searchVenues(typeof b.query === 'string' ? {...b, query:b.query} : (b.query||b))});
+    }
+
+    // Writes: 'venues' module access, the trusted automation agent_key, or the master password.
+    if (b.action === 'upsert' || b.action === 'bulk_upsert') {
+      if (!isAgent) {
+        const auth = await authorize(b, 'venues');
+        if (!auth.ok) return json(401, { success:false, error: auth.error });
+      }
+      if (b.action === 'upsert') return json(200,{success:true,data:publicVenue(await upsertVenue(b.venue||{},{skipEmbedding:!!b.skip_embeddings}))});
       const rows = Array.isArray(b.venues) ? b.venues : [];
       const out=[]; for (const v of rows) out.push(publicVenue(await upsertVenue(v,{skipEmbedding:!!b.skip_embeddings})));
       return json(200,{success:true,data:out,count:out.length});
     }
-    if (b.action === 'search') return json(200,{success:true,data:await searchVenues(typeof b.query === 'string' ? {...b, query:b.query} : (b.query||b))});
+
     return json(400,{success:false,error:'Unknown RAG venue action'});
   } catch(e) { return json(500,{success:false,error:e.message}); }
 };

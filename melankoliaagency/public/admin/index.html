@@ -4,39 +4,78 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Melankolia Agency</title>
-  <link rel="stylesheet" href="/css/admin.css?v=zip-100mb-v1">
+  <link rel="stylesheet" href="/css/admin.css?v=team-access-v2">
 </head>
 <body>
 
-  <!-- PASSWORD GATE -->
+  <!-- LOGIN GATE -->
   <div id="passwordGate" style="position:fixed;inset:0;background:#050505;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:1.5rem">
     <img src="/images/logo-mark-white.svg" alt="" style="width:52px;opacity:0.7" onerror="this.style.display='none'">
     <div style="font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:#444">Admin Access</div>
     <form id="pwForm" style="display:flex;flex-direction:column;gap:0.75rem;align-items:center">
-      <input type="password" id="pwInput" placeholder="Password" autofocus
+      <input type="text" id="userInput" placeholder="Username (leave blank if owner)" autocomplete="username"
+        style="background:#0e0e0e;border:1px solid #222;color:#fff;padding:0.7rem 1.2rem;font-size:0.9rem;width:240px;outline:none;text-align:center;letter-spacing:0.05em;font-family:inherit">
+      <input type="password" id="pwInput" placeholder="Password" autofocus autocomplete="current-password"
         style="background:#0e0e0e;border:1px solid #222;color:#fff;padding:0.7rem 1.2rem;font-size:0.9rem;width:240px;outline:none;text-align:center;letter-spacing:0.1em;font-family:inherit">
-      <button type="submit"
+      <button type="submit" id="pwSubmitBtn"
         style="background:#c8a96e;color:#000;border:none;padding:0.6rem 2rem;font-size:0.65rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;width:240px">
         Enter
       </button>
-      <div id="pwError" style="color:#c0392b;font-size:0.7rem;letter-spacing:0.1em;display:none">Incorrect password</div>
+      <div id="pwError" style="color:#c0392b;font-size:0.7rem;letter-spacing:0.1em;display:none">Incorrect username or password</div>
     </form>
   </div>
   <script>
     (function() {
-      const PW = 'melankolia2025';
-      const KEY = 'mk_admin_auth';
+      const TOKEN_KEY = 'mk_session_token';
+      const USER_KEY = 'mk_session_user';
       const gate = document.getElementById('passwordGate');
-      if (sessionStorage.getItem(KEY) === '1') { gate.style.display = 'none'; return; }
-      document.getElementById('pwForm').addEventListener('submit', function(e) {
+
+      function reveal(user) {
+        window.MK_SESSION_USER = user;
+        gate.style.display = 'none';
+        if (typeof window.onSessionReady === 'function') window.onSessionReady(user);
+      }
+
+      const savedToken = sessionStorage.getItem(TOKEN_KEY);
+      const savedUser = sessionStorage.getItem(USER_KEY);
+      if (savedToken && savedUser) {
+        // Quick optimistic reveal while we verify in the background; if verify fails we re-gate.
+        let user; try { user = JSON.parse(savedUser); } catch (e) { user = null; }
+        if (user) reveal(user);
+        fetch('/.netlify/functions/admin-users', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'verify', session_token: savedToken })
+        }).then(r => r.json()).then(d => {
+          if (!d.success) { sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY); gate.style.display = 'flex'; window.MK_SESSION_USER = null; }
+        }).catch(() => {});
+        if (user) return;
+      }
+
+      document.getElementById('pwForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        if (document.getElementById('pwInput').value === PW) {
-          sessionStorage.setItem(KEY, '1');
-          gate.style.display = 'none';
-        } else {
+        const btn = document.getElementById('pwSubmitBtn');
+        btn.disabled = true; btn.textContent = 'Checking…';
+        try {
+          const res = await fetch('/.netlify/functions/admin-users', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'login', username: document.getElementById('userInput').value, password: document.getElementById('pwInput').value })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (data.success) {
+            sessionStorage.setItem(TOKEN_KEY, data.token);
+            sessionStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            reveal(data.user);
+          } else {
+            document.getElementById('pwError').textContent = data.error || 'Incorrect username or password';
+            document.getElementById('pwError').style.display = 'block';
+            document.getElementById('pwInput').value = '';
+            document.getElementById('pwInput').focus();
+          }
+        } catch (err) {
+          document.getElementById('pwError').textContent = 'Could not reach the server. Try again.';
           document.getElementById('pwError').style.display = 'block';
-          document.getElementById('pwInput').value = '';
-          document.getElementById('pwInput').focus();
+        } finally {
+          btn.disabled = false; btn.textContent = 'Enter';
         }
       });
     })();
@@ -52,26 +91,31 @@
       </div>
       <nav class="sidebar-nav">
         <a href="#" class="sidebar-link active" data-view="dashboard"><span class="icon">◈</span> Dashboard</a>
-        <a href="#" class="sidebar-link" data-view="artists"><span class="icon">◈</span> Artists</a>
-        <a href="#" class="sidebar-link" data-view="research"><span class="icon">✦</span> AI Research</a>
-        <a href="#" class="sidebar-link" data-view="epk"><span class="icon">◈</span> EPK Builder</a>
-        <a href="#" class="sidebar-link" data-view="videos"><span class="icon">◈</span> Videos</a>
-        <a href="#" class="sidebar-link" data-view="bookings"><span class="icon">◈</span> Booking Requests</a>
-        <a href="#" class="sidebar-link" data-view="venues"><span class="icon">⌖</span> Contact Manager</a>
-        <a href="#" class="sidebar-link" data-view="discovery"><span class="icon">✉</span> Contact Discovery</a>
-        <a href="#" class="sidebar-link" data-view="routes"><span class="icon">◇</span> Route Planner</a>
-        <a href="#" class="sidebar-link" data-view="emails"><span class="icon">✉</span> Email Generator</a>
-        <a href="#" class="sidebar-link" data-view="advancing"><span class="icon">◇</span> Advancing</a>
-        <a href="#" class="sidebar-link" data-view="bands"><span class="icon">◇</span> Band Access</a>
-        <a href="#" class="sidebar-link" data-view="pages"><span class="icon">☷</span> Page Editor</a>
-        <a href="#" class="sidebar-link" data-view="settings"><span class="icon">◈</span> Site Settings</a>
+        <a href="#" class="sidebar-link" data-view="artists" data-module="artists"><span class="icon">◈</span> Artists</a>
+        <a href="#" class="sidebar-link" data-view="research" data-module="artists"><span class="icon">✦</span> AI Research</a>
+        <a href="#" class="sidebar-link" data-view="epk" data-module="artists"><span class="icon">◈</span> EPK Builder</a>
+        <a href="#" class="sidebar-link" data-view="videos" data-module="videos"><span class="icon">◈</span> Videos</a>
+        <a href="#" class="sidebar-link" data-view="bookings" data-module="bookings"><span class="icon">◈</span> Booking Requests</a>
+        <a href="#" class="sidebar-link" data-view="venues" data-module="venues"><span class="icon">⌖</span> Contact Manager</a>
+        <a href="#" class="sidebar-link" data-view="discovery" data-module="discovery"><span class="icon">✉</span> Contact Discovery</a>
+        <a href="#" class="sidebar-link" data-view="routes" data-module="routes"><span class="icon">◇</span> Route Planner</a>
+        <a href="#" class="sidebar-link" data-view="emails" data-module="emails"><span class="icon">✉</span> Email Generator</a>
+        <a href="#" class="sidebar-link" data-view="advancing" data-module="advancing"><span class="icon">◇</span> Advancing</a>
+        <a href="#" class="sidebar-link" data-view="bands" data-module="bands"><span class="icon">◇</span> Band Access</a>
+        <a href="#" class="sidebar-link" data-view="pages" data-module="pages"><span class="icon">☷</span> Page Editor</a>
+        <a href="#" class="sidebar-link" data-view="settings" data-module="settings"><span class="icon">◈</span> Site Settings</a>
+        <a href="#" class="sidebar-link" data-view="team" data-owner-only="1" style="display:none"><span class="icon">◈</span> Team Access</a>
       </nav>
       <div class="sidebar-footer">
+        <div id="sessionWhoAmI" style="font-size:0.65rem;color:#666;letter-spacing:0.05em;padding:2px 4px 6px"></div>
         <a href="/" class="sidebar-link" target="_blank">← View Site</a>
         <a class='sidebar-link' href='/admin/export' target='_blank'><span class="icon">⇣</span> Export Data</a>
         <a class='sidebar-link' href='/admin/import' target='_blank'><span class="icon">⇡</span> Import Data</a>
         <button onclick="resetAndReseed()" class="sidebar-link" style="width:100%;text-align:left;background:none;border:none;border-top:1px solid #1e1e1e;cursor:pointer;margin-top:4px;padding-top:10px">
           <span class="icon">↺</span> Re-sync Artists
+        </button>
+        <button onclick="mkLogout()" class="sidebar-link" style="width:100%;text-align:left;background:none;border:none;cursor:pointer">
+          <span class="icon">⏻</span> Log out
         </button>
       </div>
     </aside>
@@ -595,6 +639,10 @@
         <div id="bandAdminShell" class="ops-placeholder">Loading Band Access…</div>
       </div>
 
+      <div class="view" id="view-team">
+        <div id="teamAccessShell"><div class="loading">Loading…</div></div>
+      </div>
+
     </main>
   </div>
 
@@ -870,8 +918,8 @@
   </div>
 
   <script src="/js/data.js"></script>
-  <script src="/js/admin.js?v=zip-100mb-v1"></script>
-  <script src="/js/route-admin.js?v=logo-strip-v21"></script>
-  <script src="/js/advancing-admin.js?v=docs-archive-delete-v1"></script>
+  <script src="/js/admin.js?v=team-access-v2"></script>
+  <script src="/js/route-admin.js?v=team-access-v2"></script>
+  <script src="/js/advancing-admin.js?v=team-access-v2"></script>
 </body>
 </html>
