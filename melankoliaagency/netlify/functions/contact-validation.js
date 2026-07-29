@@ -45,11 +45,20 @@ exports.handler = async (event) => {
       if (!isAgent) return json(403, { success: false, error: 'purge requires agent_key' });
       const t0 = Date.now();
       const all = await listDocs(COLL, { orderBy: 'created_at desc', pageSize: 1000, mask: ['status'] }).catch(() => []);
+      // Bug history: this used to be `(!b.status || status===b.status) || (ids && ids.includes(...))`
+      // which meant "no status given" ALWAYS matched everything, regardless of `ids` — a single
+      // purge-by-id call with no status wiped the ENTIRE queue once (2026-07-29). Fixed: ids and
+      // status are now independent, explicit filters that must each be satisfied when present;
+      // if NEITHER is given, match nothing (a purge call must say what it's purging).
+      const hasIds = Array.isArray(b.ids) && b.ids.length > 0;
+      const hasStatus = !!b.status;
+      if (!hasIds && !hasStatus) return json(400, { success: false, error: 'purge requires ids[] and/or status' });
       let del = 0, more = false;
       for (const d of all) {
         if ((Date.now() - t0) > 18000) { more = true; break; }
-        const match = (!b.status || (d.status || 'pending') === b.status) || (Array.isArray(b.ids) && b.ids.includes(d.id));
-        if (match) { await require('./_firebase').deleteDoc(COLL, d.id).catch(() => {}); del++; }
+        const statusOk = !hasStatus || (d.status || 'pending') === b.status;
+        const idsOk = !hasIds || b.ids.includes(d.id);
+        if (statusOk && idsOk) { await require('./_firebase').deleteDoc(COLL, d.id).catch(() => {}); del++; }
       }
       return json(200, { success: true, deleted: del, more });
     }
