@@ -90,83 +90,23 @@ exports.handler = async (event) => {
       return json(200, { success:true, data:doc });
     }
 
-    if (a === 'debugGhost') {
-      const all = await listDocs(TOURS, { pageSize:300 });
-      const m = all.filter(t => String(t.name||t.tour_name||'').includes('Guide Demo'));
-      return json(200, { success:true, docs: m.map(t => ({ id:t.id, id_json: JSON.stringify(t.id), len:String(t.id).length, codes:[...String(t.id)].map(c=>c.charCodeAt(0)) })) });
-    }
-
-    if (a === 'debugGhost2') {
-      const PID=process.env.FIREBASE_PROJECT_ID;
-      const target=String(b.id||'guide-sacred-skin-westcoast');
-      const out={};
-      // raw GET the doc
-      const { _rawReq } = require('./_firebase');
-      try{ out.get = await _rawReq('GET', `/${TOURS}/${encodeURIComponent(target)}`); }catch(e){ out.get_err=e.message; }
-      // list subcollection ids under the doc
-      try{ out.subcols = await _rawReq('GET', `/${TOURS}/${encodeURIComponent(target)}:listCollectionIds`); }catch(e){ out.subcols_err=e.message; }
-      // raw DELETE + immediate raw GET
-      try{ out.del = await _rawReq('DELETE', `/${TOURS}/${encodeURIComponent(target)}`); out.del_ok=true; }catch(e){ out.del_err=e.message; }
-      try{ out.get_after = await _rawReq('GET', `/${TOURS}/${encodeURIComponent(target)}`); }catch(e){ out.get_after_err=e.message; }
-      return json(200, { success:true, out });
-    }
-
-    if (a === 'debugGhost3') {
-      const { _rawReq } = require('./_firebase');
-      const target=String(b.id||'guide-sacred-skin-westcoast');
-      const out={};
-      try{ out.subcols = await _rawReq('POST', `/${TOURS}/${encodeURIComponent(target)}:listCollectionIds`, {}); }catch(e){ out.subcols_err=e.message; }
-      // for each subcollection, list child docs and delete them, then delete parent
-      const ids = (out.subcols && out.subcols.collectionIds) || [];
-      out.deleted = {};
-      for (const cid of ids) {
-        try{
-          const kids = await _rawReq('GET', `/${TOURS}/${encodeURIComponent(target)}/${encodeURIComponent(cid)}?pageSize=300`);
-          const docs = (kids.documents||[]);
-          out.deleted[cid] = [];
-          for (const d of docs) {
-            const path = String(d.name).split('/databases/(default)/documents')[1];
-            try{ await _rawReq('DELETE', path); out.deleted[cid].push('ok:'+path.split('/').pop()); }catch(e){ out.deleted[cid].push('fail:'+e.message); }
-          }
-        }catch(e){ out.deleted[cid]='list-err:'+e.message; }
-      }
-      // final parent delete attempt
-      try{ await _rawReq('DELETE', `/${TOURS}/${encodeURIComponent(target)}`); out.parent_del='ok'; }catch(e){ out.parent_del='err:'+e.message; }
-      return json(200, { success:true, out });
-    }
-
-    if (a === 'debugGhost4') {
-      const { _rawReq } = require('./_firebase');
-      // raw list, expose exact document.name for Guide Demo docs
-      const j = await _rawReq('GET', `/${TOURS}?pageSize=300`);
-      const docs = (j.documents||[]).filter(d => {
-        const f=d.fields||{}; const n=(f.name&&f.name.stringValue)||(f.tour_name&&f.tour_name.stringValue)||'';
-        return String(n).includes('Guide Demo');
-      }).map(d => ({ name:d.name, seg: d.name.split('/documents/')[1] }));
-      // try deleting each by its EXACT name path
-      for (const d of docs) {
-        const path = '/' + d.seg;
-        try{ await _rawReq('DELETE', path); d.del='ok'; }catch(e){ d.del='err:'+e.message; }
-      }
-      return json(200, { success:true, docs });
-    }
-
-    if (a === 'hardDeleteTour') {
+if (a === 'hardDeleteTour') {
       // One-shot cleanup for ghost/custom-id tour docs that resist soft-delete.
       const target = String(b.id||'').trim();
       if (!target) return json(400, { success:false, error:'id required' });
       let removed = 0, tried = [];
-      // 1) direct delete by id
-      try { await deleteDoc(TOURS, target); removed++; tried.push('direct'); } catch(e){ tried.push('direct:'+e.message); }
-      // 2) match any remaining docs whose derived id === target and delete each
+      // Match by the real Firestore path id (t.id) OR the stored id field, since custom-id docs
+      // can carry a stored `id` field that differs from their actual document path.
       const all = await listDocs(TOURS, { pageSize:300 });
-      for (const t of all) {
-        if (String(t.id).trim() === target) {
-          try { await deleteDoc(TOURS, t.id); removed++; tried.push('byid:'+t.id); } catch(e){ tried.push('byid-fail:'+e.message); }
-        }
+      const victims = all.filter(t => String(t.id).trim() === target || String(t.id_field||t.id).trim() === target);
+      for (const t of victims) {
+        // delete by the REAL path segment (t.id derived from document.name), not the stored field
+        try { await deleteDoc(TOURS, t.id); removed++; tried.push('deleted:'+t.id); } catch(e){ tried.push('fail:'+t.id+':'+e.message); }
       }
+      if (!victims.length) tried.push('no doc matched '+target);
       // 3) archive its shows too
-      const shows = (await listDocs(SHOWS, { orderBy:'date' })).filter(s => s.tour_id === target && !s.deleted_at);
+      const victimIds = new Set(victims.map(v=>v.id)); victimIds.add(target);
+      const shows = (await listDocs(SHOWS, { orderBy:'date' })).filter(s => victimIds.has(s.tour_id) && !s.deleted_at);
       await Promise.all(shows.map(s => updateDoc(SHOWS, s.id, { ...s, deleted_at:now(), updated_at:now() }).catch(()=>{})));
       return json(200, { success:true, removed, archived_shows:shows.length, tried });
     }
