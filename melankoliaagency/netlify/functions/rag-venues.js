@@ -94,11 +94,21 @@ async function lookupVenue(name, city, country){
   if(!pool.length) pool = await listVenues();
   const tt=_toks(name); let best=null, bestScore=0;
   for(const v of pool){
-    const vn=_norm(v.name); if(!vn) continue;
+    // Navigation lookup only: a venue may live under a promoter/person record,
+    // with the room represented in contacts[] or associated_venues[]. These are
+    // relationship aliases, not duplicate/merge evidence.
+    const aliases=[v.name];
+    for(const x of (Array.isArray(v.associated_venues)?v.associated_venues:[])) aliases.push(typeof x==='string'?x:(x?.name||x?.venue||x?.organization||''));
+    for(const x of (Array.isArray(v.contacts)?v.contacts:[])) aliases.push(x?.organization||x?.org||x?.venue||x?.name||'');
     let score=0;
-    if(vn===target) score=1;
-    else if(vn.includes(target)||target.includes(vn)) score=0.85;
-    else { const vt=_toks(v.name); let inter=0; tt.forEach(t=>{ if(vt.has(t)) inter++; }); const denom=Math.max(tt.size,vt.size)||1; score=inter/denom; }
+    for(const alias of aliases.filter(Boolean)){
+      const vn=_norm(alias); if(!vn) continue;
+      let aliasScore=0;
+      if(vn===target) aliasScore=alias===v.name?1:0.96;
+      else if(vn.includes(target)||target.includes(vn)) aliasScore=0.85;
+      else { const vt=_toks(alias); let inter=0; tt.forEach(t=>{ if(vt.has(t)) inter++; }); const denom=Math.max(tt.size,vt.size)||1; aliasScore=inter/denom; }
+      score=Math.max(score,aliasScore);
+    }
     if(city && String(v.city||'').toLowerCase()===String(city).toLowerCase()) score+=0.08;
     if(score>bestScore){ bestScore=score; best=v; }
   }
