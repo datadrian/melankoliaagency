@@ -2452,3 +2452,6 @@ body.modal-open{overflow:hidden;}
 .route-filter-selects label { color:var(--muted); font-size:.65rem; letter-spacing:.1em; text-transform:uppercase; }
 .route-filter-selects .form-input { margin-top:.3rem; }
 @media (max-width:620px){ .route-filter-selects{grid-template-columns:1fr;} }
+.route-venue-city-actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+.route-inline-link { color:var(--accent); text-decoration:none; border-bottom:1px solid rgba(200,169,110,.35); }
+.route-inline-link:hover { border-color:var(--accent); }
