@@ -2455,3 +2455,12 @@ body.modal-open{overflow:hidden;}
 .route-venue-city-actions { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
 .route-inline-link { color:var(--accent); text-decoration:none; border-bottom:1px solid rgba(200,169,110,.35); }
 .route-inline-link:hover { border-color:var(--accent); }
+/* Route Planner destructive-action confirmation toast */
+.route-confirm-toast { position:fixed; right:1.4rem; bottom:1.4rem; z-index:100002; width:min(420px,calc(100vw - 2rem)); padding:1rem; background:#111; color:var(--off); border:1px solid rgba(200,169,110,.55); border-left:3px solid var(--accent); box-shadow:0 18px 50px rgba(0,0,0,.55); opacity:0; transform:translateY(12px); transition:opacity .16s ease,transform .16s ease; }
+.route-confirm-toast.visible { opacity:1; transform:translateY(0); }
+.route-confirm-toast.leaving { opacity:0; transform:translateY(8px); }
+.route-confirm-toast strong { display:block; color:var(--white); font-size:.8rem; letter-spacing:.08em; text-transform:uppercase; }
+.route-confirm-toast p { margin:.55rem 0 .9rem; color:var(--muted); font-size:.75rem; line-height:1.55; }
+.route-confirm-toast > div { display:flex; justify-content:flex-end; gap:.5rem; }
+.route-confirm-toast .btn-danger { background:#9f2f2f; border:1px solid #c64a4a; color:#fff; }
+.route-confirm-toast .btn-danger:hover { background:#b93838; }

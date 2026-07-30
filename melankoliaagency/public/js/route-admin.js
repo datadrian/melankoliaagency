@@ -45,6 +45,23 @@
   const addDaysISO = (iso, days=1) => { const x = iso ? new Date(String(iso).slice(0,10)+'T12:00:00') : new Date(); if(isNaN(x)) return ''; x.setDate(x.getDate()+Number(days||0)); return x.toISOString().slice(0,10); };
   const toast = (msg,type='success') => typeof showToast === 'function' ? showToast(msg,type) : alert(msg);
 
+  function confirmationToast({title='Are you sure?', message='', confirmLabel='Confirm', danger=false}={}){
+    return new Promise(resolve=>{
+      document.getElementById('routeConfirmToast')?.remove();
+      const el=document.createElement('div');
+      el.id='routeConfirmToast'; el.className='route-confirm-toast'; el.setAttribute('role','alertdialog'); el.setAttribute('aria-modal','true');
+      el.innerHTML=`<strong>${esc(title)}</strong><p>${esc(message)}</p><div><button type="button" class="btn-secondary btn-sm" data-cancel>Cancel</button><button type="button" class="${danger?'btn-danger':'btn-primary'} btn-sm" data-confirm>${esc(confirmLabel)}</button></div>`;
+      document.body.appendChild(el);
+      let done=false;
+      const finish=value=>{ if(done)return; done=true; document.removeEventListener('keydown',onKey); el.classList.add('leaving'); setTimeout(()=>el.remove(),160); resolve(value); };
+      const onKey=e=>{ if(e.key==='Escape') finish(false); };
+      el.querySelector('[data-cancel]').onclick=()=>finish(false);
+      el.querySelector('[data-confirm]').onclick=()=>finish(true);
+      document.addEventListener('keydown',onKey);
+      requestAnimationFrame(()=>{ el.classList.add('visible'); el.querySelector('[data-confirm]').focus(); });
+    });
+  }
+
   async function post(url,payload){
     const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ session_token: (typeof mkSessionToken==='function'?mkSessionToken():''), ...(payload||{}) })});
     const text = await res.text();
@@ -224,7 +241,7 @@
       <small>${shows} shows · ${esc(t.status||'draft')}</small>
       <div class="route-list-actions" onclick="event.stopPropagation()">
         <button type="button" onclick="RouteAdmin.openTour('${attr(t.id)}')">Open</button>
-        <details class="route-action-menu"><summary>More</summary><div class="route-action-menu-panel"><button type="button" onclick="RouteAdmin.duplicateTour('${attr(t.id)}')">Duplicate</button><button type="button" class="danger" onclick="RouteAdmin.deleteTour('${attr(t.id)}')">Archive</button></div></details>
+        <details class="route-action-menu"><summary>More</summary><div class="route-action-menu-panel"><button type="button" onclick="RouteAdmin.duplicateTour('${attr(t.id)}')">Duplicate</button>${t.status==='archived'||t.deleted_at?'':`<button type="button" onclick="RouteAdmin.archiveTour('${attr(t.id)}')">Archive</button>`}<button type="button" class="danger" onclick="RouteAdmin.requestDeleteTour('${attr(t.id)}')">Delete permanently</button></div></details>
       </div>
     </article>`;
   }
@@ -1395,7 +1412,7 @@
   function renderDetail(t){
     $('routeAdminShell').innerHTML=`
       <section class="route-plan-shell">
-        <div class="route-plan-topbar"><button class="btn-secondary btn-sm" onclick="RouteAdmin.init()">← Tour Library</button><div><p class="route-kicker">Saved tour workspace · autosaved</p><h1>${esc(t.name||t.tour_name||'Untitled Tour')}</h1><span>${esc(t.artist||'')} · ${esc(t.region||'')} · ${esc(normalizeDateRange(t))}</span></div><div class="route-command-actions"><button class="btn-primary btn-sm" onclick="RouteAdmin.renderTourOutreach()">Outreach</button><details class="route-action-menu route-action-menu-right"><summary class="btn-secondary btn-sm">More</summary><div class="route-action-menu-panel"><button type="button" onclick="RouteAdmin.renderVenueBoard()">Venue board</button><button type="button" onclick="RouteAdmin.renderTravelHotelModule()">Travel hub</button><button type="button" onclick="RouteAdmin.renderTravelOpsBoard()">Travel ops</button><button type="button" onclick="RouteAdmin.renderTravelAlertCenter()">Travel alerts</button><button type="button" onclick="RouteAdmin.toggleWideView()">Compact / wide view</button><button type="button" onclick="window.open('/route-planner-guide.html','_blank')">Full guide</button><button type="button" onclick="RouteAdmin.duplicateTour('${attr(t.id)}')">Duplicate tour</button><button type="button" class="danger" onclick="RouteAdmin.deleteTour('${attr(t.id)}')">Archive tour</button></div></details></div></div>
+        <div class="route-plan-topbar"><button class="btn-secondary btn-sm" onclick="RouteAdmin.init()">← Tour Library</button><div><p class="route-kicker">Saved tour workspace · autosaved</p><h1>${esc(t.name||t.tour_name||'Untitled Tour')}</h1><span>${esc(t.artist||'')} · ${esc(t.region||'')} · ${esc(normalizeDateRange(t))}</span></div><div class="route-command-actions"><button class="btn-primary btn-sm" onclick="RouteAdmin.renderTourOutreach()">Outreach</button><details class="route-action-menu route-action-menu-right"><summary class="btn-secondary btn-sm">More</summary><div class="route-action-menu-panel"><button type="button" onclick="RouteAdmin.renderVenueBoard()">Venue board</button><button type="button" onclick="RouteAdmin.renderTravelHotelModule()">Travel hub</button><button type="button" onclick="RouteAdmin.renderTravelOpsBoard()">Travel ops</button><button type="button" onclick="RouteAdmin.renderTravelAlertCenter()">Travel alerts</button><button type="button" onclick="RouteAdmin.toggleWideView()">Compact / wide view</button><button type="button" onclick="window.open('/route-planner-guide.html','_blank')">Full guide</button><button type="button" onclick="RouteAdmin.duplicateTour('${attr(t.id)}')">Duplicate tour</button>${t.status==='archived'?'':`<button type="button" onclick="RouteAdmin.archiveTour('${attr(t.id)}')">Archive tour</button>`}<button type="button" class="danger" onclick="RouteAdmin.requestDeleteTour('${attr(t.id)}')">Delete permanently</button></div></details></div></div>
         <div class="route-detail-grid">
           <section class="route-map-card"><div class="route-panel-title"><span>Saved route map</span><em>${esc(t.summary||t.routing_strategy||'')}</em></div><div id="routeMap" class="route-map route-map-detail"><div class="route-map-placeholder">Loading route map…</div></div></section>
           <section class="route-output-panel"><div class="route-panel-title"><span>AI workbench</span><em>Continue refining this saved tour.</em></div><div id="routeToolOutput">${renderWorkbench(t)}</div></section>
@@ -1408,7 +1425,21 @@
   }
   function showRow(s){ return `<div class="route-card"><div class="route-card-top"><div><div class="route-card-artist">${esc(s.status||'draft')}</div><h3>${esc(s.venue_name||s.city||'Show')}</h3></div></div><div class="route-card-meta"><span>${esc(s.date||'')}</span><span>${esc([s.city,s.country].filter(Boolean).join(', '))}</span></div><p>${esc([s.advancing_notes||'Ready for advancing details.', s.travel_mode_recommendation?('Travel: '+s.travel_mode_recommendation):'', s.hotel_responsibility?('Hotel: '+s.hotel_responsibility):'', s.backline_needed?('Backline: '+s.backline_needed):''].filter(Boolean).join(' · '))}</p></div>`; }
   async function duplicateTour(id){ const source=tours.find(t=>t.id===id) || currentTour; if(!source) return; const copy={...source,id:undefined,name:(source.name||source.tour_name||'Tour')+' Copy',tour_name:(source.tour_name||source.name||'Tour')+' Copy',status:'draft'}; try{ const saved=await api({action:'createTour',tour:copy,createShows:false}); toast('✓ Tour duplicated','success'); await initRoutePlannerAdmin(); if(saved.id) openTour(saved.id); } catch(e){ toast('Duplicate failed: '+e.message,'error'); } }
-  async function deleteTour(id){ if(!confirm('Archive this tour and its generated show records?')) return; try{ await api({action:'deleteTour',id}); toast('✓ Tour archived','success'); await initRoutePlannerAdmin(); } catch(e){ toast('Delete failed: '+e.message,'error'); } }
+  async function archiveTour(id){
+    const t=tours.find(x=>x.id===id); const name=t?.name||t?.tour_name||'this tour';
+    const ok=await confirmationToast({title:'Archive tour?',message:`Archive ${name}? It will remain available under Archived, while its linked shows leave active operations.`,confirmLabel:'Archive'});
+    if(!ok)return;
+    try{ await api({action:'archiveTour',id}); toast('✓ Tour archived','success'); await initRoutePlannerAdmin(); }
+    catch(e){ toast('Archive failed: '+e.message,'error'); }
+  }
+  async function requestDeleteTour(id){
+    const t=tours.find(x=>x.id===id); const name=t?.name||t?.tour_name||'this tour';
+    const shows=(Array.isArray(t?.legs)?t.legs.filter(l=>!l.day_off).length:0);
+    const ok=await confirmationToast({title:'Delete tour permanently?',message:`Are you sure you want to permanently delete ${name}${shows?` and its ${shows} linked show record${shows===1?'':'s'}`:''}? This cannot be undone.`,confirmLabel:'Delete permanently',danger:true});
+    if(!ok)return;
+    try{ const result=await api({action:'hardDeleteTour',id}); toast(`✓ Tour deleted${result.deleted_shows!=null?` · ${result.deleted_shows} shows removed`:''}`,'success'); await initRoutePlannerAdmin(); }
+    catch(e){ toast('Delete failed: '+e.message,'error'); }
+  }
 
   async function ensureMap(){
     if(window.google?.maps){ mapReady=true; return; }
@@ -1512,7 +1543,7 @@
   function darkMapStyle(){ return [{elementType:'geometry',stylers:[{color:'#101010'}]},{elementType:'labels.text.stroke',stylers:[{color:'#101010'}]},{elementType:'labels.text.fill',stylers:[{color:'#888'}]},{featureType:'water',elementType:'geometry',stylers:[{color:'#050505'}]},{featureType:'road',elementType:'geometry',stylers:[{color:'#242424'}]},{featureType:'poi',stylers:[{visibility:'off'}]},{featureType:'transit',stylers:[{visibility:'off'}]}]; }
 
   function systemTour(){
-    $('routeAdminShell').innerHTML = `<section class="route-guide"><button class="btn-secondary btn-sm" onclick="RouteAdmin.init()">← Back to Planner</button><div class="route-mini-brand"><img src="/images/logo-mark-white.svg" alt=""><div><b>Route Planner</b><span>Operating model</span></div></div><h1>How to use the planner repeatedly</h1><div class="route-guide-grid"><section><b>1. Tour Library</b><p>Every draft and saved route lives in the left rail. Open, duplicate, delete/archive, and refresh from one place.</p></section><section><b>2. Map-first Builder</b><p>The planning page starts with your continent map, then plots generated and saved routing legs.</p></section><section><b>3. Anchors</b><p>Start from confirmed weekend/festival shows. AI analyzes gaps and builds around them.</p></section><section><b>4. AI Workbench</b><p>Generate, optimize, budget, suggest venues, advise deals, chat, and create branded emails without leaving the route.</p></section><section><b>5. Persistence</b><p>Save writes the tour and creates draft show records for advancing.</p></section><section><b>6. Iteration</b><p>Open the same tour repeatedly, duplicate versions, compare routing, and archive dead drafts.</p></section></div></section>`;
+    $('routeAdminShell').innerHTML = `<section class="route-guide"><button class="btn-secondary btn-sm" onclick="RouteAdmin.init()">← Back to Planner</button><div class="route-mini-brand"><img src="/images/logo-mark-white.svg" alt=""><div><b>Route Planner</b><span>Operating model</span></div></div><h1>How to use the planner repeatedly</h1><div class="route-guide-grid"><section><b>1. Tour Library</b><p>Every draft and saved route lives in the left rail. Open, duplicate, archive, permanently delete, and refresh from one place.</p></section><section><b>2. Map-first Builder</b><p>The planning page starts with your continent map, then plots generated and saved routing legs.</p></section><section><b>3. Anchors</b><p>Start from confirmed weekend/festival shows. AI analyzes gaps and builds around them.</p></section><section><b>4. AI Workbench</b><p>Generate, optimize, budget, suggest venues, advise deals, chat, and create branded emails without leaving the route.</p></section><section><b>5. Persistence</b><p>Save writes the tour and creates draft show records for advancing.</p></section><section><b>6. Iteration</b><p>Open the same tour repeatedly, duplicate versions, compare routing, and archive dead drafts.</p></section></div></section>`;
   }
 
 
@@ -1688,7 +1719,7 @@
   }
 
 
-  window.RouteAdmin = { toast, init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, deleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, showTravelProviderStatus, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, draftAllFollowUps, matchAllFromCRM, autofillVenueFromCRM, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, removeBlankDay, toggleWideView, loadMarketVenues, addMarketVenueToOutreach, transportCompare, toggleFlightGear, addGearPiece, removeGearPiece, _setGear, askAboutCurrentReview, applyReviewPatch, dismissReviewPatch };
+  window.RouteAdmin = { toast, init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, archiveTour, requestDeleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, showTravelProviderStatus, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, draftAllFollowUps, matchAllFromCRM, autofillVenueFromCRM, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, removeBlankDay, toggleWideView, loadMarketVenues, addMarketVenueToOutreach, transportCompare, toggleFlightGear, addGearPiece, removeGearPiece, _setGear, askAboutCurrentReview, applyReviewPatch, dismissReviewPatch };
   function csvCell(v){
     const s = v==null ? '' : String(v);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;

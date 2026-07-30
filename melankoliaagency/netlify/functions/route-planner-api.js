@@ -72,11 +72,15 @@ exports.handler = async (event) => {
       return json(200, { success:true, data:{ tour, show } });
     }
 
-    if (a === 'deleteTour') {
+    if (a === 'archiveTour' || a === 'deleteTour') {
+      // Archive remains visible in the Tour Library. Linked show records are
+      // soft-deleted so they disappear from active advancing/operations views.
       const t = await getDoc(TOURS, b.id);
-      if (t) await updateDoc(TOURS, b.id, { ...t, deleted_at:now(), updated_at:now() });
+      if (!t) return json(404, { success:false, error:'Tour not found' });
+      const archivedAt = now();
+      await updateDoc(TOURS, b.id, { ...t, status:'archived', archived_at:archivedAt, updated_at:archivedAt });
       const oldShows = (await listDocs(SHOWS, { orderBy:'date' })).filter(s => s.tour_id === b.id && !s.deleted_at);
-      await Promise.all(oldShows.map(s => updateDoc(SHOWS, s.id, { ...s, deleted_at:now(), updated_at:now() })));
+      await Promise.all(oldShows.map(s => updateDoc(SHOWS, s.id, { ...s, deleted_at:archivedAt, updated_at:archivedAt })));
       return json(200, { success:true, archived_shows:oldShows.length });
     }
 
@@ -90,25 +94,17 @@ exports.handler = async (event) => {
       return json(200, { success:true, data:doc });
     }
 
-if (a === 'hardDeleteTour') {
-      // One-shot cleanup for ghost/custom-id tour docs that resist soft-delete.
-      const target = String(b.id||'').trim();
+    if (a === 'hardDeleteTour') {
+      // Permanent deletion is intentionally separate from Archive. Delete the
+      // tour document and every linked show record; this cannot be undone.
+      const target = String(b.id || '').trim();
       if (!target) return json(400, { success:false, error:'id required' });
-      let removed = 0, tried = [];
-      // Match by the real Firestore path id (t.id) OR the stored id field, since custom-id docs
-      // can carry a stored `id` field that differs from their actual document path.
-      const all = await listDocs(TOURS, { pageSize:300 });
-      const victims = all.filter(t => String(t.id).trim() === target || String(t.id_field||t.id).trim() === target);
-      for (const t of victims) {
-        // delete by the REAL path segment (t.id derived from document.name), not the stored field
-        try { await deleteDoc(TOURS, t.id); removed++; tried.push('deleted:'+t.id); } catch(e){ tried.push('fail:'+t.id+':'+e.message); }
-      }
-      if (!victims.length) tried.push('no doc matched '+target);
-      // 3) archive its shows too
-      const victimIds = new Set(victims.map(v=>v.id)); victimIds.add(target);
-      const shows = (await listDocs(SHOWS, { orderBy:'date' })).filter(s => victimIds.has(s.tour_id) && !s.deleted_at);
-      await Promise.all(shows.map(s => updateDoc(SHOWS, s.id, { ...s, deleted_at:now(), updated_at:now() }).catch(()=>{})));
-      return json(200, { success:true, removed, archived_shows:shows.length, tried });
+      const direct = await getDoc(TOURS, target);
+      if (!direct) return json(404, { success:false, error:'Tour not found' });
+      const shows = (await listDocs(SHOWS, { orderBy:'date', pageSize:500 })).filter(s => s.tour_id === target);
+      await Promise.all(shows.map(show => deleteDoc(SHOWS, show.id)));
+      await deleteDoc(TOURS, target);
+      return json(200, { success:true, removed:1, deleted_shows:shows.length });
     }
 
     return json(400, { success:false, error:'Unknown action' });
