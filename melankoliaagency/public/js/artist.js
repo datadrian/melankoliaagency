@@ -74,7 +74,7 @@
 
   // Book button with artist pre-filled
   const bookBtn = document.getElementById('bookBtn');
-  bookBtn.href = `/booking.html?artist=${encodeURIComponent(artist.name)}`;
+  bookBtn.href = `/booking?artist=${encodeURIComponent(artist.name)}`;
 
   // Music videos
   const videosContainer = document.getElementById('artistVideos');

@@ -8,9 +8,40 @@
   included_files = ["netlify/functions/node_modules/**"]
 
 
+# Canonical public URLs — apex host + extensionless top-level paths.
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/booking.html"
+  to = "/booking"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/submission.html"
+  to = "/submission"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/videos.html"
+  to = "/videos"
+  status = 301
+  force = true
+
 # About page permanently removed — 301 to home at the edge (no flash, de-indexes).
 [[redirects]]
   from = "/about"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/about.html"
   to = "/"
   status = 301
   force = true

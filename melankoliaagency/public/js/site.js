@@ -90,6 +90,24 @@
     return qs || parts[parts.length - 1] || '';
   }
 
+  function upsertHead(kind, key, value) {
+    var selector = kind === 'link' ? 'link[rel="' + key + '"]' : 'meta[' + kind + '="' + key + '"]';
+    var el = document.head.querySelector(selector);
+    if (!el) { el = document.createElement(kind === 'link' ? 'link' : 'meta'); if (kind === 'link') el.rel = key; else el.setAttribute(kind, key); document.head.appendChild(el); }
+    if (kind === 'link') el.href = value; else el.content = value;
+  }
+  function setArtistSeo(a) {
+    var canonical = 'https://melankoliaagency.com/artists/' + encodeURIComponent(a.slug || '');
+    var description = String(a.shortBio || a.bio || (a.name + ' — artist represented by Melankolia Agency.')).replace(/\s+/g, ' ').trim().slice(0, 160);
+    upsertHead('link', 'canonical', canonical);
+    upsertHead('name', 'description', description);
+    upsertHead('property', 'og:title', a.name + ' — Melankolia Agency');
+    upsertHead('property', 'og:description', description);
+    upsertHead('property', 'og:url', canonical);
+    var image = pick(a, 'banner') || pick(a, 'profile');
+    if (image && image.src) upsertHead('property', 'og:image', mediaUrl(image.src));
+  }
+
   function renderSocial(a) {
     var social = document.getElementById('artistSocial');
     if (!social || !a.links) return;
@@ -119,6 +137,7 @@
       var a = artists.filter(function (x) { return x.slug === slug; })[0];
       if (!a) { var n = document.getElementById('artistName'); if (n) n.textContent = 'Artist Not Found'; return; }
       document.title = a.name + ' — Melankolia Agency';
+      setArtistSeo(a);
       var nameEl = document.getElementById('artistName'); if (nameEl) nameEl.textContent = a.name;
 
       var meta = document.getElementById('artistMeta');

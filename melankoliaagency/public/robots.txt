@@ -1,5 +1,3 @@
 User-agent: *
 Allow: /
-Disallow: /admin/
-Disallow: /about
-Sitemap: https://www.melankoliaagency.com/sitemap.xml
+Sitemap: https://melankoliaagency.com/sitemap.xml

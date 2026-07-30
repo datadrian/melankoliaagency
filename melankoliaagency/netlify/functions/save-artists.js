@@ -22,6 +22,7 @@ const REPO = 'melankoliaagency';
 const BRANCH = 'main';
 const BASE = 'melankoliaagency/public';
 const DATA_PATH = BASE + '/artists.json';
+const SITEMAP_PATH = BASE + '/sitemap.xml';
 const ADMIN_PASSWORD = process.env.MELANKOLIA_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD || 'melankolia2025';
 const GH = 'https://api.github.com';
 
@@ -64,6 +65,18 @@ async function putFile(path, contentBase64, message, sha) {
   });
   if (!r.ok) throw new Error('GitHub write failed: ' + r.status + ' ' + (await r.text()).slice(0, 300));
   return r.json();
+}
+
+function buildSitemap(artists) {
+  const base = 'https://melankoliaagency.com';
+  const lastmod = new Date().toISOString().slice(0, 10);
+  const slugs = (artists || []).filter(a => a && a.slug && (a.status || 'active') !== 'inactive').map(a => String(a.slug)).sort();
+  const entries = [['/', '1.0'], ['/booking', '0.9'], ['/submission', '0.7'], ['/videos', '0.7']]
+    .concat(slugs.map(slug => ['/artists/' + encodeURIComponent(slug), '0.9']));
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    entries.map(([path, priority]) => `  <url><loc>${base}${path}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>${priority}</priority></url>`).join('\n') +
+    '\n</urlset>\n';
 }
 
 function purge(path) {
@@ -113,8 +126,14 @@ exports.handler = async (event) => {
       const content = JSON.stringify({ artists: sortedArtists }, null, 2);
       const b64 = Buffer.from(content, 'utf8').toString('base64');
       const out = await putFile(DATA_PATH, b64, 'content: update artists via admin', existing && existing.sha);
-      await purge(DATA_PATH);
-      return resp(200, { success: true, commit: out.commit && out.commit.sha, count: sortedArtists.length });
+      // Keep Google discovery synchronized with the git-backed roster. This is
+      // intentionally a second Contents API commit so both files remain visible
+      // and auditable in the repository.
+      const sitemapExisting = await getFile(SITEMAP_PATH);
+      const sitemapBase64 = Buffer.from(buildSitemap(sortedArtists), 'utf8').toString('base64');
+      const sitemapOut = await putFile(SITEMAP_PATH, sitemapBase64, 'seo: sync sitemap with artist roster', sitemapExisting && sitemapExisting.sha);
+      await Promise.all([purge(DATA_PATH), purge(SITEMAP_PATH)]);
+      return resp(200, { success: true, commit: sitemapOut.commit && sitemapOut.commit.sha || out.commit && out.commit.sha, count: sortedArtists.length, sitemap_count: sortedArtists.filter(a => a && a.slug && (a.status || 'active') !== 'inactive').length });
     }
 
     return resp(400, { success: false, error: 'Unknown action' });
