@@ -22,6 +22,14 @@
   let mapMarkers = [];
   let mapLines = [];
   let lastAssistantPatch = null;
+  // Stateful travel boards. These must be declared under strict mode before
+  // render/update helpers assign to them; otherwise the toolbar actions throw.
+  let travelAlertRows = [];
+  let travelAlertMode = 'week';
+  let travelAlertIncludeResolved = false;
+  let travelAlertOwnerFilter = 'all';
+  let travelAlertSeverityFilter = 'all';
+  let opsBoardRows = [];
   const USD_TO_EUR = 0.92;
   let routeCurrency = 'USD';
   try { routeCurrency = (localStorage.getItem('mk_route_currency') || 'USD').toUpperCase()==='EUR' ? 'EUR' : 'USD'; } catch {}
