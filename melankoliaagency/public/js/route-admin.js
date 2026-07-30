@@ -1618,8 +1618,10 @@
   let _venueDeepLinkHandled=false;
   async function initVenueManager(){
     const root=$('venueAdminShell'); if(!root)return; root.innerHTML=loading('Loading Contact Manager…');
-    try{ await venueManagerLoad(); await venueManagerOpenFromUrl(); }
-    catch(e){ root.innerHTML=errorBox('Contact Manager unavailable',e.message); }
+    try{
+      const q=new URLSearchParams(location.search), targeted=q.get('view')==='venues'&&(q.get('contact')||q.get('name'));
+      if(targeted) await venueManagerOpenFromUrl(); else await venueManagerLoad();
+    }catch(e){ root.innerHTML=errorBox('Contact Manager unavailable',e.message); }
   }
   function detailValue(label,value,href=''){
     const text=Array.isArray(value)?value.filter(Boolean).join(', '):String(value||'').trim();
@@ -1636,15 +1638,16 @@
   async function venueManagerOpenFromUrl(){
     if(_venueDeepLinkHandled)return; const q=new URLSearchParams(location.search); if(q.get('view')!=='venues')return;
     const id=q.get('contact')||'', name=(q.get('name')||'').trim(), city=(q.get('city')||'').trim(); if(!id&&!name)return;
-    _venueDeepLinkHandled=true; const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-    let v=id?venueManagerAllRows.find(x=>String(x.id||'')===id):null;
-    if(!v&&name)v=venueManagerAllRows.find(x=>norm(x.name)===norm(name)&&(!city||norm(x.city)===norm(city)));
+    _venueDeepLinkHandled=true;
+    let v=null;
+    if(id){ try{ v=await post(RAG_VENUES_API,{action:'get',id}); }catch(e){ if(!name)throw e; } }
     if(!v&&name){ const looked=await post(RAG_VENUES_API,{action:'lookup',name,city}); v=looked?.match||null; }
     if(!v){
-      const rows=venueManagerAllRows.filter(x=>(!name||norm(x.name).includes(norm(name)))&&(!city||norm(x.city)===norm(city)));
+      const result=name?await post(RAG_VENUES_API,{action:'search',query:{query:name,city,limit:20}}):{venues:[]};
+      const rows=result?.venues||[]; venueManagerAllRows=rows;
       renderVenueManager(rows,`No exact contact match found for ${name||id}. Showing the closest CRM results.`); return;
     }
-    venueManagerRows=[v]; renderVenueManager([v],`Opened from Venue Outreach · exact Contact Manager record.`); venueManagerDetail(0);
+    venueManagerAllRows=[v]; venueManagerRows=[v]; renderVenueManager([v],`Opened from Venue Outreach · exact Contact Manager record.`); venueManagerDetail(0);
   }
   async function venueManagerLoad(){ venueManagerMode='master'; const rows=await post(RAG_VENUES_API,{action:'list'}); venueManagerAllRows=rows; renderVenueManager(rows,'Full contact list loaded. Start typing to filter instantly.'); }
   function venueManagerFilter(){

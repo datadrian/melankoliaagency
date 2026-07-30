@@ -1,4 +1,4 @@
-const { listDocs, queryDocs, createDoc, updateDoc, json } = require('./_firebase');
+const { listDocs, queryDocs, getDoc, createDoc, updateDoc, json } = require('./_firebase');
 const { authorize } = require('./_auth');
 
 const VENUES = 'route_planner_crm_venues';
@@ -17,10 +17,17 @@ exports.handler = async (event) => {
 
     // Reads: any logged-in staff session (module-agnostic — Route Planner, Contact
     // Manager, and Contact Discovery matching all need to read the venue list).
-    if (b.action === 'list' || b.action === 'search') {
+    if (b.action === 'list' || b.action === 'search' || b.action === 'get') {
       if (!isAgent) {
         const auth = await authorize(b, null);
         if (!auth.ok) return json(401, { success:false, error: auth.error });
+      }
+      if (b.action === 'get') {
+        const target = String(b.id || '').trim();
+        if (!target) return json(400, { success:false, error:'id required' });
+        const venue = await getDoc(VENUES, target);
+        if (!venue || venue.deleted_at) return json(404, { success:false, error:'Contact not found' });
+        return json(200, { success:true, data:publicVenue(venue) });
       }
       if (b.action === 'list') return json(200,{success:true,data:(await listVenues()).map(publicVenue)});
       return json(200,{success:true,data:await searchVenues(typeof b.query === 'string' ? {...b, query:b.query} : (b.query||b))});
