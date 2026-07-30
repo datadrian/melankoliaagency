@@ -81,7 +81,8 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
   <div class="step">
       <div class="step-head"><span class="step-num">1</span><h3>Open the Tour Library &amp; start a project</h3></div>
       <p>Log in to the Melankolia Ops Platform and open <b>Route Planner</b> from the sidebar. The left <b>Tour Library</b> panel is your archive of active, draft and archived runs. Click <b>Create New Tour Plan</b> or <b>New Plan</b> to open a fresh configuration workspace.</p>
-      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/01-tour-library.png?v=guide-audit-v3" alt="Route Planner workspace &amp; Tour Library" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
+
+      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/01-tour-library.png?v=guide-audit-v4" alt="Route Planner workspace and Tour Library" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p>The <b>Tour Library</b> is more than a file list. Every card shows the artist, region, date range and current status. Three actions live on each card:</p>
 <ul>
 <li><b>Open</b>: loads the full saved workspace: map, legs, pipeline, and every Outreach Board exactly where you left them.</li>
@@ -93,21 +94,39 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
     </div><div class="step">
       <div class="step-head"><span class="step-num">2</span><h3>Configure the Route Builder form</h3></div>
       <p>In the <b>Route Builder</b> on the <b>right rail</b>, enter Sacred Skin&rsquo;s parameters: artist <b>Sacred Skin</b>, region <b>US West Coast</b>, dates in <b>August 2026</b>, five shows, start <b>Los Angeles</b>, end <b>Seattle</b>, a travel party of <b>3</b>, approximately <b>80&nbsp;kg</b> of gear, ground travel, and the <b>guarantee vs door</b> deal type.</p>
-      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/02-route-builder-form.png?v=guide-audit-v3" alt="Configure the Route Builder form" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
+
+      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/02-route-builder-form.png?v=guide-audit-v4" alt="Configure the Route Builder form" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p>Every field in the builder feeds a different downstream system, so it&rsquo;s worth knowing what each one actually drives:</p>
 <ul>
 <li><b>Artist</b>: is selected from your roster and pulls genre/market data used to match compatible venues later.</li>
 <li><b>Region</b>: scopes which cities and venues the AI considers when generating stops. A tighter region (e.g. "Pacific Northwest" vs "US West Coast") produces a denser, shorter run.</li>
 <li><b>Dates &amp; show count</b>: the engine spaces stops across the window, targeting your requested number of shows without back-to-back grueling drives where avoidable.</li>
 <li><b>Start / end city</b>: anchors the geographic shape of the whole route; everything else routes between these two points.</li>
-<li><b>Travel mode, party size, gear weight</b>: these are the exact inputs the <b>Transport Optimizer</b> (Step 6) reuses, so fill them in accurately now to save re-entry later.</li>
+<li><b>Travel mode, party size, gear weight</b>: these are the exact inputs the <b>Transport Optimizer</b> (Step 3) reuses, so fill them in accurately now to save re-entry later.</li>
 <li><b>Deal type preference</b>: guarantee / door split / versus: informs the target-rate suggestions you&rsquo;ll see per stop and the language <b>Estimate Budget</b> uses.</li>
 </ul>
 <p>Review these inputs before generating. <b>Generate Route</b> creates and autosaves a draft tour, so later changes should be made in the saved workspace rather than by assuming regeneration will preserve negotiated stops.</p></div></details>
     </div><div class="step">
-      <div class="step-head"><span class="step-num">3</span><h3>Establish your anchor shows</h3></div>
+      <div class="step-head"><span class="step-num">3</span><h3>Compare transport: drive, one-way van, or fly</h3></div>
+      <p>Before you commit to ground travel, open <b>Transport &amp; gear feasibility</b> in the builder. Set the <b>ground vehicle</b> (rented or band-owned) and <b>rental shape</b> (return to origin or one-way drop). If the gear is flight-ready, tick <b>Gear is flight-ready</b> and add each individual flight case with its real weight.</p>
+      <p>Click <b>Compare transport options</b>. The planner compares <b>van round-trip</b>, <b>one-way van plus a flight home</b>, and <b>flying the whole tour</b>, then recommends the cheapest viable option. It uses available live pricing and identifies when fallback estimates are used, so the result can change between runs. Any case over <b>70&nbsp;lb</b> blocks the flight-only scenario and requires freight or ground transport.</p>
+
+      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/03-transport-optimizer.png?v=guide-audit-v4" alt="Transport and gear feasibility comparison" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
+      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>This tool answers &ldquo;should we drive this whole thing, or is flying actually cheaper?&rdquo; using real calculations and current pricing inputs, not a rule of thumb.</p>
+<ul>
+<li><b>Ground vehicle: rented vs owned</b>: if the band owns the van, rental-cost scenarios drop out entirely; you&rsquo;re only comparing fuel/dead-miles against flying.</li>
+<li><b>Rental shape</b> matters more than people expect: a <b>return-to-origin</b> rental means the van (and someone to drive it) has to go all the way back to the start city after the last show: that&rsquo;s extra rental days, extra fuel, and extra crew time for miles that earn nothing. A <b>one-way drop</b> avoids all of that but usually carries a drop fee from the rental company.</li>
+<li><b>Weekly vs daily rate</b> is baked into the math automatically: a 7-day rental is priced at the weekly rate (roughly 4.6&times; daily, not 7&times;), so longer tours favor renting over owning or flying more than you&rsquo;d guess.</li>
+<li><b>Gear &amp; flight rules</b> (Adrian&rsquo;s house rules, hard-coded): any single case <b>over 50 lb</b> triggers a heavy-bag fee (~$150); additional oversized cases are ~$40 each; any case <b>over 70 lb</b> hits the airline hard cap and <b>blocks flying entirely</b> for that piece; the tool marks fly-only infeasible and tells you to ship freight or drive instead.</li>
+</ul>
+<p>The three scenarios it prices: <b>van round-trip</b>, <b>one-way van + fly crew home</b>, and <b>fly the whole tour</b>: use <b>live flight fares and rental rates</b> pulled via grounded web search (or real-time Amadeus pricing if that&rsquo;s connected), not static averages. It ranks every <em>feasible</em> option by total cost and marks the cheapest one <b>Recommended</b>, with a plain-English reason (e.g. &ldquo;dragging the van back 1,150 miles costs more than flying home&rdquo;).</p>
+<div class="tip"><b>Tip:</b> Re-run this any time party size, gear list, or the route&rsquo;s start/end cities change: the recommendation can flip, especially once a route gets long enough that weekly rental pricing kicks in.</div></div></details>
+    </div><div class="step">
+      <div class="step-head"><span class="step-num">4</span><h3>Establish your anchor shows</h3></div>
       <p>Lock your non-negotiable dates first so the engine routes around them. In <b>Anchor Shows</b>, add the Friday <b>Aug 14, 2026</b> slot at <b>San Francisco Gothic Fest</b> (Grand Ballroom) with its guarantee, marked <b>Confirmed</b>.</p>
-      
+
+
+      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/04-anchor-shows.png?v=guide-audit-v4" alt="Anchor Shows entry form with a confirmed San Francisco festival" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p>An <b>anchor</b> is a date the AI treats as gravity, not a suggestion: the engine will never reassign, move, or overwrite an anchor slot when it generates or regenerates the route. Everything else gets built around it.</p>
 <ul>
 <li>You can add <b>multiple anchors</b> to one tour: for example, a Friday festival plus an already-locked radio session two days later. The engine routes the drive-in and drive-out around both.</li>
@@ -116,9 +135,10 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
 </ul>
 <div class="tip"><b>Tip:</b> Add anchors before you click Generate Route, not after: the routing engine uses them as fixed points when calculating the whole path, so anchoring first produces a tighter, more realistic itinerary.</div></div></details>
     </div><div class="step">
-      <div class="step-head"><span class="step-num">4</span><h3>Generate the AI route leg list</h3></div>
+      <div class="step-head"><span class="step-num">5</span><h3>Generate the AI route leg list</h3></div>
       <p>Click <b>Generate Route</b>. The engine uses route constraints, mapping data and drive guidelines to output a day-by-day itinerary: <b>Los Angeles &rarr; San Francisco (anchor) &rarr; Sacramento &rarr; Portland &rarr; Seattle</b>. Each stop lands in the <b>Booking Pipeline</b> board (Prospects &rarr; Holds &rarr; Negotiating &rarr; Confirmed) with its target rate and projected net.</p>
-      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/04-booking-pipeline.png?v=guide-audit-v3" alt="Generated leg list &amp; Booking Pipeline" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
+
+      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/05-booking-pipeline.png?v=guide-audit-v4" alt="Generated five-stop leg list and Booking Pipeline" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p><b>Generate Route</b> runs several passes at once: it checks live highway feasibility between candidate cities, cross-references your CRM&rsquo;s venue history for genre/market fit, and applies spacing logic so you&rsquo;re not routed into three 8-hour drives in a row without a rest day.</p>
 <p>The <b>Booking Pipeline</b> board that appears is a live Kanban, not a static summary:</p>
 <ul>
@@ -130,33 +150,23 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
 <p>Drag any card between columns and it <b>autosaves to Firestore instantly</b>; there&rsquo;s no separate save step for pipeline moves. The metrics row above the board (Shows / Days / Est. KM / Drive Hrs, then Currency / Projected Revenue / Fuel / Lodging / Per Diems / Projected Net) recalculates live as stops move and rates change. Fuel, Lodging and Per Diems are editable estimates. Adjust them to sharpen your Projected Net before you pitch.</p>
 <div class="tip"><b>Tip:</b> Once outreach has started, adjust the saved tour with Stop Detail, AI Oversight or the inline Fix flow. Do not assume a fresh Generate Route pass will preserve active negotiations.</div></div></details>
     </div><div class="step">
-      <div class="step-head"><span class="step-num">5</span><h3>Analyze real driving paths &amp; transit times</h3></div>
+      <div class="step-head"><span class="step-num">6</span><h3>Analyze real driving paths &amp; transit times</h3></div>
       <p>The map now draws real, highway-specific driving paths between stops. Each leg shows the true metrics: LA&rarr;SF (~380 mi, ~6 h), SF&rarr;Sacramento (~90 mi, ~1.5 h), Sacramento&rarr;Portland (~580 mi, ~9 h), Portland&rarr;Seattle (~175 mi, ~3 h). Flights render as dashed lines.</p>
-      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/05-driving-paths.png?v=guide-audit-v3" alt="Real driving paths &amp; transit times on the map" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
+
+      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/06-driving-paths.png?v=guide-audit-v4" alt="Real road-driving paths and transit times on the map" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p>This isn&rsquo;t a straight-line estimate between pins: the map calls a real routing engine (Google Routes API under the hood) to draw the actual highway path and return true drive time and distance for every ground leg. That&rsquo;s why you see specific numbers like <b>580 mi / 9 h</b> instead of a rounded guess.</p>
 <ul>
 <li><b>Solid lines</b> = driving legs, labeled with live drive-time and distance.</li>
 <li><b>Dashed lines</b> = flight legs (no road path to draw).</li>
 </ul>
-<p>Use this view as your sanity check before locking anything in: a 9-hour overnight-adjacent drive is exactly the kind of thing that looks fine on a spreadsheet but breaks a crew in real life. If a leg looks brutal, that&rsquo;s your cue to either add an off-day (Step 7) or re-open the Transport Optimizer (Step 6) to see if flying that leg is actually cheaper once you factor in an extra hotel night and drive-day per diems.</p>
+<p>Use this view as your sanity check before locking anything in: a 9-hour overnight-adjacent drive is exactly the kind of thing that looks fine on a spreadsheet but breaks a crew in real life. If a leg looks brutal, that&rsquo;s your cue to either add an off-day (Step 7) or re-open the Transport Optimizer (Step 3) to see if flying that leg is actually cheaper once you factor in an extra hotel night and drive-day per diems.</p>
 <div class="tip"><b>Tip:</b> Real drive times also feed the <b>Transport Optimizer</b>&rsquo;s dead-mile math directly, so there&rsquo;s no need to re-enter mileage; it reads the same route data.</div></div></details>
-    </div><div class="step">
-      <div class="step-head"><span class="step-num">6</span><h3>Compare transport: drive, one-way van, or fly</h3></div>
-      <p>Before you commit to ground travel, open <b>Transport &amp; gear feasibility</b> in the builder. Set the <b>ground vehicle</b> (rented or band-owned) and <b>rental shape</b> (return to origin or one-way drop). If the gear is flight-ready, tick <b>Gear is flight-ready</b> and add each individual flight case with its real weight.</p>
-      <p>Click <b>Compare transport options</b>. The planner compares <b>van round-trip</b>, <b>one-way van plus a flight home</b>, and <b>flying the whole tour</b>, then recommends the cheapest viable option. It uses available live pricing and identifies when fallback estimates are used, so the result can change between runs. Any case over <b>70&nbsp;lb</b> blocks the flight-only scenario and requires freight or ground transport.</p>
-      <details class="deep"><summary>In depth</summary><div class="deep-body"><p>This tool answers &ldquo;should we drive this whole thing, or is flying actually cheaper?&rdquo; using real calculations and current pricing inputs, not a rule of thumb.</p>
-<ul>
-<li><b>Ground vehicle: rented vs owned</b>: if the band owns the van, rental-cost scenarios drop out entirely; you&rsquo;re only comparing fuel/dead-miles against flying.</li>
-<li><b>Rental shape</b> matters more than people expect: a <b>return-to-origin</b> rental means the van (and someone to drive it) has to go all the way back to the start city after the last show: that&rsquo;s extra rental days, extra fuel, and extra crew time for miles that earn nothing. A <b>one-way drop</b> avoids all of that but usually carries a drop fee from the rental company.</li>
-<li><b>Weekly vs daily rate</b> is baked into the math automatically: a 7-day rental is priced at the weekly rate (roughly 4.6&times; daily, not 7&times;), so longer tours favor renting over owning or flying more than you&rsquo;d guess.</li>
-<li><b>Gear &amp; flight rules</b> (Adrian&rsquo;s house rules, hard-coded): any single case <b>over 50 lb</b> triggers a heavy-bag fee (~$150); additional oversized cases are ~$40 each; any case <b>over 70 lb</b> hits the airline hard cap and <b>blocks flying entirely</b> for that piece; the tool marks fly-only infeasible and tells you to ship freight or drive instead.</li>
-</ul>
-<p>The three scenarios it prices: <b>van round-trip</b>, <b>one-way van + fly crew home</b>, and <b>fly the whole tour</b>: use <b>live flight fares and rental rates</b> pulled via grounded web search (or real-time Amadeus pricing if that&rsquo;s connected), not static averages. It ranks every <em>feasible</em> option by total cost and marks the cheapest one <b>Recommended</b>, with a plain-English reason (e.g. &ldquo;dragging the van back 1,150 miles costs more than flying home&rdquo;).</p>
-<div class="tip"><b>Tip:</b> Re-run this any time party size, gear list, or the route&rsquo;s start/end cities change: the recommendation can flip, especially once a route gets long enough that weekly rental pricing kicks in.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">7</span><h3>Review with AI Oversight &amp; the Fix chat</h3></div>
       <p>The Sacramento&rarr;Portland leg is a grueling 9-hour drive. Click <b>AI Oversight</b> to scan for risks. It flags the long leg. Use the inline <b>Ask AI / Propose Fix</b> box: type &ldquo;<i>add a travel/off-day in Ashland, OR between Sacramento and Portland</i>&rdquo;, review the proposed change summary, and click <b>Apply</b>.</p>
-      
+
+
+      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/07-ai-oversight.png?v=guide-audit-v4" alt="Saved AI Oversight review flagging the Sacramento to Portland drive risk" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p><b>AI Oversight</b> scans the whole generated route for risk patterns: not just long drives, but thin margins, day-of-week mismatches (a Tuesday stop in a market that only draws on weekends), and missing rest days between back-to-back long legs.</p>
 <p>The inline <b>Ask AI / Propose Fix</b> box is deliberately a two-step flow, not an instant edit:</p>
 <ul>
@@ -168,14 +178,17 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
     </div><div class="step">
       <div class="step-head"><span class="step-num">8</span><h3>Expand stop details &amp; the Outreach Board</h3></div>
       <p>Click the <b>Portland</b> stop in the leg list to open the <b>Stop Detail</b> pane and its nested <b>Outreach Board</b>. Use <b>Fast Contacts</b> for immediate CRM matches or <b>Contact Finder</b> for a live web search, then review each synthwave/new wave-compatible room before adding it to outreach.</p>
-      
+
+
+      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/08-stop-detail-portland.png?v=guide-audit-v4" alt="Portland Stop Detail with booking, transport, hotel, and outreach fields" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p>Clicking any stop in the leg list expands the <b>Stop Detail</b> pane: the date, market size, target rate, and any notes you&rsquo;ve logged for that city. Nested inside is the <b>Outreach Board</b> for that single stop.</p>
 <p>Contact suggestions can come from the internal <b>venue CRM</b>, live Contact Finder research, or manual additions. Review genre compatibility, room capacity and contact quality before selecting a venue for the stop.</p>
 <div class="tip"><b>Tip:</b> If none of the pre-pulled venues feel right, you can add one manually from the Contact Manager and it&rsquo;ll show up here for this stop: the board isn&rsquo;t limited to auto-suggestions.</div></div></details>
     </div><div class="step">
       <div class="step-head"><span class="step-num">9</span><h3>Manage parallel outreach &amp; keep backups</h3></div>
       <p>Pitch several Portland venues in parallel and move each through <b>To contact</b>, <b>Contacted</b>, <b>Awaiting reply</b>, and <b>Interested / talking</b> as the conversation develops. When one venue is locked, use <b>Confirm this venue</b>. The remaining candidates keep their current outreach states and are grouped as backups automatically.</p>
-      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/08-outreach-board.png?v=guide-audit-v3" alt="Per-venue Outreach Board with statuses, confirm &amp; backups" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
+
+      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/09-parallel-outreach.png?v=guide-audit-v4" alt="Per-venue Outreach Board with statuses, confirmation, and preserved backups" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p>The Outreach Board&rsquo;s status flow is built around real booking behavior: you rarely pitch just one room per date, and rooms fall through constantly, so the system is designed for <b>parallel</b> conversations from the start.</p>
 <ul>
 <li>Working statuses are <b>To contact</b>, <b>Contacted</b>, <b>Awaiting reply</b>, <b>Interested / talking</b>, and <b>Declined / passed</b>. <b>Confirmed</b> and <b>Fell through</b> are set with their dedicated actions.</li>
@@ -186,7 +199,9 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
     </div><div class="step">
       <div class="step-head"><span class="step-num">10</span><h3>Monitor the tour-wide Outreach Board</h3></div>
       <p>Open the tour-wide <b>Outreach Board</b> from the saved-tour toolbar. Its summaries separate city coverage from venue activity, including confirmed cities, open cities, venues to contact, conversations and follow-ups due. Use <b>Draft all follow-ups</b> for contacts with no confirmation after seven or more days, and review hold-deadline alerts above the metrics.</p>
-      
+
+
+      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/10-tour-wide-outreach.png?v=guide-audit-v4" alt="Tour-wide Outreach Board with follow-ups and city coverage" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p>This is the tour-wide command center. While the per-stop board (Step 9) manages one city, this view rolls every stop into one pipeline so nothing quietly stalls.</p>
 <ul>
 <li>The <b>KPI strip</b> gives an at-a-glance count of confirmed stops, stops still in active conversation, and how many contacts are overdue for a follow-up.</li>
@@ -195,12 +210,14 @@ footer{padding:34px 0 60px;color:var(--muted);font-size:13px;text-align:center}
 </ul>
 <div class="tip"><b>Tip:</b> Check this board at the start of your booking day, not just when something reminds you to. It&rsquo;s built to be the first place you look, not a report you have to remember to run.</div></div></details>
     </div><div class="step">
-      <div class="step-head"><span class="step-num">11</span><h3>Review autosave &amp; sync the tour</h3></div>
-      <p><b>Generate Route</b> already autosaves the draft tour and creates draft show records for Advancing. After further edits, use <b>Save / Sync Tour</b> as an explicit synchronization checkpoint before returning to the Tour Library.</p>
-      
+      <div class="step-head"><span class="step-num">11</span><h3>Verify autosave &amp; linked show records</h3></div>
+      <p><b>Generate Route</b> autosaves the draft tour and creates one linked Firestore show record for every non-rest-day stop. Before returning to the Tour Library, confirm the header reads <b>5 Firestore show records linked</b> and review the final pipeline, rates, transport assumptions and projected net.</p>
+
+
+      <div class="shot"><img src="https://melankoliaagency.com/images/route-guide/11-save-sync.png?v=guide-audit-v4" alt="Saved route showing five linked Firestore show records and the live pipeline" loading="lazy"><figcaption class="shot-cap">Live screenshot from the Melankolia Route Planner.</figcaption></div>
       <details class="deep"><summary>In depth</summary><div class="deep-body"><p>On successful generation, the new tour receives an API-generated ID, appears in the Tour Library, and creates one draft Advancing record for each non-rest-day stop. Pipeline moves, stop edits, outreach changes and assistant-applied patches then persist against that saved tour.</p>
-<p><b>Save / Sync Tour</b> writes the latest generated-tour state and replaces its linked show records so the routing workspace and Advancing stay aligned.</p>
-<div class="tip"><b>Tip:</b> Once the tour appears in the library, it can be duplicated as a template. For a future regional run, clone it and review every date, venue, rate and transport assumption before syncing.</div></div></details>
+<p>There is no separate save button in a saved-tour workspace: pipeline moves, Stop Detail edits, outreach changes and approved AI patches persist as you make them. The linked-show count is the quickest visual check that Route Planner and Advancing are still aligned.</p>
+<div class="tip"><b>Tip:</b> Once the tour appears in the library, it can be duplicated as a template. For a future regional run, clone it and review every date, venue, rate and transport assumption before using the copy.</div></div></details>
     </div>
 </div></section>
 
