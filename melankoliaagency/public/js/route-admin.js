@@ -1250,15 +1250,41 @@
     const active=c.contacted+c.awaiting+c.interested;
     return `${c.to_contact} to contact · ${active} in conversation · ${c.declined} passed`;
   }
+  function venueEmail(v={}){ return String(v.booking_email || v.email || '').trim(); }
+  function instagramUrl(raw){
+    const s=String(raw||'').trim(); if(!s) return '';
+    if(/^https?:\/\//i.test(s)){ try{ const u=new URL(s); return /(^|\.)instagram\.com$/i.test(u.hostname)?u.href:''; }catch(e){ return ''; } }
+    const handle=s.replace(/^@/,'').replace(/^(?:www\.)?instagram\.com\//i,'').replace(/^\/+|\/+$/g,'').split(/[/?#]/)[0];
+    return /^[A-Za-z0-9._]+$/.test(handle)?`https://www.instagram.com/${handle}/`:'';
+  }
+  function instagramLabel(raw){ const url=instagramUrl(raw); if(!url)return ''; try{ const part=new URL(url).pathname.split('/').filter(Boolean)[0]; return part?'@'+part:'Instagram'; }catch(e){ return 'Instagram'; } }
+  function contactManagerHref(v={},leg={}){
+    const q=new URLSearchParams({view:'venues'}); const crmId=v.crm_id||v.crm_venue_id||'';
+    if(crmId)q.set('contact',crmId); if(v.name)q.set('name',v.name); if(v.city||leg.city)q.set('city',v.city||leg.city);
+    return '/admin/?'+q.toString();
+  }
+  function openVenueContact(idx,vi){
+    const t=activeRoute(), leg=t?.legs?.[idx], v=leg?.candidate_venues?.[vi]; if(!v)return;
+    const href=contactManagerHref(v,leg); const win=window.open('about:blank','_blank');
+    if(!win){ toast('Pop-up blocked — allow pop-ups to open Contact Manager','error'); return; }
+    try{
+      const token=sessionStorage.getItem('mk_session_token'), user=sessionStorage.getItem('mk_session_user');
+      if(token)win.sessionStorage.setItem('mk_session_token',token); if(user)win.sessionStorage.setItem('mk_session_user',user);
+      win.opener=null;
+    }catch(e){}
+    win.location.href=href;
+  }
   function venueRowHtml(v,idx,vi){
     const st=vStatus(v);
     const opts=OUTREACH_STAGES.map(([k,lab])=>`<option value="${k}" ${st===k?'selected':''}>${lab}</option>`).join('');
     const when=v.outreach_date?` · contacted ${esc(v.outreach_date)}`:'';
     const note=v.outreach_note?`<p class="ob-note">📝 ${esc(v.outreach_note)}</p>`:'';
     const confirmed=st==='confirmed';
+    const email=venueEmail(v), insta=instagramUrl(v.instagram), instaLabel=instagramLabel(v.instagram);
+    const contactLinks=`<div class="ob-contact-links">${email?`<a href="mailto:${attr(email)}" title="Email ${attr(v.name||'venue')}">✉ ${esc(email)}</a>`:'<span class="missing">Email unavailable</span>'}${insta?`<a href="${attr(insta)}" target="_blank" rel="noopener noreferrer" title="Open Instagram">◎ ${esc(instaLabel)}</a>`:'<span class="missing">Instagram unavailable</span>'}<button type="button" onclick="RouteAdmin.openVenueContact(${idx},${vi})">Full contact ↗</button></div>`;
     return `<div class="ob-row ob-${st}">
       <div class="ob-row-head"><strong>${esc(v.name||'Venue')}</strong><span class="ob-pill ob-pill-${st}">${esc(OUTREACH_LABEL[st]||st)}${when}</span></div>
-      <span class="ob-meta">${esc(venueMeta(v))}</span>${v.fit_reason||v.outreach_angle?`<p class="ob-fit">${esc(v.fit_reason||v.outreach_angle)}</p>`:''}${note}
+      <span class="ob-meta">${esc(venueMeta(v))}</span>${contactLinks}${v.fit_reason||v.outreach_angle?`<p class="ob-fit">${esc(v.fit_reason||v.outreach_angle)}</p>`:''}${note}
       <div class="ob-actions">
         ${confirmed
           ? `<button class="btn-secondary btn-sm ob-danger" onclick="RouteAdmin.venueFellThrough(${idx},${vi})">Fell through</button>`
@@ -1589,7 +1615,37 @@
     if(!el) return renderVenueManager(rows,note);
     el.innerHTML=`<div class="route-panel-title"><span>${esc(venueManagerMode==='finder'?'Finder results added to master list':'Contact list results')}</span><em>${venueManagerRows.length} matched · showing ${shown.length}</em></div>${shown.length?shown.map(venueCard).join(''):'<div class="route-ai-empty">No contacts loaded yet. Search the master list or run the Finder module.</div>'}`;
   }
-  async function initVenueManager(){ const root=$('venueAdminShell'); if(!root) return; root.innerHTML=loading('Loading Contact Manager…'); try{ await venueManagerLoad(); }catch(e){ root.innerHTML=errorBox('Contact Manager unavailable',e.message); } }
+  let _venueDeepLinkHandled=false;
+  async function initVenueManager(){
+    const root=$('venueAdminShell'); if(!root)return; root.innerHTML=loading('Loading Contact Manager…');
+    try{ await venueManagerLoad(); await venueManagerOpenFromUrl(); }
+    catch(e){ root.innerHTML=errorBox('Contact Manager unavailable',e.message); }
+  }
+  function detailValue(label,value,href=''){
+    const text=Array.isArray(value)?value.filter(Boolean).join(', '):String(value||'').trim();
+    return `<div class="vm-detail-field"><span>${esc(label)}</span>${text?(href?`<a href="${attr(href)}" target="_blank" rel="noopener noreferrer">${esc(text)}</a>`:`<b>${esc(text)}</b>`):'<em>Not provided</em>'}</div>`;
+  }
+  function venueManagerDetail(i){
+    const v=venueManagerRows[i]||{}; const el=$('venueManagerForm'); if(!el)return;
+    const email=venueEmail(v), insta=instagramUrl(v.instagram), contacts=Array.isArray(v.contacts)?v.contacts:[];
+    const associated=(Array.isArray(v.associated_venues)?v.associated_venues:[]).map(x=>typeof x==='string'?x:[x.name,x.city].filter(Boolean).join(' — '));
+    el.innerHTML=`<div class="route-tool-card vm-contact-detail"><div class="route-tool-head"><div><p class="route-kicker">Full contact record</p><h3>${esc(v.name||'Contact')}</h3></div><div class="route-stop-actions"><button class="btn-primary btn-sm" onclick="VenueManager.edit(${i})">Edit contact</button><button class="btn-secondary btn-sm" onclick="VenueManager.closeDetail()">Close</button></div></div><div class="vm-detail-grid">${detailValue('Type',v.contact_type||v.type)}${detailValue('Market',[v.city,v.region,v.country].filter(Boolean).join(', '))}${detailValue('Address',v.address)}${detailValue('Booking email',email,email?`mailto:${email}`:'')}${detailValue('Phone',v.phone,v.phone?`tel:${v.phone}`:'')}${detailValue('WhatsApp',v.whatsapp)}${detailValue('Booking method',v.booking_method)}${detailValue('Booking form',v.booking_form_url,v.booking_form_url||'')}${detailValue('Website',v.website,v.website||'')}${detailValue('Instagram',instagramLabel(v.instagram),insta)}${detailValue('Facebook',v.facebook,v.facebook||'')}${detailValue('Relationship',v.relationship_status)}${detailValue('Capacity',v.actual_capacity||v.capacity)}${detailValue('Associated venues',associated)}</div>${contacts.length?`<div class="vm-detail-section"><span>People</span>${contacts.map(c=>`<div><b>${esc(c.name||'Unnamed contact')}</b>${c.title?` · ${esc(c.title)}`:''}${c.email?` · <a href="mailto:${attr(c.email)}">${esc(c.email)}</a>`:''}${c.phone?` · ${esc(c.phone)}`:''}</div>`).join('')}</div>`:''}${v.notes?`<div class="vm-detail-section"><span>Notes</span><p>${esc(v.notes)}</p></div>`:''}</div>`;
+    requestAnimationFrame(()=>el.scrollIntoView({behavior:'smooth',block:'start'}));
+  }
+  function venueManagerCloseDetail(){ const el=$('venueManagerForm'); if(el)el.innerHTML=''; }
+  async function venueManagerOpenFromUrl(){
+    if(_venueDeepLinkHandled)return; const q=new URLSearchParams(location.search); if(q.get('view')!=='venues')return;
+    const id=q.get('contact')||'', name=(q.get('name')||'').trim(), city=(q.get('city')||'').trim(); if(!id&&!name)return;
+    _venueDeepLinkHandled=true; const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+    let v=id?venueManagerAllRows.find(x=>String(x.id||'')===id):null;
+    if(!v&&name)v=venueManagerAllRows.find(x=>norm(x.name)===norm(name)&&(!city||norm(x.city)===norm(city)));
+    if(!v&&name){ const looked=await post(RAG_VENUES_API,{action:'lookup',name,city}); v=looked?.match||null; }
+    if(!v){
+      const rows=venueManagerAllRows.filter(x=>(!name||norm(x.name).includes(norm(name)))&&(!city||norm(x.city)===norm(city)));
+      renderVenueManager(rows,`No exact contact match found for ${name||id}. Showing the closest CRM results.`); return;
+    }
+    venueManagerRows=[v]; renderVenueManager([v],`Opened from Venue Outreach · exact Contact Manager record.`); venueManagerDetail(0);
+  }
   async function venueManagerLoad(){ venueManagerMode='master'; const rows=await post(RAG_VENUES_API,{action:'list'}); venueManagerAllRows=rows; renderVenueManager(rows,'Full contact list loaded. Start typing to filter instantly.'); }
   function venueManagerFilter(){
     venueManagerFilters={query:val('vmQuery'),city:val('vmCity'),country:val('vmCountry'),genre:val('vmGenre'),capacity:val('vmCapacity')};
@@ -1719,7 +1775,7 @@
   }
 
 
-  window.RouteAdmin = { toast, init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, archiveTour, requestDeleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, showTravelProviderStatus, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, draftAllFollowUps, matchAllFromCRM, autofillVenueFromCRM, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, removeBlankDay, toggleWideView, loadMarketVenues, addMarketVenueToOutreach, transportCompare, toggleFlightGear, addGearPiece, removeGearPiece, _setGear, askAboutCurrentReview, applyReviewPatch, dismissReviewPatch };
+  window.RouteAdmin = { toast, init:initRoutePlannerAdmin, renderBuilder, generate, saveGenerated, optimizeGenerated, optimizeSaved, optimizeCurrent, estimateBudget, suggestVenues, generateEmail, adviseDeal, chatAgent, analyzeAnchors, analyzeCurrentAnchors, openTour, duplicateTour, archiveTour, requestDeleteTour, systemTour, setFilter, refreshLibraryList, openStop, saveStopEdits, venueFinderForStop, researchVenuesAllStops, useCandidateVenue, generateVenueEmail, setVenueOutreach, logVenueContacted, venueOutreachNote, confirmVenue, venueFellThrough, backlineForStop, backlineAllStops, showBacklineResult, renderTravelAlertCenter, setTravelAlertFilter, copyTravelAlertDigest, updateTravelAlert, editTravelAlertNote, generateTravelAlertMessage, renderTravelOpsBoard, openTourThenTravel, opsRouteLinks, renderTravelHotelModule, showTravelProviderStatus, syncTourBandGuidance, archiveTravelRecord, saveTravelLeg, saveHotelStay, openGeneratedTravelLinks, reviewCurrentRoute, runSuggestedAction, dragKanban, dropKanban, setCurrency, renderVenueBoard, renderTourOutreach, openVenueContact, draftAllFollowUps, matchAllFromCRM, autofillVenueFromCRM, manualVenueForm, addManualVenue, assistantAsk, applyAssistantPatch, insertBlankDayAfter, convertBlankDayToProspect, removeBlankDay, toggleWideView, loadMarketVenues, addMarketVenueToOutreach, transportCompare, toggleFlightGear, addGearPiece, removeGearPiece, _setGear, askAboutCurrentReview, applyReviewPatch, dismissReviewPatch };
   function csvCell(v){
     const s = v==null ? '' : String(v);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
@@ -1873,6 +1929,6 @@
     const c=document.getElementById('vmExCustom'); if(c) c.style.display = preset==='custom' ? '' : 'none';
     venueManagerExportPreview();
   }
-  window.VenueManager = { init:initVenueManager, load:venueManagerLoad, search:venueManagerSearch, findWeb:venueManagerFinder, edit:venueManagerEdit, newVenue:venueManagerNew, cancelEdit:venueManagerCancel, save:venueManagerSave, sendToRoute:venueManagerSendToRoute, filter:venueManagerFilter, exportCsv:venueManagerExportDialog, enrich:venueManagerEnrich, _exRun:venueManagerRunExport, _exToggleCustom:venueManagerExportToggleCustom };
+  window.VenueManager = { init:initVenueManager, load:venueManagerLoad, search:venueManagerSearch, findWeb:venueManagerFinder, detail:venueManagerDetail, closeDetail:venueManagerCloseDetail, openFromUrl:venueManagerOpenFromUrl, edit:venueManagerEdit, newVenue:venueManagerNew, cancelEdit:venueManagerCancel, save:venueManagerSave, sendToRoute:venueManagerSendToRoute, filter:venueManagerFilter, exportCsv:venueManagerExportDialog, enrich:venueManagerEnrich, _exRun:venueManagerRunExport, _exToggleCustom:venueManagerExportToggleCustom };
   document.addEventListener('DOMContentLoaded',()=>{ if($('routeAdminShell')) initRoutePlannerAdmin(); if($('venueAdminShell')) initVenueManager(); });
 })();

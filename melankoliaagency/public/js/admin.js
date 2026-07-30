@@ -29,6 +29,15 @@ function applySessionUI(user){
   });
   const who = document.getElementById('sessionWhoAmI');
   if (who) who.textContent = user.is_owner ? 'Signed in as Owner' : ('Signed in as ' + (user.display_name || 'staff'));
+  // Same-origin deep links from Route Planner can open an exact CRM contact
+  // in a new tab. Apply the requested view once the session has been restored.
+  if (!window._mkAdminDeepLinkApplied) {
+    const requestedView = new URLSearchParams(location.search).get('view');
+    if (requestedView === 'venues') {
+      window._mkAdminDeepLinkApplied = true;
+      setTimeout(() => showView('venues'), 0);
+    }
+  }
   // if the currently active view isn't permitted (e.g. deep link), bounce to dashboard
   const activeLink = document.querySelector('.sidebar-link.active[data-module]');
   if (activeLink && activeLink.style.display === 'none') showView('dashboard');

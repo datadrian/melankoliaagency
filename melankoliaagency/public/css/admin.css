@@ -2464,3 +2464,20 @@ body.modal-open{overflow:hidden;}
 .route-confirm-toast > div { display:flex; justify-content:flex-end; gap:.5rem; }
 .route-confirm-toast .btn-danger { background:#9f2f2f; border:1px solid #c64a4a; color:#fff; }
 .route-confirm-toast .btn-danger:hover { background:#b93838; }
+/* Outreach contact channels + Contact Manager deep-link detail */
+.ob-contact-links { display:flex; align-items:center; flex-wrap:wrap; gap:.42rem .8rem; margin:.52rem 0 .15rem; }
+.ob-contact-links a,.ob-contact-links button { color:var(--accent); background:none; border:0; padding:0; font:inherit; font-size:.68rem; letter-spacing:.03em; text-decoration:none; cursor:pointer; }
+.ob-contact-links a:hover,.ob-contact-links button:hover { text-decoration:underline; }
+.ob-contact-links .missing { color:var(--muted); font-size:.66rem; }
+.vm-contact-detail { border-left:3px solid var(--accent); }
+.vm-detail-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.65rem; margin-top:1rem; }
+.vm-detail-field { min-width:0; padding:.7rem; border:1px solid var(--border); background:rgba(255,255,255,.015); }
+.vm-detail-field span,.vm-detail-section>span { display:block; color:var(--muted); font-size:.58rem; letter-spacing:.12em; text-transform:uppercase; margin-bottom:.3rem; }
+.vm-detail-field b,.vm-detail-field a,.vm-detail-field em { display:block; color:var(--off); font-size:.72rem; line-height:1.45; overflow-wrap:anywhere; font-style:normal; }
+.vm-detail-field a { color:var(--accent); text-decoration:none; }
+.vm-detail-field em { color:var(--muted); }
+.vm-detail-section { margin-top:.75rem; padding:.8rem; border:1px solid var(--border); color:var(--off); font-size:.72rem; line-height:1.6; }
+.vm-detail-section p { margin:0; white-space:pre-wrap; }
+.vm-detail-section a { color:var(--accent); }
+@media (max-width:900px){ .vm-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+@media (max-width:560px){ .vm-detail-grid{grid-template-columns:1fr;} }
