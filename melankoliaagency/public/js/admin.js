@@ -435,7 +435,8 @@ function showView(name) {
   if (name === 'epk')       renderEPKList();
   if (name === 'videos')    renderVideoGrid();
   if (name === 'bookings')  renderBookings();
-  if (name === 'routes' && typeof initRoutePlannerAdmin === 'function') initRoutePlannerAdmin();
+  if (name === 'routes' && window.RouteAdmin && typeof window.RouteAdmin.init === 'function') window.RouteAdmin.init();
+  if (name === 'venues' && window.VenueManager && typeof window.VenueManager.init === 'function') window.VenueManager.init();
   if (name === 'emails' && typeof initEmailGenerator === 'function') initEmailGenerator();
   if (name === 'advancing' && typeof initAdvancing === 'function') initAdvancing();
   if (name === 'bands' && typeof initBandAccess === 'function') initBandAccess();

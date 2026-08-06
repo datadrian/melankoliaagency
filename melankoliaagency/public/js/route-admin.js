@@ -63,13 +63,17 @@
   }
 
   async function post(url,payload){
-    const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ session_token: (typeof mkSessionToken==='function'?mkSessionToken():''), ...(payload||{}) })});
-    const text = await res.text();
-    let json = null;
-    try { json = text ? JSON.parse(text) : {}; }
-    catch(e){ const snippet=text.slice(0,220).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim(); throw new Error(`Non-JSON response from ${url.split('/').pop()} (${res.status}). ${snippet || 'The function likely timed out before returning JSON.'}`); }
-    if(!res.ok || json.success===false) throw new Error(json.error || `Request failed (${res.status})`);
-    return json.data ?? json;
+    await waitForSession();
+    for(let attempt=0; attempt<2; attempt++){
+      const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ session_token: (typeof mkSessionToken==='function'?mkSessionToken():''), ...(payload||{}) })});
+      const text = await res.text();
+      let json = null;
+      try { json = text ? JSON.parse(text) : {}; }
+      catch(e){ const snippet=text.slice(0,220).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim(); throw new Error(`Non-JSON response from ${url.split('/').pop()} (${res.status}). ${snippet || 'The function likely timed out before returning JSON.'}`); }
+      if(res.status===401 && attempt===0){ await sleepMs(350); continue; }
+      if(!res.ok || json.success===false) throw new Error(json.error || `Request failed (${res.status})`);
+      return json.data ?? json;
+    }
   }
   const api = payload => post(ROUTE_API,payload);
   const ai = (action,data) => post(ROUTE_AI,{action,data});
@@ -77,13 +81,17 @@
   // instead of unwrapping to just `data` — needed for the Backline Finder
   // job-status polling, where `status:'pending'` responses have no `data` yet.
   async function postFull(url,payload){
-    const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ session_token: (typeof mkSessionToken==='function'?mkSessionToken():''), ...(payload||{}) })});
-    const text = await res.text();
-    let json = null;
-    try { json = text ? JSON.parse(text) : {}; }
-    catch(e){ const snippet=text.slice(0,220).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim(); throw new Error(`Non-JSON response from ${url.split('/').pop()} (${res.status}). ${snippet || 'The function likely timed out before returning JSON.'}`); }
-    if(!res.ok || json.success===false) throw new Error(json.error || `Request failed (${res.status})`);
-    return json;
+    await waitForSession();
+    for(let attempt=0; attempt<2; attempt++){
+      const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ session_token: (typeof mkSessionToken==='function'?mkSessionToken():''), ...(payload||{}) })});
+      const text = await res.text();
+      let json = null;
+      try { json = text ? JSON.parse(text) : {}; }
+      catch(e){ const snippet=text.slice(0,220).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim(); throw new Error(`Non-JSON response from ${url.split('/').pop()} (${res.status}). ${snippet || 'The function likely timed out before returning JSON.'}`); }
+      if(res.status===401 && attempt===0){ await sleepMs(350); continue; }
+      if(!res.ok || json.success===false) throw new Error(json.error || `Request failed (${res.status})`);
+      return json;
+    }
   }
   function sleepMs(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
@@ -105,25 +113,28 @@
   // (the gate verifies the session asynchronously on page load, and the planner
   //  can initialize before that finishes — which caused the intermittent
   //  "Not authorized. Please log in." flash on first load).
-  async function waitForSession(maxMs=4000){
-    // If the login gate is still background-verifying a restored session (the
-    // "optimistic reveal" path on a return visit), wait for that to settle first —
-    // firing our first request while it's still in flight is the main source of the
-    // intermittent "Not authorized" flash, since a token that's about to be evicted
-    // still momentarily reads as present in sessionStorage.
+  async function waitForSession(maxMs=15000){
+    // A restored session is not usable until the login gate has verified it.
+    // Await the real verification promise — never race it with an arbitrary
+    // timeout and then send a protected request anyway.
     if(window.mkSessionVerified && typeof window.mkSessionVerified.then==='function'){
-      try{ await Promise.race([window.mkSessionVerified, new Promise(r=>setTimeout(r,2500))]); } catch(e){}
+      const verified=await window.mkSessionVerified.catch(()=>({success:false}));
+      if(verified && verified.success===false && !(typeof mkSessionToken==='function'&&mkSessionToken())) throw new Error(verified.error||'Please log in again.');
     }
-    if(typeof mkSessionToken!=='function') return '';
-    const started=Date.now();
-    let tok=mkSessionToken();
+    if(typeof mkSessionToken!=='function') throw new Error('Admin session is not ready.');
+    const started=Date.now(); let tok=mkSessionToken();
     while(!tok && Date.now()-started<maxMs){
-      await new Promise(r=>setTimeout(r,150));
+      await new Promise(resolve=>{
+        let done=false; const finish=()=>{ if(done)return; done=true; clearTimeout(timer); window.removeEventListener('mk-session-ready',finish); resolve(); };
+        const timer=setTimeout(finish,250); window.addEventListener('mk-session-ready',finish,{once:true});
+      });
       tok=mkSessionToken();
     }
+    if(!tok) throw new Error('Please log in to continue.');
     return tok;
   }
-  async function initRoutePlannerAdmin(){
+  let routeInitPromise=null;
+  async function _initRoutePlannerAdmin(){
     const root = $('routeAdminShell');
     if(!root) return;
     root.innerHTML = loading('Loading route operations…');
@@ -147,6 +158,12 @@
     }
     root.innerHTML = errorBox('Route Planner backend unavailable', (lastErr&&lastErr.message)||'Unknown error') +
       `<div style="margin-top:10px"><button type="button" class="btn-secondary btn-sm" onclick="RouteAdmin.init()">Retry</button></div>`;
+  }
+
+  function initRoutePlannerAdmin(){
+    if(routeInitPromise) return routeInitPromise;
+    routeInitPromise=_initRoutePlannerAdmin().finally(()=>{ routeInitPromise=null; });
+    return routeInitPromise;
   }
 
   function renderHub(){
@@ -1616,12 +1633,19 @@
     el.innerHTML=`<div class="route-panel-title"><span>${esc(venueManagerMode==='finder'?'Finder results added to master list':'Contact list results')}</span><em>${venueManagerRows.length} matched · showing ${shown.length}</em></div>${shown.length?shown.map(venueCard).join(''):'<div class="route-ai-empty">No contacts loaded yet. Search the master list or run the Finder module.</div>'}`;
   }
   let _venueDeepLinkHandled=false;
-  async function initVenueManager(){
+  let venueInitPromise=null;
+  async function _initVenueManager(){
     const root=$('venueAdminShell'); if(!root)return; root.innerHTML=loading('Loading Contact Manager…');
     try{
+      await waitForSession();
       const q=new URLSearchParams(location.search), targeted=q.get('view')==='venues'&&(q.get('contact')||q.get('name'));
       if(targeted) await venueManagerOpenFromUrl(); else await venueManagerLoad();
-    }catch(e){ root.innerHTML=errorBox('Contact Manager unavailable',e.message); }
+    }catch(e){ root.innerHTML=errorBox('Contact Manager unavailable',e.message)+`<div style="margin-top:10px"><button type="button" class="btn-secondary btn-sm" onclick="VenueManager.init()">Retry</button></div>`; }
+  }
+  function initVenueManager(){
+    if(venueInitPromise)return venueInitPromise;
+    venueInitPromise=_initVenueManager().finally(()=>{venueInitPromise=null;});
+    return venueInitPromise;
   }
   function detailValue(label,value,href=''){
     const text=Array.isArray(value)?value.filter(Boolean).join(', '):String(value||'').trim();
@@ -1933,5 +1957,10 @@
     venueManagerExportPreview();
   }
   window.VenueManager = { init:initVenueManager, load:venueManagerLoad, search:venueManagerSearch, findWeb:venueManagerFinder, detail:venueManagerDetail, closeDetail:venueManagerCloseDetail, openFromUrl:venueManagerOpenFromUrl, edit:venueManagerEdit, newVenue:venueManagerNew, cancelEdit:venueManagerCancel, save:venueManagerSave, sendToRoute:venueManagerSendToRoute, filter:venueManagerFilter, exportCsv:venueManagerExportDialog, enrich:venueManagerEnrich, _exRun:venueManagerRunExport, _exToggleCustom:venueManagerExportToggleCustom };
-  document.addEventListener('DOMContentLoaded',()=>{ if($('routeAdminShell')) initRoutePlannerAdmin(); if($('venueAdminShell')) initVenueManager(); });
+  function initActiveProtectedView(){
+    if(document.getElementById('view-routes')?.classList.contains('active')) initRoutePlannerAdmin();
+    if(document.getElementById('view-venues')?.classList.contains('active')) initVenueManager();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initActiveProtectedView);
+  else initActiveProtectedView();
 })();

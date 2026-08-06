@@ -29,7 +29,7 @@ exports.handler = async (event) => {
         if (!venue || venue.deleted_at) return json(404, { success:false, error:'Contact not found' });
         return json(200, { success:true, data:publicVenue(venue) });
       }
-      if (b.action === 'list') return json(200,{success:true,data:(await listVenues()).map(publicVenue)});
+      if (b.action === 'list') return json(200,{success:true,data:(await listVenuesLite()).map(publicVenue)});
       return json(200,{success:true,data:await searchVenues(typeof b.query === 'string' ? {...b, query:b.query} : (b.query||b))});
     }
 
@@ -57,7 +57,20 @@ exports.handler = async (event) => {
   } catch(e) { return json(500,{success:false,error:e.message}); }
 };
 
+const CRM_LIST_FIELDS = [
+  'contact_type','type','name','city','country','region','market','address',
+  'capacity','actual_capacity','rating','relationship_status','buyer_status',
+  'booking_email','email','emails','phone','phones','whatsapp','website',
+  'instagram','facebook','twitter','tiktok','youtube','linkedin','soundcloud',
+  'spotify','bandcamp','telegram','booking_method','booking_form_url',
+  'genre_affinity','genres','notes','contacts','associated_venues','source_tags',
+  'last_found_source','last_found_at','created_at','updated_at','deleted_at'
+];
 async function listVenues(){ return (await listDocs(VENUES,{orderBy:'updated_at desc',pageSize:2000})).filter(v=>!v.deleted_at); }
+// Contact Manager's table/export view never needs embedding vectors or rag_text.
+// Firestore field masks keep the first authenticated request small and fast,
+// instead of downloading ~1,200 large vector documents and stripping them later.
+async function listVenuesLite(){ return (await listDocs(VENUES,{orderBy:'updated_at desc',pageSize:2000,mask:CRM_LIST_FIELDS})).filter(v=>!v.deleted_at); }
 function venueText(v){ return [v.name,v.contact_type,v.type,v.city,v.country,v.region,v.capacity?`capacity ${v.capacity}`:'',v.actual_capacity?`actual capacity ${v.actual_capacity}`:'',v.rating?`rating ${v.rating}`:'',arr(v.genres||v.genre_affinity).join(' '),v.relationship_status,v.buyer_status,v.notes,v.booking_email,v.phone,v.website,v.instagram,v.booking_method].filter(Boolean).join(' | '); }
 function arr(x){ return Array.isArray(x)?x:String(x||'').split(/[,;/]+/).map(s=>s.trim()).filter(Boolean); }
 function publicVenue(v={}){ const {embedding,rag_text,...rest}=v||{}; return rest; }
